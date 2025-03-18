@@ -13,9 +13,9 @@ class LoadingScene extends Phaser.Scene {
         // });
 
         // this.load.image('bg-grass', 'assets/img/background/14.png');
-        this.load.pack('spriteCharacter_Bundles', '../spritesCharacter.json');
-        this.load.pack('spriteUtilities_Bundles', '../spritesUtilities.json');
-        this.load.pack('spriteMisc_Bundles', '../spritesMisc.json');
+        this.load.pack('spriteCharacter_Bundles', 'spritesCharacter.json');
+        this.load.pack('spriteUtilities_Bundles', 'spritesUtilities.json');
+        this.load.pack('spriteMisc_Bundles', 'spritesMisc.json');
         // this.load.atlas('femaleBody', '../assets/img/sprites/body/femaleBody.png', '../assets/img/sprites/body/femaleBody.json');
         // this.load.atlas('maleBody', '../assets/img/sprites/body/maleBody.png', '../assets/img/sprites/body/maleBody.json');
     }
