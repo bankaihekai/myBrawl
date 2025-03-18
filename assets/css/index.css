@@ -1,0 +1,27 @@
+/* Reset default margin and padding */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrollbars */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000; /* Optional background color */
+}
+
+/* Ensure the game container fills the viewport and centers the canvas */
+#game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw; /* Full width of viewport */
+    height: 100vh; /* Full height of viewport */
+}
+
+/* Ensure the Phaser canvas is centered */
+#game-container canvas {
+    display: block; /* Remove any inline-block spacing */
+}
