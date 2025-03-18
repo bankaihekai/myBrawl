@@ -1,0 +1,200 @@
+[
+    {
+        "path": "assets/img/sprite/",
+        "files": [
+            {
+                "type": "spritesheet",
+                "key": "maleWhite",
+                "url": "character/maleWhite.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "malePeach",
+                "url": "character/malePeach.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "maleAsian",
+                "url": "character/maleAsian.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "maleDark",
+                "url": "character/maleDark.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "femaleWhite",
+                "url": "character/femaleWhite.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "femalePeach",
+                "url": "character/femalePeach.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "femaleAsian",
+                "url": "character/femaleAsian.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "femaleDark",
+                "url": "character/femaleDark.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_male1",
+                "url": "hairs/male/1.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_male2",
+                "url": "hairs/male/2.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_male3",
+                "url": "hairs/male/3.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_male4",
+                "url": "hairs/male/4.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_male5",
+                "url": "hairs/male/5.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_female1",
+                "url": "hairs/female/1.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_female2",
+                "url": "hairs/female/2.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_female3",
+                "url": "hairs/female/3.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_female4",
+                "url": "hairs/female/4.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "hair_female5",
+                "url": "hairs/female/5.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "body_female",
+                "url": "body/female.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "body_male",
+                "url": "body/male.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "body_basic_attire_male",
+                "url": "body/male_basic_attire.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "body_basic_attire_female",
+                "url": "body/female_basic_attire.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "male_armor1",
+                "url": "body/male_armor1.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "male_armor2",
+                "url": "body/male_armor2.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "male_armor3",
+                "url": "body/male_armor3.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "male_armor4",
+                "url": "body/male_armor4.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "male_armor5",
+                "url": "body/male_armor5.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            }
+            ,
+            {
+                "type": "spritesheet",
+                "key": "female_armor1",
+                "url": "body/female_armor1.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "female_armor2",
+                "url": "body/female_armor2.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "female_armor3",
+                "url": "body/female_armor3.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "female_armor4",
+                "url": "body/female_armor4.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            },
+            {
+                "type": "spritesheet",
+                "key": "female_armor5",
+                "url": "body/female_armor5.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            }
+        ]
+    }
+]
