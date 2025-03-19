@@ -133,7 +133,7 @@ class CreateScene extends Phaser.Scene {
         this.currentCharDetails.basicAttire = currentCharDetails.basicAttire;
 
         this.renderSprite(this.characterContainer, currentCharDetails, charDetails);
-        console.log(this.currentCharDetails);
+        // console.log(this.currentCharDetails);
     }
 
     renderSprite(container, currentCharDetails, charDetails) {
@@ -671,7 +671,7 @@ class CreateScene extends Phaser.Scene {
             try {
                 const bytes = CryptoJS.AES.decrypt(encryptedData, CONSTANTS._charDetailsKey.concat("1"));
                 const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                console.log("Character loaded!", decryptedData);
+                // console.log("Character loaded!", decryptedData);
                 return decryptedData;
             } catch (error) {
                 console.error(CONSTANTS._errorMessages.failedDecrypt, error);
@@ -690,7 +690,7 @@ class CreateScene extends Phaser.Scene {
             try {
                 const bytes = CryptoJS.AES.decrypt(activeUserDetails, CONSTANTS._charDetailsKey.concat("1"));
                 const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                console.log("Character logged In!", decryptedData);
+                // console.log("Character logged In!", decryptedData);
                 this.scene.start("playerHome");
             } catch (error) {
                 console.error(CONSTANTS._errorMessages.failedDecrypt, error);

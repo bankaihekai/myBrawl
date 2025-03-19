@@ -15,12 +15,11 @@ class PlayerHome extends Phaser.Scene {
             weapons: CONSTANTS._weaponsAvailable,
             skills: CONSTANTS._skills
         };
+        this.binKey = "67d9878c8a456b7966787549";
+        this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
     }
 
     create() {
-        console.log("home game");
-        console.log("-----------------------------------");
-        // this.createCursorTooltip();
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -475,7 +474,7 @@ class PlayerHome extends Phaser.Scene {
 
                 if (userInput.trim() !== '') {
                     // Your code to handle the confirmed input
-                    console.log('User confirmed input:', userInput);
+                    // console.log('User confirmed input:', userInput);
                     // Hide the input and buttons
                     passwordInput.style.display = 'none';
                     buttonContainer.style.display = 'none';
@@ -483,9 +482,9 @@ class PlayerHome extends Phaser.Scene {
                     passwordInput.value = '';
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
                     this.renderCreateCharacter();
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
                     this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                    console.log(this.currentCharDetails);
+                    // this.saveCharacter(CONSTANTS._successMessages.savedPassword);
+                    // console.log(this.currentCharDetails);
                 } else {
                     alert('No input provided. Action canceled.');
                 }
@@ -870,7 +869,7 @@ class PlayerHome extends Phaser.Scene {
 
             // console.log({ currentCharDetails: this.currentCharDetails.utilities.weapons });
             // console.log({ availableUtils: this.availableUtils.weapons });
-            console.log({ currentCharDetails: this.currentCharDetails });
+            // console.log({ currentCharDetails: this.currentCharDetails });
         }
     }
 
@@ -1368,72 +1367,5 @@ class PlayerHome extends Phaser.Scene {
             modal.remove();
         });
     }
-    
-    saveCharacter(data) {
-        fetch('src/server/dataSaving.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-            .then(response => {
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    this.SaveCharacter.destroy();
-                    console.log('Character saved successfully!');
-
-                    const message = this.add.text(
-                        this.sys.game.config.width / 2,
-                        this.sys.game.config.height / 2,
-                        "Created Successfully",
-                        {
-                            fontSize: '32px',
-                            color: '#ffffff',
-                            stroke: '#000000',
-                            fontStyle: 'bold',
-                            strokeThickness: 1,
-                            backgroundColor: '#5cb85c',
-                            padding: { x: 20, y: 10 }
-                        }
-                    ).setOrigin(0.5, 0.5);  // Center the text
-
-                    setTimeout(() => {
-                        message.destroy();
-                        this.scene.start("profile");
-                    }, 3000);
-                    
-                } else {
-                    console.error('Failed to save character:', data.message);
-
-                    const message = this.add.text(
-                        this.sys.game.config.width / 2,
-                        this.sys.game.config.height / 2,
-                        "Failed to save character",
-                        {
-                            fontSize: '32px',
-                            color: '#ffffff',
-                            stroke: '#000000',
-                            fontStyle: 'bold',
-                            strokeThickness: 1,
-                            backgroundColor: '#d9534f',
-                            padding: { x: 20, y: 10 }
-                        }
-                    ).setOrigin(0.5, 0.5);  // Center the text
-
-                    // Add a delay before transitioning to the next scene
-
-                    setTimeout(() => {
-                        message.destroy();
-                    }, 3000);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-
 }
 
