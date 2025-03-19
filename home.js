@@ -508,7 +508,6 @@ class PlayerHome extends Phaser.Scene {
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
                     this.saveCharacter(CONSTANTS._successMessages.savedPassword);
                     this.renderCreateCharacter();
-                    console.log(this.currentCharDetails);
                 } else {
                     alert('No input provided. Action canceled.');
                 }
@@ -1416,9 +1415,7 @@ class PlayerHome extends Phaser.Scene {
                     }
                 })
                 .then(updatedResult => {
-                    console.log("Updated Bin:", updatedResult);
                     if (updatedResult) {
-
                         this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
                         this.createToast(this.generateRandomKeys(), message, true);
                     } else {
@@ -1426,7 +1423,6 @@ class PlayerHome extends Phaser.Scene {
                     }
                 })
                 .catch(error => {
-                    console.error("Error:", error);
                     this.currentCharDetails.psd = null;
                     this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
                 });
