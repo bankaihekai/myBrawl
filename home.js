@@ -509,7 +509,7 @@ class PlayerHome extends Phaser.Scene {
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
                     this.renderCreateCharacter();
                     this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                    // this.saveCharacter(CONSTANTS._successMessages.savedPassword);
+                    this.saveCharacter(CONSTANTS._successMessages.savedPassword);
                     // console.log(this.currentCharDetails);
                 } else {
                     alert('No input provided. Action canceled.');
