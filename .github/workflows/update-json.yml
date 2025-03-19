@@ -18,7 +18,7 @@ jobs:
           node-version: '16'
 
       - name: Install jq
-        run: sudo apt-get install jq
+        run: sudo apt-get install -y jq
 
       - name: Read and Update JSON
         run: |
@@ -28,6 +28,12 @@ jobs:
           # Ensure the JSON file exists
           if [ ! -f "$FILE" ]; then
             echo "[]" > "$FILE"
+          fi
+
+          # Ensure NEW_DATA is not empty
+          if [ -z "$NEW_DATA" ] || [ "$NEW_DATA" = "null" ]; then
+            echo "Error: client_payload is missing or empty."
+            exit 1
           fi
 
           # Append the new data
