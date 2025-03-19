@@ -17,10 +17,13 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Install jq
+        run: sudo apt-get install jq
+
       - name: Read and Update JSON
         run: |
-          NEW_DATA='${{ toJson(github.event.client_payload.newData) }}'
           FILE="data.json"
+          NEW_DATA='${{ github.event.client_payload }}'
 
           # Ensure the JSON file exists
           if [ ! -f "$FILE" ]; then
@@ -35,5 +38,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add data.json
-          git commit -m "Updated data.json with new entry"
+          git commit -m "Updated data.json with new entry" || echo "No changes to commit"
           git push
