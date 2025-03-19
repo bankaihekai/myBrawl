@@ -1,30 +1,39 @@
 name: Update JSON File
 
 on:
-  workflow_dispatch:  # Allows manual execution
-  repository_dispatch: # Allows API trigger
+  repository_dispatch:
+    types: [update_json]
 
 jobs:
   update-json:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '16'
 
-      - name: Modify JSON File
+      - name: Read and Update JSON
         run: |
-          echo "Updating JSON file..."
-          node updateJson.js
+          NEW_DATA='${{ toJson(github.event.client_payload.newData) }}'
+          FILE="data.json"
 
-      - name: Commit and Push Changes
+          # Ensure the JSON file exists
+          if [ ! -f "$FILE" ]; then
+            echo "[]" > "$FILE"
+          fi
+
+          # Append the new data
+          jq ". += [$NEW_DATA]" "$FILE" > tmp.json && mv tmp.json "$FILE"
+
+      - name: Commit & Push Changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add data.json
-          git commit -m "Updated JSON data [GitHub Actions]"
+          git commit -m "Updated data.json with new entry"
           git push
