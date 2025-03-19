@@ -17,10 +17,40 @@ class PlayerHome extends Phaser.Scene {
         };
         this.binKey = "67d9878c8a456b7966787549";
         this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
-        this.ghp = "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";
+        this.ghpToken = "";
+    }
+
+    ghp() {
+        // 1. Fetch the latest data from the bin
+        return fetch(`https://api.jsonbin.io/v3/b/${this.binKey}/latest`, {
+            method: "GET",
+            headers: {
+                "X-Master-Key": this.masterKey
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch existing data");
+                return response.json(); // Convert response to JSON
+            })
+            .then(data => {
+                if (data && data.record) { // Ensure response structure is valid
+                    this.ghpToken = data.record[0].ghpat; // Set the GitHub Token
+                    return this.ghpToken; // Return token for further use
+                } else {
+                    throw new Error("GitHub token not found in JSONBin");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching GitHub Token:", error);
+            });
     }
 
     create() {
+
+        this.ghp().then(token => {
+            if (token) console.log("GHP Success!");
+        });
+
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -1374,7 +1404,7 @@ class PlayerHome extends Phaser.Scene {
             method: "POST",
             headers: {
                 "Accept": "application/vnd.github.v3+json",
-                "Authorization": `Bearer ${this.ghp}`, // Use env variable instead
+                "Authorization": `Bearer ${this.ghpToken}`, // Use env variable instead
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -1382,18 +1412,18 @@ class PlayerHome extends Phaser.Scene {
                 client_payload: { newData: this.currentCharDetails } // Wrapped correctly
             })
         })
-        .then(updateResponse => {
-            if (!updateResponse.ok) throw new Error("Failed to update data");
-            return updateResponse.json();
-        })
-        .then(updatedResult => {
-            console.log("Updated Bin:", updatedResult);
-            this.createToast(this.generateRandomKeys(), message, true);
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
+            .then(updateResponse => {
+                if (!updateResponse.ok) throw new Error("Failed to update data");
+                return updateResponse.json();
+            })
+            .then(updatedResult => {
+                console.log("Updated Bin:", updatedResult);
+                this.createToast(this.generateRandomKeys(), message, true);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
     }
-    
+
 }
 
