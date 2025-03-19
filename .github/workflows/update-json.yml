@@ -1,4 +1,4 @@
-name: Update JSON File
+name: Update userDb.json
 
 on:
   repository_dispatch:
@@ -18,7 +18,7 @@ jobs:
           node-version: '16'
 
       - name: Install jq
-        run: sudo apt-get install -y jq
+        run: sudo apt-get install jq
 
       - name: Read and Update JSON
         run: |
@@ -30,19 +30,18 @@ jobs:
             echo "[]" > "$FILE"
           fi
 
-          # Ensure NEW_DATA is not empty
-          if [ -z "$NEW_DATA" ] || [ "$NEW_DATA" = "null" ]; then
-            echo "Error: client_payload is missing or empty."
-            exit 1
-          fi
-
-          # Append the new data
+          # Append new data and save
           jq ". += [$NEW_DATA]" "$FILE" > tmp.json && mv tmp.json "$FILE"
 
       - name: Commit & Push Changes
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+
           git add api/userDb.json
           git commit -m "Updated userDb.json with new entry" || echo "No changes to commit"
           git push

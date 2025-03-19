@@ -31,8 +31,8 @@ class PlayerHome extends Phaser.Scene {
                 return response.json();
             })
             .then(data => {
-                if (data.record && data.record[0] && data.record[0].ghpat) {
-                    return data.record[0].ghpat;
+                if (data.record && data.record[0] && data.record[0].classic) {
+                    return data.record[0].classic;
                 } else {
                     throw new Error("GitHub token not found in JSONBin");
                 }
