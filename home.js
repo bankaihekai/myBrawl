@@ -19,30 +19,6 @@ class PlayerHome extends Phaser.Scene {
         this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
     }
 
-    ghp() {
-        return fetch(`https://api.jsonbin.io/v3/b/${this.binKey}/latest`, {
-            method: "GET",
-            headers: {
-                "X-Master-Key": this.masterKey
-            }
-        })
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to fetch existing data");
-                return response.json();
-            })
-            .then(data => {
-                if (data.record && data.record[0] && data.record[0].classic) {
-                    return data.record[0].classic;
-                } else {
-                    throw new Error("GitHub token not found in JSONBin");
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching GitHub Token:", error);
-                return null;
-            });
-    }
-
     create() {
 
         const loadIsLogin = this.loadCharacter("recentLogin");
@@ -461,8 +437,8 @@ class PlayerHome extends Phaser.Scene {
             passwordInput.id = 'passwordInput';
             passwordInput.placeholder = 'Enter Password';
             passwordInput.style.position = 'absolute';
-            passwordInput.style.left = '50%';
-            passwordInput.style.top = '50%';
+            passwordInput.style.left = '55%';
+            passwordInput.style.top = '40%';
             passwordInput.style.transform = 'translate(-50%, -50%)';
             passwordInput.style.display = 'none'; // Hide it initially
             document.body.appendChild(passwordInput);
@@ -470,8 +446,8 @@ class PlayerHome extends Phaser.Scene {
             const buttonContainer = document.createElement('div');
             buttonContainer.id = 'buttonContainer';
             buttonContainer.style.position = 'absolute';
-            buttonContainer.style.left = '50%';
-            buttonContainer.style.top = '55%';
+            buttonContainer.style.left = '55%';
+            buttonContainer.style.top = '45%';
             buttonContainer.style.transform = 'translate(-50%, -50%)';
             buttonContainer.style.display = 'none'; // Hide it initially
             document.body.appendChild(buttonContainer);
@@ -506,7 +482,20 @@ class PlayerHome extends Phaser.Scene {
                     // Clear the input value
                     passwordInput.value = '';
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
-                    this.saveCharacter(CONSTANTS._successMessages.savedPassword);
+                    
+                    createUser(this.currentCharDetails).then((data) => {
+                        if(data){
+                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
+                        } else {
+                            throw { code: 500, message: "Saving data failed!" };
+                        }
+                    })
+                    .catch(error => {
+                        this.currentCharDetails.psd = null;
+                        this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                    });
+
                     this.renderCreateCharacter();
                 } else {
                     alert('No input provided. Action canceled.');
@@ -1390,45 +1379,5 @@ class PlayerHome extends Phaser.Scene {
             modal.remove();
         });
     }
-
-    saveCharacter(message) {
-
-        this.ghp().then(token => {
-
-            return fetch("https://api.github.com/repos/bankaihekai/mybrawl/dispatches", {
-                method: "POST",
-                headers: {
-                    "Accept": "application/vnd.github.v3+json",
-                    "Authorization": `Bearer ${token}`, // Use env variable instead
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    event_type: "update_json",
-                    client_payload: { newData: this.currentCharDetails } // Wrapped correctly
-                })
-            })
-                .then(updateResponse => {
-                    if (!updateResponse.ok) {
-                        throw { code: 500, message: "Saving data failed!" }
-                    } else {
-                        return updateResponse.json();
-                    }
-                })
-                .then(updatedResult => {
-                    if (updatedResult) {
-                        this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                        this.createToast(this.generateRandomKeys(), message, true);
-                    } else {
-                        throw { code: 500, message: "Saving data failed!" }
-                    }
-                })
-                .catch(error => {
-                    this.currentCharDetails.psd = null;
-                    this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
-                });
-        });
-
-    }
-
 }
 

@@ -23,6 +23,8 @@ const CONSTANTS = {
         inputName: "Please input a name.",
     },
     _errorMessages: {
+        userAlreadyExist: "User already existing.",
+        invalidCreds: "Incorrect username or password.",
         requiredPassword: "Password is required.",
         notMatchPassword: "Passwords do not match.",
         requiredUsername: "Username is required.",

@@ -45,9 +45,19 @@ class CreateScene extends Phaser.Scene {
             isSaving: false // flag to lock naming while entering password
         }
 
+        this.existingUsers = [];
+
     }
 
     create() {
+
+        getAllUsers()
+            .then(users => {
+                this.existingUsers = users;
+            })
+            .catch(error => {
+                console.error("Error fetching users in Phaser:", error);
+            });
 
         this.displayloggedOut();
         this.validateLoggedIn();
@@ -219,49 +229,9 @@ class CreateScene extends Phaser.Scene {
             this.buttonContainer.add(this.saveButton);
 
             this.saveButton.on("pointerdown", () => {
-                const availableUserName = true; // check if user is available in DB
+                const availableUserName = this.existingUsers.filter(data => data.name == this.currentCharDetails.name);
 
-                if (availableUserName) {
-                    // this.saveButton.disableInteractive();
-                    // this.flags.isSaving = true;
-                    // console.log({ toSave: this.currentCharDetails });
-
-                    // // Create a password modal
-                    // const modal = document.createElement("div");
-                    // modal.innerHTML = `
-                    //     <div style="
-                    //         position: fixed;
-                    //         top: 50%;
-                    //         left: 50%;
-                    //         transform: translate(-50%, -50%);
-                    //         background: white;
-                    //         padding: 20px;
-                    //         box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-                    //         text-align: center;
-                    //         border-radius: 8px;
-                    //     ">
-                    //         <p>Enter your password:</p>
-                    //         <input type="password" id="passwordInput" style="padding: 5px; width: 200px;">
-                    //         <p>Retry password:</p>
-                    //         <input type="password" id="passwordRetryInput" style="padding: 5px; width: 200px;">
-                    //         <br><br>
-                    //         <button id="submitPasswordBtn" style="padding: 5px 10px;">Submit</button>
-                    //         <button id="cancelPasswordBtn" style="padding: 5px 10px; margin-left: 10px;">Cancel</button>
-                    //     </div>
-                    // `;
-
-                    // document.body.appendChild(modal);
-
-                    // // Handle password submission
-                    // document.getElementById("submitPasswordBtn").addEventListener("click", () => {
-                    //     const password = document.getElementById("passwordInput").value;
-                    //     const passwordRetry = document.getElementById("passwordRetryInput").value;
-
-                    //     if (!password || !passwordRetry) {
-                    //         this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requiredPassword);
-                    //     } else if (password !== passwordRetry) {
-                    //         this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.notMatchPassword);
-                    //     } else {
+                if (availableUserName.length == 0) {
 
                     const randomId = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
 
@@ -271,17 +241,8 @@ class CreateScene extends Phaser.Scene {
                     this.saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
                     this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
                     this.scene.start("playerHome");
-                    //     }
-                    //     this.saveButton.setInteractive();
-                    //     document.body.removeChild(modal);
-                    // });
-
-                    // Handle modal cancel
-                    // document.getElementById("cancelPasswordBtn").addEventListener("click", () => {
-                    //     this.flags.isSaving = false;
-                    //     this.saveButton.setInteractive();
-                    //     document.body.removeChild(modal);
-                    // });
+                } else {
+                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.userAlreadyExist);
                 }
             });
 
@@ -498,12 +459,18 @@ class CreateScene extends Phaser.Scene {
 
                 if (user_name) {
                     if (password) {
-                        // to do 
-                        // add user login validation
-                        // check user char details
-                        // load char redirect to home page
-                        // alert(CONSTANTS._successMessage.loginSuccess); // Optional success message
-                        this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.featureNotAvailable.replace("{key}", "Login"));
+                        const activeUserName = this.existingUsers.filter(data => data.name == user_name);
+
+                        if(activeUserName.length > 0) {
+                            this.saveToLocalStorage("recentLogin", true);
+                            this.saveToLocalStorage(CONSTANTS._charUserKey, activeUserName[0].name); // character user key
+                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, activeUserName[0]); // character data
+                            this.validateLoggedIn();
+
+                        } else {
+                            this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
+                        }
+                        
                     } else {
                         this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requiredPassword);
                     }
