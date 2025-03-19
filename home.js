@@ -20,7 +20,6 @@ class PlayerHome extends Phaser.Scene {
     }
 
     ghp() {
-        // 1. Fetch the latest data from the bin
         return fetch(`https://api.jsonbin.io/v3/b/${this.binKey}/latest`, {
             method: "GET",
             headers: {
@@ -29,18 +28,18 @@ class PlayerHome extends Phaser.Scene {
         })
             .then(response => {
                 if (!response.ok) throw new Error("Failed to fetch existing data");
-                return response.json(); // Convert response to JSON
+                return response.json();
             })
             .then(data => {
-                if (data && data.record) { // Ensure response structure is valid
-                    this.ghpToken = data.record[0].ghpat; // Set the GitHub Token
-                    return this.ghpToken; // Return token for further use
+                if (data.record && data.record[0] && data.record[0].ghpat) {
+                    return data.record[0].ghpat;
                 } else {
                     throw new Error("GitHub token not found in JSONBin");
                 }
             })
             .catch(error => {
                 console.error("Error fetching GitHub Token:", error);
+                return null;
             });
     }
 
@@ -507,10 +506,9 @@ class PlayerHome extends Phaser.Scene {
                     // Clear the input value
                     passwordInput.value = '';
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
-                    this.renderCreateCharacter();
-                    this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
                     this.saveCharacter(CONSTANTS._successMessages.savedPassword);
-                    // console.log(this.currentCharDetails);
+                    this.renderCreateCharacter();
+                    console.log(this.currentCharDetails);
                 } else {
                     alert('No input provided. Action canceled.');
                 }
@@ -1412,18 +1410,25 @@ class PlayerHome extends Phaser.Scene {
             })
                 .then(updateResponse => {
                     if (!updateResponse.ok) {
-                        this.createToast(this.generateRandomKeys(), JSON.stringify('Failed to update data'), false);
+                        throw { code: 500, message: "Saving data failed!" }
                     } else {
                         return updateResponse.json();
                     }
                 })
                 .then(updatedResult => {
                     console.log("Updated Bin:", updatedResult);
-                    this.createToast(this.generateRandomKeys(), message, true);
+                    if (updatedResult) {
+
+                        this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                        this.createToast(this.generateRandomKeys(), message, true);
+                    } else {
+                        throw { code: 500, message: "Saving data failed!" }
+                    }
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    this.createToast(this.generateRandomKeys(), JSON.stringify(error), false);
+                    this.currentCharDetails.psd = null;
+                    this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
                 });
         });
 
