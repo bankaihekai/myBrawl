@@ -51,12 +51,15 @@ class CreateScene extends Phaser.Scene {
 
     create() {
 
+        this.setLoading(true);
         getAllUsers()
             .then(users => {
                 this.existingUsers = users;
             })
             .catch(error => {
                 console.error("Error fetching users in Phaser:", error);
+            }).finally(() => {
+                this.setLoading(false); // Hide the loading screen when done
             });
 
         this.displayloggedOut();
@@ -456,26 +459,22 @@ class CreateScene extends Phaser.Scene {
             document.getElementById("submitPasswordBtn").addEventListener("click", () => {
                 const password = document.getElementById("passwordInput").value;
                 const user_name = document.getElementById("usernameInput").value;
+                console.log({ password: password });
+                console.log({ user_name: user_name });
+                if (user_name && password) {
+                    const activeUserName = this.existingUsers.filter(data => data.name == user_name);
 
-                if (user_name) {
-                    if (password) {
-                        const activeUserName = this.existingUsers.filter(data => data.name == user_name);
+                    if (activeUserName.length > 0) {
+                        this.saveToLocalStorage("recentLogin", true);
+                        this.saveToLocalStorage(CONSTANTS._charUserKey, activeUserName[0].name); // character user key
+                        this.saveToLocalStorage(CONSTANTS._charDetailsKey, activeUserName[0]); // character data
+                        this.validateLoggedIn();
 
-                        if(activeUserName.length > 0) {
-                            this.saveToLocalStorage("recentLogin", true);
-                            this.saveToLocalStorage(CONSTANTS._charUserKey, activeUserName[0].name); // character user key
-                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, activeUserName[0]); // character data
-                            this.validateLoggedIn();
-
-                        } else {
-                            this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
-                        }
-                        
                     } else {
-                        this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requiredPassword);
+                        this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
                     }
                 } else {
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requiredUsername);
+                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requireCreds);
                 }
 
                 document.body.removeChild(modal);
@@ -768,6 +767,15 @@ class CreateScene extends Phaser.Scene {
 
             this.characterContainer.add(closeSkill_sprite);
             maxSprites--;
+        }
+    }
+
+    setLoading(withLoading) {
+        const loadingScreen = document.getElementById("loading-screen");
+        if (loadingScreen) {
+            loadingScreen.style.display = withLoading ? "flex" : "none";
+        } else {
+            console.warn("Loading screen element not found!");
         }
     }
 }

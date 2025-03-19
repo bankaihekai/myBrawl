@@ -25,9 +25,8 @@ const CONSTANTS = {
     _errorMessages: {
         userAlreadyExist: "User already existing.",
         invalidCreds: "Incorrect username or password.",
-        requiredPassword: "Password is required.",
+        requireCreds: "Username and Password are required.",
         notMatchPassword: "Passwords do not match.",
-        requiredUsername: "Username is required.",
         featureNotAvailable: "{key} Feature not available.",
         noUtilitiesFound: "No random utils found.",
         failedDecrypt: "Failed to decrypt data.",

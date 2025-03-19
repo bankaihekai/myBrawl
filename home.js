@@ -482,7 +482,7 @@ class PlayerHome extends Phaser.Scene {
                     // Clear the input value
                     passwordInput.value = '';
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
-                    
+                    this.setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if(data){
                             this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
@@ -494,6 +494,8 @@ class PlayerHome extends Phaser.Scene {
                     .catch(error => {
                         this.currentCharDetails.psd = null;
                         this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                    }).finally(() => {
+                        this.setLoading(false); 
                     });
 
                     this.renderCreateCharacter();
@@ -1378,6 +1380,15 @@ class PlayerHome extends Phaser.Scene {
         document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
             modal.remove();
         });
+    }
+
+    setLoading(withLoading) {
+        const loadingScreen = document.getElementById("loading-screen");
+        if (loadingScreen) {
+            loadingScreen.style.display = withLoading ? "flex" : "none";
+        } else {
+            console.warn("Loading screen element not found!");
+        }
     }
 }
 
