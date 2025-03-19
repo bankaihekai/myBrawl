@@ -17,7 +17,6 @@ class PlayerHome extends Phaser.Scene {
         };
         this.binKey = "67d9878c8a456b7966787549";
         this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
-        this.ghpToken = "";
     }
 
     ghp() {
@@ -46,10 +45,6 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-
-        this.ghp().then(token => {
-            if (token) console.log("GHP Success!");
-        });
 
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
@@ -1400,29 +1395,35 @@ class PlayerHome extends Phaser.Scene {
     }
 
     saveCharacter(message) {
-        return fetch("https://api.github.com/repos/bankaihekai/mybrawl/dispatches", {
-            method: "POST",
-            headers: {
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": `Bearer ${this.ghpToken}`, // Use env variable instead
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                event_type: "update_json",
-                client_payload: { newData: this.currentCharDetails } // Wrapped correctly
+
+        this.ghp().then(token => {
+            if (token) console.log("GHP Success!");
+
+            return fetch("https://api.github.com/repos/bankaihekai/mybrawl/dispatches", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/vnd.github.v3+json",
+                    "Authorization": `Bearer ${token}`, // Use env variable instead
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    event_type: "update_json",
+                    client_payload: { newData: this.currentCharDetails } // Wrapped correctly
+                })
             })
-        })
-            .then(updateResponse => {
-                if (!updateResponse.ok) throw new Error("Failed to update data");
-                return updateResponse.json();
-            })
-            .then(updatedResult => {
-                console.log("Updated Bin:", updatedResult);
-                this.createToast(this.generateRandomKeys(), message, true);
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
+                .then(updateResponse => {
+                    if (!updateResponse.ok) throw new Error("Failed to update data");
+                    return updateResponse.json();
+                })
+                .then(updatedResult => {
+                    console.log("Updated Bin:", updatedResult);
+                    this.createToast(this.generateRandomKeys(), message, true);
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        });
+
     }
 
 }
