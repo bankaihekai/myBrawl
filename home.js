@@ -1397,7 +1397,6 @@ class PlayerHome extends Phaser.Scene {
     saveCharacter(message) {
 
         this.ghp().then(token => {
-            if (token) console.log("GHP Success!");
 
             return fetch("https://api.github.com/repos/bankaihekai/mybrawl/dispatches", {
                 method: "POST",
@@ -1412,8 +1411,11 @@ class PlayerHome extends Phaser.Scene {
                 })
             })
                 .then(updateResponse => {
-                    if (!updateResponse.ok) throw new Error("Failed to update data");
-                    return updateResponse.json();
+                    if (!updateResponse.ok) {
+                        this.createToast(this.generateRandomKeys(), JSON.stringify('Failed to update data'), false);
+                    } else {
+                        return updateResponse.json();
+                    }
                 })
                 .then(updatedResult => {
                     console.log("Updated Bin:", updatedResult);
@@ -1421,6 +1423,7 @@ class PlayerHome extends Phaser.Scene {
                 })
                 .catch(error => {
                     console.error("Error:", error);
+                    this.createToast(this.generateRandomKeys(), JSON.stringify(error), false);
                 });
         });
 
