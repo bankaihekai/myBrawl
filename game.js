@@ -16,7 +16,7 @@ const config = {
     },
     antialias: false,
     parent: 'game-container',
-    scene: [LoadingScene, CreateScene, PlayerHome],
+    scene: [LoadingScene, CreateScene, PlayerHome, PlayerSelect, PlayerFight],
     pixelArt: true,
 };
 

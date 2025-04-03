@@ -200,7 +200,9 @@ class PlayerHome extends Phaser.Scene {
         this.createToolTip(fightIcon, "Fight!", "buttons");
 
         fightIcon.on("pointerdown", () => {
-            this.createModalTable2('Select Opponent', "<h1 class='text-danger'>Fight not yet available</h1>", "fight");
+            // this.createModalTable2('Select Opponent', "<h1 class='text-danger'>Fight not yet available</h1>", "fight");
+            document.getElementById("phaser-tooltip")?.remove();
+            this.scene.start("playerSelect");
         });
 
         const learnBook_icon = this.add.sprite(this.centerX / 2 + 80, this.centerY + 30, "buttons").setFrame(32); // book icon
@@ -1389,6 +1391,46 @@ class PlayerHome extends Phaser.Scene {
         } else {
             console.warn("Loading screen element not found!");
         }
+    }
+
+    renderRandomCharacter(lvlPoints) {
+        
+        const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+        const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
+        const rand_hairNumber = this.randomizer(rand_hairGenderValue);
+        const rand_hairFrame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
+        const rand_basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const rand_bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+
+        let randomChar = {
+            level: {
+                current: 0,
+                experience: 0,
+                points: lvlPoints || 1
+            },
+            name: "Dummy" + this.randomizer(999),
+            gender: rand_Gender,
+            bodyFrame: rand_bodyFrame,
+            hair: {
+                number: rand_hairNumber,
+                frame: rand_hairFrame
+            },
+            basicAttire: rand_basicAttire,
+            utilities: {
+                skills: [],
+                weapons: [],
+                pets: []
+            },
+            attributes: {
+                life: 60,
+                damage: 1,
+                agile: 1,
+                speed: 1,
+                armor: 0
+            }
+        }
+
+        return randomChar;
     }
 }
 
