@@ -42,15 +42,13 @@ class PlayerFight extends Phaser.Scene {
             this.scene.start('playGame');
         }
 
-        console.log({ loadedOpponent: this.loadedOpponent });
-        console.log({ loadedCharacter: this.currentCharDetails });
-
         // ----------------------------------------
         // // TEST CODE
         // // ---------------------------------------
         // this.currentCharDetails.utilities.skills.push(3);
-        this.currentCharDetails.utilities.weapons.push(12);
         // this.loadedOpponent.attributes.damage = 50;
+        console.log({ loadedOpponent: this.loadedOpponent });
+        console.log({ loadedCharacter: this.currentCharDetails });
 
         // ----------------------------------------
         // TEST CODE
@@ -675,7 +673,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     console.log(`Winner: ${winner}`); // Print the victor
 
-                    const winner_X = winner == "player" ? 50 : 480;
+                    const winner_X = winner == "player" ? 100 : 480;
                     const winner_y = 150;
                     let winnerDisplay = this.add.text(winner_X, winner_y, "Winner!", {
                         fontSize: '50px',
@@ -686,7 +684,7 @@ class PlayerFight extends Phaser.Scene {
                     });
                     this.charNameContainer.add(winnerDisplay);
                 }
-            }, 10);
+            }, 800);
         } else {
             console.log(`Winner: ${winner}`); // Print the victor
             console.log({ script: this.script }); // Optionally print the full script array
@@ -943,6 +941,7 @@ class PlayerFight extends Phaser.Scene {
                 const rand_value = this.randomizer(1);
                 if (rand_value == 0) {
                     // Player attack first
+                    this.generateLogs(this.init, { type: "Move", charTitle: "player" });
 
                     for (let i = 1; i <= playerCombo; i++) {
 
@@ -952,7 +951,9 @@ class PlayerFight extends Phaser.Scene {
                             playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse);
                         };
 
-                        countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        if(this.playerLife > 0 && this.opponentLife > 0){
+                            countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        }
 
                         if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "opponent" });
@@ -979,7 +980,9 @@ class PlayerFight extends Phaser.Scene {
                             oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse);
                         };
 
-                        countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        if(this.playerLife > 0 && this.opponentLife > 0){
+                            countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        }
 
                         if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "player" });
@@ -993,8 +996,16 @@ class PlayerFight extends Phaser.Scene {
                     }
                     this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
 
+                    if(this.playerLife > 0 && this.opponentLife > 0){
+                        this.generateLogs(this.init, { type: "Return", charTitle: "player" });
+                    } else {
+                        this.generateLogs(this.init, { type: "Stop", charTitle: "player" });
+                        this.generateLogs(this.init, { type: "Stop", charTitle: "opponent" });
+                    }
+
                 } else {
                     // opponent attack first
+                    this.generateLogs(this.init, { type: "Move", charTitle: "opponent" });
 
                     for (let i = 1; i <= opponentCombo; i++) {
 
@@ -1004,7 +1015,9 @@ class PlayerFight extends Phaser.Scene {
                             oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse);
                         };
 
-                        countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        if(this.playerLife > 0 && this.opponentLife > 0){
+                            countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        }
 
                         if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "player" });
@@ -1030,7 +1043,9 @@ class PlayerFight extends Phaser.Scene {
                             playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse);
                         };
 
-                        countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        if(this.playerLife > 0 && this.opponentLife > 0){
+                            countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        }
 
                         if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "opponent" });
@@ -1043,8 +1058,17 @@ class PlayerFight extends Phaser.Scene {
                         }
                     }
                     this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
+                    
+                    if(this.playerLife > 0 && this.opponentLife > 0){
+                        this.generateLogs(this.init, { type: "Return", charTitle: "opponent" });
+                    } else {
+                        this.generateLogs(this.init, { type: "Stop", charTitle: "player" });
+                        this.generateLogs(this.init, { type: "Stop", charTitle: "opponent" });
+                    }
+
                 }
             } else if (this.currentPlayerSpeed >= maxSpeed) {
+                this.generateLogs(this.init, { type: "Move", charTitle: "player" });
 
                 // Player attacks!
                 for (let i = 1; i <= playerCombo; i++) {
@@ -1055,7 +1079,9 @@ class PlayerFight extends Phaser.Scene {
                         playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse);
                     };
 
-                    countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                    if(this.playerLife > 0 && this.opponentLife > 0){
+                        countered = this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                    }
 
                     if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                         this.generateLogs(this.init, { type: "counter", charTitle: "opponent" });
@@ -1068,8 +1094,16 @@ class PlayerFight extends Phaser.Scene {
                     }
                 }
                 this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
-            } else if (this.currentOpponentSpeed >= maxSpeed) {
 
+                if(this.playerLife > 0 && this.opponentLife > 0){
+                    this.generateLogs(this.init, { type: "Return", charTitle: "player" });
+                } else {
+                    this.generateLogs(this.init, { type: "Stop", charTitle: "player" });
+                    this.generateLogs(this.init, { type: "Stop", charTitle: "opponent" });
+                }
+
+            } else if (this.currentOpponentSpeed >= maxSpeed) {
+                this.generateLogs(this.init, { type: "Move", charTitle: "opponent" });
 
                 var changeWeaponResult = this.changeWeapon("opponent");
                 if (changeWeaponResult) {
@@ -1080,7 +1114,9 @@ class PlayerFight extends Phaser.Scene {
                 // Opponent attacks!
                 for (let i = 1; i <= opponentCombo; i++) {
 
-                    countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                    if(this.playerLife > 0 && this.opponentLife > 0){
+                        countered = this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                    }
 
                     if (countered && this.playerLife > 0 && this.opponentLife > 0) {
                         this.generateLogs(this.init, { type: "counter", charTitle: "player" });
@@ -1093,6 +1129,13 @@ class PlayerFight extends Phaser.Scene {
                     }
                 }
                 this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
+
+                if(this.playerLife > 0 && this.opponentLife > 0){
+                    this.generateLogs(this.init, { type: "Return", charTitle: "opponent" });
+                } else {
+                    this.generateLogs(this.init, { type: "Stop", charTitle: "player" });
+                    this.generateLogs(this.init, { type: "Stop", charTitle: "opponent" });
+                }
             }
             this.init += 1;
         }
