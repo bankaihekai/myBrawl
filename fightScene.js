@@ -11,6 +11,8 @@ class PlayerFight extends Phaser.Scene {
         this.thrownWeapons = [5, 6, 20, 28];
         this.heavyWeapons = [1, 2, 4, 7, 12, 14, 15, 19, 21, 22, 25];
         this.sharpWeapons = [8, 10, 16, 17, 18, 23, 26, 27, 30, 32];
+        this.maxSpeed = 1000; // Threshold for cyclic comparison
+
         // for skill basher 6
         this.isStun = {
             player: false,
@@ -584,23 +586,148 @@ class PlayerFight extends Phaser.Scene {
                     index++; // Move to the next element
                 } else {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
-                    console.log(`Winner: ${winner}`); // Print the victor
-
-                    const winner_X = winner == CONSTANTS._player ? 100 : 480;
-                    const winner_y = 150;
-                    let winnerDisplay = this.add.text(winner_X, winner_y, "Winner!", {
-                        fontSize: '50px',
-                        fill: '#000000',
-                        fontStyle: 'bold',
-                        stroke: '#00ff00', // Border color
-                        strokeThickness: 3 // Border thickness
-                    });
-                    this.charNameContainer.add(winnerDisplay);
+                    this.showWinner(winner);
                 }
             }, 800);
         } else {
-            console.log(`Winner: ${winner}`); // Print the victor
-            console.log({ script: this.script }); // Optionally print the full script array
+            this.showWinner(winner);
+        }
+    }
+
+    attackAndUpdate() {
+
+        this.renderLife();
+        this.playerLife = this.currentCharDetails.attributes.life;
+        this.opponentLife = this.loadedOpponent.attributes.life;
+
+        this.currentPlayerSpeed = 0; // Player speed counter
+        this.currentOpponentSpeed = 0; // Opponent speed counter
+        this.playerSpeed = this.currentCharDetails.attributes.speed;
+        this.opponentSpeed = this.loadedOpponent.attributes.speed;
+
+        // initialize agility / evasion additional
+        this.playerEvasion = Math.round(this.currentCharDetails.attributes.agile * 0.5);
+        this.opponentEvasion = Math.round(this.loadedOpponent.attributes.agile * 0.5);
+
+        // initialize block rate
+        this.playerBlock = 0;
+        this.opponentBlock = 0;
+
+        this.init = 0;
+
+        // Loop until one character's life reaches zero
+        while (this.playerLife > 0 && this.opponentLife > 0) {
+            // // Increment speeds for both characters
+            this.currentPlayerSpeed += this.playerSpeed;
+            this.currentOpponentSpeed += this.opponentSpeed;
+
+            // Player
+            const player_weaponNumber = this.playerUtils.activeWeapon || -1;
+            let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
+            let playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
+            let playerCombo = this.calculateCombo(player_weaponToUse.combo);
+
+            // Opponent
+            const opponent_weaponNumber = this.opponentUtils.activeWeapon || -1;
+            let opponent_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == opponent_weaponNumber);
+            let oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
+            let opponentCombo = this.calculateCombo(opponent_weaponToUse.combo);
+
+            this.playerBlock = player_weaponToUse.block || 0;
+            this.opponentBlock = player_weaponToUse.block || 0;
+
+            // Reduce speed for using a Weapon
+            this.currentPlayerSpeed += player_weaponToUse.speed; // negative values
+            this.currentOpponentSpeed += opponent_weaponToUse.speed; // negative values
+
+            // Check if either character reaches maxSpeed
+            if (this.currentPlayerSpeed >= this.maxSpeed && this.currentOpponentSpeed >= this.maxSpeed) {
+
+                const rand_value = this.randomizer(1);
+                if (rand_value == 0) {
+                    // Player attack first
+                    this.processTurn(CONSTANTS._opponent, player_weaponToUse, playerDamage, playerCombo, opponent_weaponToUse, oppponentDamage);
+
+                    if (this.opponentLife == 0) break;
+
+                    // opponenent attacks
+                    this.processTurn(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, opponentCombo, player_weaponToUse, playerDamage);
+
+                } else {
+                    // opponent attack first
+                    this.processTurn(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, opponentCombo, player_weaponToUse, playerDamage);
+
+                    if (this.playerLife == 0) break;
+
+                    // player attacks
+                    this.processTurn(CONSTANTS._opponent, player_weaponToUse, playerDamage, playerCombo, opponent_weaponToUse, oppponentDamage);
+                }
+            } else if (this.currentPlayerSpeed >= this.maxSpeed) {
+                this.processTurn(CONSTANTS._opponent, player_weaponToUse, playerDamage, playerCombo, opponent_weaponToUse, oppponentDamage);
+            } else if (this.currentOpponentSpeed >= this.maxSpeed) {
+                this.processTurn(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, opponentCombo, player_weaponToUse, playerDamage);
+            }
+            this.init += 1;
+        }
+
+        this.displayLogs(false); // true for setinterval 1sec
+    }
+
+    processTurn(attackerType, attacker_weaponToUse, attackerDamage, attackerCombo, defender_weaponToUse, defenderDamage) {
+
+        const attacker = attackerType == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const defender = attackerType == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+        const attackerDetails = attackerType == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
+        const defenderDetails = attackerType == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
+        const defenderCounter = attackerType == CONSTANTS._player ? this.canCounter.player : this.canCounter.opponent;
+    
+        this.generateLogs(this.init, { type: "Move", charTitle: attacker });
+    
+        var changeWeaponResult = this.changeWeapon(attacker);
+        if (changeWeaponResult) {
+            attacker_weaponToUse = changeWeaponResult;
+            attackerDamage = this.calculateDamage(attackerDetails.attributes.damage, defenderDetails.attributes.armor, attacker_weaponToUse, attacker);
+        };
+    
+        // Opponent attacks!
+        for (let i = 1; i <= attackerCombo; i++) {
+    
+            if (this.playerLife > 0 && this.opponentLife > 0) break;
+    
+            var newChangeWeaponResult = this.changeWeapon(attacker);
+            if (newChangeWeaponResult) {
+                attacker_weaponToUse = newChangeWeaponResult;
+                attackerDamage = this.calculateDamage(attackerDetails.attributes.damage, defenderDetails.attributes.armor, attacker_weaponToUse, attacker);
+            };
+    
+            if (this.playerLife > 0 && this.opponentLife > 0) {
+                this.characterAttack(attacker, attacker_weaponToUse, attackerDamage, defender_weaponToUse);
+            }
+    
+            if (defenderCounter && this.playerLife > 0 && this.opponentLife > 0) {
+                this.generateLogs(this.init, { type: "counter", charTitle: defender, attacker: attacker });
+                this.characterAttack(defender, defender_weaponToUse, defenderDamage, attacker_weaponToUse);
+            }
+        }
+    
+        if(defender == CONSTANTS._player) {
+            this.calculateSpeed(true, false); // Reset Opponent speed counter
+        } else {
+            this.calculateSpeed(false, true); // Reset Opponent speed counter
+        }
+    
+        if (this.playerLife > 0 && this.opponentLife > 0) {
+    
+            const opponentWithThrownWeapon = this.thrownWeapons.find(w => w == this.opponentUtils.activeWeapon);
+            if (opponentWithThrownWeapon) {
+                this.generateLogs(this.init, { type: "Stop throwing", charTitle: attacker });
+            } else {
+                this.generateLogs(this.init, { type: "Return", charTitle: attacker });
+            }
+    
+        } else {
+            this.generateLogs(this.init, { type: "Stop", charTitle: defender });
+            this.generateLogs(this.init, { type: "Stop", charTitle: attacker });
         }
     }
 
@@ -669,12 +796,12 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    calculateSpeed(changePlayer, changeOpponent, maxSpeed) {
+    calculateSpeed(changePlayer, changeOpponent) {
         if (changePlayer) {
-            this.currentPlayerSpeed -= maxSpeed; // Player speed counter
+            this.currentPlayerSpeed -= this.maxSpeed; // Player speed counter
         }
         if (changeOpponent) {
-            this.currentOpponentSpeed -= maxSpeed; // Opponent speed counter
+            this.currentOpponentSpeed -= this.maxSpeed; // Opponent speed counter
         }
     }
 
@@ -804,272 +931,6 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    attackAndUpdate() {
-
-        this.renderLife();
-        const maxSpeed = 1000; // Threshold for cyclic comparison
-        this.playerLife = this.currentCharDetails.attributes.life;
-        this.opponentLife = this.loadedOpponent.attributes.life;
-
-        this.currentPlayerSpeed = 0; // Player speed counter
-        this.currentOpponentSpeed = 0; // Opponent speed counter
-        this.playerSpeed = this.currentCharDetails.attributes.speed;
-        this.opponentSpeed = this.loadedOpponent.attributes.speed;
-
-        // initialize agility / evasion additional
-        this.playerEvasion = Math.round(this.currentCharDetails.attributes.agile * 0.5);
-        this.opponentEvasion = Math.round(this.loadedOpponent.attributes.agile * 0.5);
-
-        // initialize block rate
-        this.playerBlock = 0;
-        this.opponentBlock = 0;
-
-        this.init = 0;
-
-        // Loop until one character's life reaches zero
-        while (this.playerLife > 0 && this.opponentLife > 0) {
-            // Increment speeds for both characters
-            this.currentPlayerSpeed += this.playerSpeed;
-            this.currentOpponentSpeed += this.opponentSpeed;
-
-            // Player
-            const player_weaponNumber = this.playerUtils.activeWeapon || -1;
-            let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
-            let playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-            let playerCombo = this.calculateCombo(player_weaponToUse.combo);
-
-            // Opponent
-            const opponent_weaponNumber = this.opponentUtils.activeWeapon || -1;
-            let opponent_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == opponent_weaponNumber);
-            let oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-            let opponentCombo = this.calculateCombo(opponent_weaponToUse.combo);
-
-            this.playerBlock = player_weaponToUse.block || 0;
-            this.opponentBlock = player_weaponToUse.block || 0;
-
-            // Reduce speed for using a Weapon
-            this.currentPlayerSpeed += player_weaponToUse.speed; // negative values
-            this.currentOpponentSpeed += opponent_weaponToUse.speed; // negative values
-
-            // Check if either character reaches maxSpeed
-            if (this.currentPlayerSpeed >= maxSpeed && this.currentOpponentSpeed >= maxSpeed) {
-
-                const rand_value = this.randomizer(1);
-                if (rand_value == 0) {
-                    // Player attack first
-                    this.generateLogs(this.init, { type: "Move", charTitle: CONSTANTS._player });
-
-                    for (let i = 1; i <= playerCombo; i++) {
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                        var changeWeaponResult = this.changeWeapon(CONSTANTS._player);
-                        if (changeWeaponResult) {
-                            player_weaponToUse = changeWeaponResult;
-                            playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-                        };
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                        }
-
-                        if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
-                            this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._opponent, attacker: CONSTANTS._player });
-                            this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-                        }
-                    }
-                    this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
-
-                    if (this.opponentLife == 0) {
-                        break;
-                    };
-
-                    // opponenent attacks
-                    for (let i = 1; i <= opponentCombo; i++) {
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                        var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
-                        if (changeWeaponResult) {
-                            opponent_weaponToUse = changeWeaponResult;
-                            oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-                        };
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-                        }
-
-                        if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
-                            this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._player, attacker: CONSTANTS._opponent });
-                            this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                        }
-                    }
-                    this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) {
-                        const playerWithThrownWeapon = this.thrownWeapons.find(w => w == this.playerUtils.activeWeapon);
-                        if (playerWithThrownWeapon) {
-                            this.generateLogs(this.init, { type: "Stop throwing", charTitle: CONSTANTS._player });
-                        } else {
-                            this.generateLogs(this.init, { type: "Return", charTitle: CONSTANTS._player });
-                        }
-                    } else {
-                        this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._player });
-                        this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._opponent });
-                    }
-
-                } else {
-                    // opponent attack first
-                    this.generateLogs(this.init, { type: "Move", charTitle: CONSTANTS._opponent });
-
-                    for (let i = 1; i <= opponentCombo; i++) {
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                        var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
-                        if (changeWeaponResult) {
-                            opponent_weaponToUse = changeWeaponResult;
-                            oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-                        };
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-                        }
-
-                        if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
-                            this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._player, attacker: CONSTANTS._opponent });
-                            this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                        }
-                    };
-                    this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
-
-                    if (this.playerLife == 0) {
-                        break;
-                    };
-
-                    for (let i = 1; i <= playerCombo; i++) {
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                        var changeWeaponResult = this.changeWeapon(CONSTANTS._player);
-                        if (changeWeaponResult) {
-                            player_weaponToUse = changeWeaponResult;
-                            playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-                        };
-
-                        if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                        }
-
-                        if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
-                            this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._opponent, attacker: CONSTANTS._player });
-                            this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-
-                        }
-                    }
-                    this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) {
-
-                        const opponentWithThrownWeapon = this.thrownWeapons.find(w => w == this.opponentUtils.activeWeapon);
-                        if (opponentWithThrownWeapon) {
-                            this.generateLogs(this.init, { type: "Stop throwing", charTitle: CONSTANTS._opponent });
-                        } else {
-                            this.generateLogs(this.init, { type: "Return", charTitle: CONSTANTS._opponent });
-                        }
-                    } else {
-                        this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._player });
-                        this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._opponent });
-                    }
-
-                }
-            } else if (this.currentPlayerSpeed >= maxSpeed) {
-                this.generateLogs(this.init, { type: "Move", charTitle: CONSTANTS._player });
-
-                // Player attacks!
-                for (let i = 1; i <= playerCombo; i++) {
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                    var changeWeaponResult = this.changeWeapon(CONSTANTS._player);
-                    if (changeWeaponResult) {
-                        player_weaponToUse = changeWeaponResult;
-                        playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-                    };
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) {
-                        this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                    }
-
-                    if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
-                        this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._opponent, attacker: CONSTANTS._player });
-                        this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-                    }
-                }
-                this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
-
-                if (this.playerLife > 0 && this.opponentLife > 0) {
-                    const playerWithThrownWeapon = this.thrownWeapons.find(w => w == this.playerUtils.activeWeapon);
-                    if (playerWithThrownWeapon) {
-                        this.generateLogs(this.init, { type: "Stop throwing", charTitle: CONSTANTS._player });
-                    } else {
-                        this.generateLogs(this.init, { type: "Return", charTitle: CONSTANTS._player });
-                    }
-                } else {
-                    this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._player });
-                    this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._opponent });
-                }
-
-            } else if (this.currentOpponentSpeed >= maxSpeed) {
-                this.generateLogs(this.init, { type: "Move", charTitle: CONSTANTS._opponent });
-
-                var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
-                if (changeWeaponResult) {
-                    opponent_weaponToUse = changeWeaponResult;
-                    oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-                };
-
-                // Opponent attacks!
-                for (let i = 1; i <= opponentCombo; i++) {
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) continue;
-
-                    var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
-                    if (changeWeaponResult) {
-                        opponent_weaponToUse = changeWeaponResult;
-                        oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-                    };
-
-                    if (this.playerLife > 0 && this.opponentLife > 0) {
-                        this.characterAttack(CONSTANTS._opponent, opponent_weaponToUse, oppponentDamage, player_weaponToUse);
-                    }
-
-                    if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
-                        this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._player, attacker: CONSTANTS._opponent });
-                        this.characterAttack(CONSTANTS._player, player_weaponToUse, playerDamage, opponent_weaponToUse);
-                    }
-                }
-                this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
-
-                if (this.playerLife > 0 && this.opponentLife > 0) {
-
-                    const opponentWithThrownWeapon = this.thrownWeapons.find(w => w == this.opponentUtils.activeWeapon);
-                    if (opponentWithThrownWeapon) {
-                        this.generateLogs(this.init, { type: "Stop throwing", charTitle: CONSTANTS._opponent });
-                    } else {
-                        this.generateLogs(this.init, { type: "Return", charTitle: CONSTANTS._opponent });
-                    }
-
-                } else {
-                    this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._player });
-                    this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._opponent });
-                }
-            }
-            this.init += 1;
-        }
-        this.displayLogs(true); // true for setinterval 1sec
-    }
-
     updateLife(target, remaining) {
         const maxWidth = 350;
         if (target == CONSTANTS._player) {
@@ -1121,6 +982,21 @@ class PlayerFight extends Phaser.Scene {
                 this.isStun.opponent = true;
             }
         }
+    }
+
+    showWinner(winner){
+        console.log(`Winner: ${winner}`); // Print the victor
+
+        const winner_X = winner == CONSTANTS._player ? 100 : 480;
+        const winner_y = 150;
+        let winnerDisplay = this.add.text(winner_X, winner_y, "Winner!", {
+            fontSize: '50px',
+            fill: '#000000',
+            fontStyle: 'bold',
+            stroke: '#00ff00', // Border color
+            strokeThickness: 3 // Border thickness
+        });
+        this.charNameContainer.add(winnerDisplay);
     }
 }
 
