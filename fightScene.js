@@ -281,51 +281,6 @@ class PlayerFight extends Phaser.Scene {
         this.charNameContainer.add(opponentName);
     }
 
-    createToolTip(toHover, content, utilKeys) {
-
-        var position = {
-            x: CONSTANTS._gameWidth,
-            y: CONSTANTS._gameHeight
-        };
-
-        switch (utilKeys) {
-            case "skills":
-                position.x += 180, // left
-                    position.y -= 170 // top
-                break;
-            case "weapons":
-                break;
-            case "pets":
-                break;
-            default:
-                position.x -= 80, // left
-                    position.y -= 220 // top
-                break;
-        }
-
-        toHover.setInteractive();
-
-        toHover.on("pointerover", () => {
-            document.getElementById("phaser-tooltip")?.remove();
-
-            const modal = document.createElement("div");
-            modal.id = "phaser-tooltip";
-            modal.innerHTML = `
-            <div class="position-absolute bg-dark text-white border rounded p-3" 
-                 style="left: ${position.x}px; top: ${position.y}px; z-index: 1000; 
-                        max-width: 350px; padding: 15px; border-radius: 8px; 
-                        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
-                        font-size: 18px; font-weight: bold; border: 2px solid #ffffff;">
-                ${content}
-            </div>
-        `;
-
-            document.body.appendChild(modal);
-        });
-
-        toHover.on("pointerout", () => document.getElementById("phaser-tooltip")?.remove());
-    }
-
     saveToLocalStorage(key, data) {
         const encryptedData = this.encryptedData(key, data);
         localStorage.setItem(key, encryptedData);
@@ -368,44 +323,6 @@ class PlayerFight extends Phaser.Scene {
         }
 
         return true;
-    }
-
-    /**
-     * Create reusable modal with table component to display message
-     * @param {string} key - use as button id
-     * @param {string} message - modal message, must contain table row and data elements
-     * @returns {void}
-     */
-    createModalTable(key, message) {
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">Level Up!</h5>
-                        </div>
-                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
     }
 
     /**
@@ -483,38 +400,6 @@ class PlayerFight extends Phaser.Scene {
 
         // Select the random value from the array
         return data[randomIndex];
-    }
-
-    createModalTable2(title, message, key) {
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">${title}</h5>
-                        </div>
-                        <div class="modal-body" style="height: 500px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-secondary">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
     }
 
     setLoading(withLoading) {
