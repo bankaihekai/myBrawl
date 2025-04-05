@@ -719,102 +719,68 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    playerAttack(playerWeapon, damage, opponentWeapon) {
+    // charactyerType playerWeapon, damage, opponentWeapon
+    characterAttack(attackerType, attackerWeapon, attackerDamage, defenderWeapon) {
         // const isStunned = this.checkStunned("player");
         // if (isStunned) return false; // no attack if stunned
 
-        const isWithThrownWeapon = this.thrownWeapons.find(w => w == playerWeapon.number);
-        var isAccurate = this.calculateAccuracy(playerWeapon.accuracy);
+        const attacker = attackerType == "player" ? "player" : "opponent";
+        const defender = attackerType == "player" ? "opponent" : "player";
+        const isWithThrownWeapon = this.thrownWeapons.find(w => w == attackerWeapon.number);
+        const isAccurate = this.calculateAccuracy(attackerWeapon.accuracy);
 
         if (isAccurate) {
 
-            var isEvade = this.calculateEvasion(opponentWeapon.evasion, "opponent");
+            var isEvade = this.calculateEvasion(defenderWeapon.evasion, defender);
             if (isEvade) {
-                this.generateLogs(this.init, { type: "Dodge", charTitle: "opponent", attacker: "player" });
-                this.canCounter.opponent = true;
+                this.generateLogs(this.init, { type: "Dodge", charTitle: defender, attacker: attacker });
+                if (defender == "player") {
+                    this.canCounter.player = true;
+                } else {
+                    this.canCounter.opponent = true;
+                }
             }
 
-            var isBlock = this.calculateEvasion(opponentWeapon.evasion, "opponent");
+            var isBlock = this.calculateEvasion(defenderWeapon.evasion, defender);
             if (isBlock) {
-                this.generateLogs(this.init, { type: "Block", charTitle: "opponent", attacker: "player" });
-                this.canCounter.opponent = true;
+                this.generateLogs(this.init, { type: "Block", charTitle: defender, attacker: attacker });
+                if (defender == "player") {
+                    this.canCounter.player = true;
+                } else {
+                    this.canCounter.opponent = true;
+                }
             }
 
-            // Player attacks!
-            var remaining_opponentLife = Math.max(0, this.opponentLife - damage); // Ensure life doesn't go below zero
+            // attacks!
+            var remaining_DefenderLife = 0;
+            if (attacker == "player") {
+                remaining_DefenderLife = Math.max(0, this.opponentLife - attackerDamage); // Ensure life doesn't go below zero
+                this.opponentLife = remaining_DefenderLife;
+            } else {
+                remaining_DefenderLife = Math.max(0, this.playerLife - attackerDamage); // Ensure life doesn't go below zero
+                this.playerLife = remaining_DefenderLife;
+            }
 
+            const attackerLife = attacker == "player" ? this.playerLife : this.opponentLife;
             this.generateLogs(
                 this.init,
-                { type: "attack", charTitle: "player" },
-                { name: playerWeapon.name, damage: damage },
-                { p1: this.playerLife, p2: remaining_opponentLife }
+                { type: "attack", charTitle: attacker },
+                { name: attackerWeapon.name, damage: attackerDamage },
+                { p1: attackerLife, p2: remaining_DefenderLife }
             );
-            this.opponentLife = remaining_opponentLife;
 
-            this.calculateDisarm(playerWeapon.disarm, "opponent");
+            this.calculateDisarm(attackerWeapon.disarm, defender);
 
             // const withBasher = this.currentCharDetails.utilities.skills.find(skill => skill == 6); // basher skill
             // const isWithHeavyWeapon = this.heavyWeapons.find(w => w == playerWeapon.number);
             // if (withBasher && isWithHeavyWeapon) this.calculateStun("opponent");
 
-            this.canCounter.opponent = false;
-        }
-
-        // with counter attack if not thrown weapons
-        if (isWithThrownWeapon) {
-            this.canCounter.opponent = false;
-        } else {
-            this.canCounter.opponent = true;
-        }
-    }
-
-    opponentAttack(opponentWeapon, damage, playerWeapon) {
-        // const isStunned = this.checkStunned("opponent");
-        // if (isStunned) return false; // no attack if stunned
-
-        const isWithThrownWeapon = this.thrownWeapons.find(w => w == opponentWeapon.number);
-        var isAccurate = this.calculateAccuracy(opponentWeapon.accuracy);
-
-        if (isAccurate) {
-
-            var isEvade = this.calculateEvasion(playerWeapon.evasion, "player");
-            if (isEvade) {
-                this.generateLogs(this.init, { type: "Dodge", charTitle: "player", attacker: "opponent" });
-                this.canCounter.player = true;
+            if (defender == "player" && isWithThrownWeapon) {
+                this.canCounter.player = false;
             }
-
-            var isBlock = this.calculateBlock(playerWeapon.block, "player");
-            if (isBlock) {
-                this.generateLogs(this.init, { type: "Block", charTitle: "player", attacker: "opponent" });
-                this.canCounter.player = true;
+            else if (defender == "opponent" && isWithThrownWeapon) {
+                this.canCounter.opponent = false;
             }
-
-            // Opponent attacks!
-            var remaining_playerLife = Math.max(0, this.playerLife - damage); // Ensure life doesn't go below zero
-
-            this.generateLogs(
-                this.init,
-                { type: "attack", charTitle: "opponent" },
-                { name: opponentWeapon.name, damage: damage },
-                { p1: remaining_playerLife, p2: this.opponentLife }
-            );
-            this.playerLife = remaining_playerLife;
-
-            this.calculateDisarm(opponentWeapon.disarm, "player");
-
-            // const withBasher = this.loadedOpponent.utilities.skills.find(skill => skill == 6); // basher skill
-            // const isWithHeavyWeapon = this.heavyWeapons.find(w => w == opponentWeapon.number);
-            // if (withBasher && isWithHeavyWeapon) this.calculateStun("player");
-
-            // return false; // no counter attack
-            this.canCounter.player = false;
-        }
-
-        // with counter attack if not thrown weapons
-        if (isWithThrownWeapon) {
-            this.canCounter.player = false;
-        } else {
-            this.canCounter.player = true;
         }
     }
 
@@ -1010,6 +976,8 @@ class PlayerFight extends Phaser.Scene {
 
                     for (let i = 1; i <= playerCombo; i++) {
 
+                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                         var changeWeaponResult = this.changeWeapon("player");
                         if (changeWeaponResult) {
                             player_weaponToUse = changeWeaponResult;
@@ -1017,12 +985,12 @@ class PlayerFight extends Phaser.Scene {
                         };
 
                         if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                            this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                         }
 
                         if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "opponent", attacker: "player" });
-                            this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                            this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
                         }
                     }
                     this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
@@ -1034,6 +1002,8 @@ class PlayerFight extends Phaser.Scene {
                     // opponenent attacks
                     for (let i = 1; i <= opponentCombo; i++) {
 
+                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                         var changeWeaponResult = this.changeWeapon("opponent");
                         if (changeWeaponResult) {
                             opponent_weaponToUse = changeWeaponResult;
@@ -1041,12 +1011,12 @@ class PlayerFight extends Phaser.Scene {
                         };
 
                         if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                            this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
                         }
 
                         if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "player", attacker: "opponent" });
-                            this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                            this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                         }
                     }
                     this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
@@ -1069,6 +1039,8 @@ class PlayerFight extends Phaser.Scene {
 
                     for (let i = 1; i <= opponentCombo; i++) {
 
+                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                         var changeWeaponResult = this.changeWeapon("opponent");
                         if (changeWeaponResult) {
                             opponent_weaponToUse = changeWeaponResult;
@@ -1076,12 +1048,12 @@ class PlayerFight extends Phaser.Scene {
                         };
 
                         if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                            this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
                         }
 
                         if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "player", attacker: "opponent" });
-                            this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                            this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                         }
                     };
                     this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
@@ -1092,6 +1064,8 @@ class PlayerFight extends Phaser.Scene {
 
                     for (let i = 1; i <= playerCombo; i++) {
 
+                        if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                         var changeWeaponResult = this.changeWeapon("player");
                         if (changeWeaponResult) {
                             player_weaponToUse = changeWeaponResult;
@@ -1099,12 +1073,12 @@ class PlayerFight extends Phaser.Scene {
                         };
 
                         if (this.playerLife > 0 && this.opponentLife > 0) {
-                            this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                            this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                         }
 
                         if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
                             this.generateLogs(this.init, { type: "counter", charTitle: "opponent", attacker: "player" });
-                            this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                            this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
 
                         }
                     }
@@ -1130,6 +1104,8 @@ class PlayerFight extends Phaser.Scene {
                 // Player attacks!
                 for (let i = 1; i <= playerCombo; i++) {
 
+                    if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                     var changeWeaponResult = this.changeWeapon("player");
                     if (changeWeaponResult) {
                         player_weaponToUse = changeWeaponResult;
@@ -1137,12 +1113,12 @@ class PlayerFight extends Phaser.Scene {
                     };
 
                     if (this.playerLife > 0 && this.opponentLife > 0) {
-                        this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                     }
 
                     if (this.canCounter.opponent && this.playerLife > 0 && this.opponentLife > 0) {
                         this.generateLogs(this.init, { type: "counter", charTitle: "opponent", attacker: "player" });
-                        this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
                     }
                 }
                 this.calculateSpeed(true, false, maxSpeed); // Reset Player speed counter
@@ -1171,6 +1147,8 @@ class PlayerFight extends Phaser.Scene {
                 // Opponent attacks!
                 for (let i = 1; i <= opponentCombo; i++) {
 
+                    if (this.playerLife > 0 && this.opponentLife > 0) continue;
+
                     var changeWeaponResult = this.changeWeapon("opponent");
                     if (changeWeaponResult) {
                         opponent_weaponToUse = changeWeaponResult;
@@ -1178,12 +1156,12 @@ class PlayerFight extends Phaser.Scene {
                     };
 
                     if (this.playerLife > 0 && this.opponentLife > 0) {
-                        this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+                        this.characterAttack("opponent", opponent_weaponToUse, oppponentDamage, player_weaponToUse);
                     }
 
                     if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
                         this.generateLogs(this.init, { type: "counter", charTitle: "player", attacker: "opponent" });
-                        this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+                        this.characterAttack("player", player_weaponToUse, playerDamage, opponent_weaponToUse);
                     }
                 }
                 this.calculateSpeed(false, true, maxSpeed); // Reset Opponent speed counter
