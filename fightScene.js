@@ -1046,4 +1046,55 @@ class PlayerFight extends Phaser.Scene {
         });
         this.charNameContainer.add(winnerDisplay);
     }
+
+    // attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage
+    // ex. opponent attacker
+    // ex. player defender
+    processTurns(attacker, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage) {
+
+        const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+
+        this.generateLogs(this.init, { type: "Move", charTitle: CONSTANTS._opponent });
+
+        var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
+        if (changeWeaponResult) {
+            opponent_weaponToUse = changeWeaponResult;
+            oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
+        };
+
+        // Opponent attacks!
+        for (let i = 1; i <= opponentCombo; i++) {
+
+            var changeWeaponResult = this.changeWeapon(CONSTANTS._opponent);
+            if (changeWeaponResult) {
+                opponent_weaponToUse = changeWeaponResult;
+                oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
+            };
+
+            if (this.playerLife > 0 && this.opponentLife > 0) {
+                this.opponentAttack(opponent_weaponToUse, oppponentDamage, player_weaponToUse);
+            }
+
+            if (this.canCounter.player && this.playerLife > 0 && this.opponentLife > 0) {
+                this.generateLogs(this.init, { type: "counter", charTitle: CONSTANTS._player, attacker: CONSTANTS._opponent });
+                this.playerAttack(player_weaponToUse, playerDamage, opponent_weaponToUse);
+            }
+        }
+        this.calculateSpeed(false, true); // Reset Opponent speed counter
+
+        if (this.playerLife > 0 && this.opponentLife > 0) {
+
+            const opponentWithThrownWeapon = this.thrownWeapons.find(w => w == this.opponentUtils.activeWeapon);
+            if (opponentWithThrownWeapon) {
+                this.generateLogs(this.init, { type: "Stop throwing", charTitle: CONSTANTS._opponent });
+            } else {
+                this.generateLogs(this.init, { type: "Return", charTitle: CONSTANTS._opponent });
+            }
+
+        } else {
+            this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._player });
+            this.generateLogs(this.init, { type: "Stop", charTitle: CONSTANTS._opponent });
+        }
+    }
 }
