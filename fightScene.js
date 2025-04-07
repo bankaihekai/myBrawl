@@ -782,7 +782,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (final > 0) {
-            const isSuccessful = this.calculateChance(evasionPercentage); // Attempt the remaining chance
+            const isSuccessful = this.calculateChance(final); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> evade attack
         }
 
@@ -798,7 +798,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (final > 0) {
-            const isSuccessful = this.calculateChance(blockPercentage); // Attempt the remaining chance
+            const isSuccessful = this.calculateChance(final); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> evade attack
         }
 
