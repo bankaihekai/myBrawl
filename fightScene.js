@@ -779,6 +779,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.player == false) {
                     this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
                 } else {
+                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._player});
                     this.isStun.player = false;
                 }
                 this.init += 1;
@@ -786,6 +787,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.opponent == false) {
                     this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
                 } else {
+                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._opponent});
                     this.isStun.opponent = false;
                 }
                 this.init += 1;
