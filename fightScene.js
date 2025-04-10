@@ -777,8 +777,10 @@ class PlayerFight extends Phaser.Scene {
 
             if (this.currentPlayerSpeed >= this.maxSpeed && this.currentPlayerSpeed > this.currentOpponentSpeed) {
                 this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
+                this.init += 1;
             } else if (this.currentOpponentSpeed >= this.maxSpeed && this.currentOpponentSpeed > this.currentPlayerSpeed) {
                 this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
+                this.init += 1;
             } else {
                 const rand_value = this.randomizer(1);
 
@@ -788,7 +790,6 @@ class PlayerFight extends Phaser.Scene {
                     this.currentOpponentSpeed += 300;
                 }
             }
-            this.init += 1;
         }
         this.displayLogs(true); // true for setinterval 1sec
     }
@@ -939,15 +940,15 @@ class PlayerFight extends Phaser.Scene {
 
             if (randomActionResult) {
                 this.generateLogs(this.init, { type: randomActionCode, charTitle: theDefender, attacker: theAttacker });
-                this.canCounter.opponent = isWithThrownWeapon ? false : true;
+                const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
+                const counterResult = this.calculateCounterAttack(defenderWeapon.counter);
+                this.canCounter[theDefender] = !!counterResult && !!withCounter ? true : false;
                 isDodgeOrBlock = true;
             }
 
             if (!isDodgeOrBlock) {
                 // Player attacks!
                 var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage); // Ensure life doesn't go below zero
-
-
 
                 if (theAttacker == CONSTANTS._player) {
 
@@ -959,7 +960,6 @@ class PlayerFight extends Phaser.Scene {
                     );
 
                     this.opponentLife = remaining_defenderLife;
-                    this.canCounter.opponent = false;
                 }
                 else {
 
@@ -971,16 +971,20 @@ class PlayerFight extends Phaser.Scene {
                     );
 
                     this.playerLife = remaining_defenderLife;
-                    this.canCounter.player = false;
                 }
-
+                this.canCounter[theDefender] = false;
+                
                 this.calculateDisarm(attackerWeapon.disarm, theDefender);
             }
             // const withBasher = this.currentCharDetails.utilities.skills.find(skill => skill == 6); // basher skill
             // const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
             // if (withBasher && isWithHeavyWeapon) this.calculateStun(CONSTANTS._opponent);
         } else {
-            this.generateLogs(this.init, { type: "Missed", charTitle: theAttacker });
+            
+            const random_missed_Action = this.randomizer(1);
+            const random_missed_ActionCode = random_missed_Action == 0 ? "Dodge" : "Block";
+
+            this.generateLogs(this.init, { type: random_missed_ActionCode, charTitle: theDefender, attacker: theAttacker });
             if (theAttacker == CONSTANTS._player) {
                 this.canCounter.opponent = false;
             } else {
