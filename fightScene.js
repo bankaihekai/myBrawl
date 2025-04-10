@@ -588,7 +588,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 500);
+            }, 100);
         } else {
             this.showWinner(winner);
         }
@@ -776,10 +776,18 @@ class PlayerFight extends Phaser.Scene {
             this.currentOpponentSpeed += opponent_weaponToUse.speed; // negative values
 
             if (this.currentPlayerSpeed >= this.maxSpeed && this.currentPlayerSpeed > this.currentOpponentSpeed) {
-                this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
+                if (this.isStun.player == false) {
+                    this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
+                } else {
+                    this.isStun.player = false;
+                }
                 this.init += 1;
             } else if (this.currentOpponentSpeed >= this.maxSpeed && this.currentOpponentSpeed > this.currentPlayerSpeed) {
-                this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
+                if (this.isStun.opponent == false) {
+                    this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
+                } else {
+                    this.isStun.opponent = false;
+                }
                 this.init += 1;
             } else {
                 const rand_value = this.randomizer(1);
@@ -816,35 +824,27 @@ class PlayerFight extends Phaser.Scene {
     checkStunned(targetUser) {
         // check if the target user is stunned to skip movement
         const target = targetUser == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const defender = targetUser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
 
-        if (target == CONSTANTS._player) {
-            if (this.isStun.player) {
-                this.generateLogs(this.init, { type: "Stunned", charTitle: CONSTANTS._player, attacker: CONSTANTS._opponent });
-                this.isStun.player = false;
-                return true;
-            }
-        } else {
-            if (this.isStun.opponent) {
-                this.generateLogs(this.init, { type: "Stunned", charTitle: CONSTANTS._opponent, attacker: CONSTANTS._player });
-                this.isStun.opponent = false;
-                return true;
-            }
+        if (this.isStun[target]) {
+            this.generateLogs(this.init, { type: "Stunned", charTitle: defender, attacker: target });
+            this.isStun[target] = false;
+            return true;
         }
 
         return false;
     }
 
-    calculateStun(targetuser) {
+    calculateStun(targetuser) { // target user == attacker
         const target = targetuser == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
-        const isStunned = this.calculateChance(100); // 15% chance to stun
+        const defender = targetuser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+        const isStunned = this.calculateChance(15); // 15% chance to stun
 
-        if (isStunned) {
-            if (target == CONSTANTS._player) {
-                this.isStun.player = true;
-            } else {
-                this.isStun.opponent = true;
-            }
+        if(isStunned){
+            this.generateLogs(this.init, { type: "Stunned", charTitle: defender, attacker: target });
         }
+
+        this.isStun[defender] = isStunned ? true : false;
     }
 
     showWinner(winner) {
@@ -884,7 +884,7 @@ class PlayerFight extends Phaser.Scene {
         // Opponent attacks!
         for (let i = 1; i <= attackerCombo; i++) {
             if (this.playerLife > 0 && this.opponentLife > 0) {
-                this.processAttack(theAttacker, attacker_weaponToUse, attackerDamage, defender_weaponToUse);
+                this.processAttack(theAttacker, attacker_weaponToUse, attackerDamage, defender_weaponToUse, [i, attackerCombo]);
             }
 
             // theDefenderCounter
@@ -916,10 +916,11 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    processAttack(attacker, attackerWeapon, attackerDamage, defenderWeapon) {
-        // const isStunned = this.checkStunned(CONSTANTS._player);
-        // if (isStunned) return false; // no attack if stunned
+    processAttack(attacker, attackerWeapon, attackerDamage, defenderWeapon, comboInitMax) {
+
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const theAttackerUtils = attacker == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
+
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
@@ -936,7 +937,6 @@ class PlayerFight extends Phaser.Scene {
             const randomActionResult = randomAction == 0 ?
                 this.calculateEvasion(randomActionUtils, theDefender) :
                 this.calculateBlock(randomActionUtils, theDefender);
-
 
             if (randomActionResult) {
                 this.generateLogs(this.init, { type: randomActionCode, charTitle: theDefender, attacker: theAttacker });
@@ -973,23 +973,24 @@ class PlayerFight extends Phaser.Scene {
                     this.playerLife = remaining_defenderLife;
                 }
                 this.canCounter[theDefender] = false;
-                
+
                 this.calculateDisarm(attackerWeapon.disarm, theDefender);
+
+                const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
+                if (withBash) {
+                    const withBasher = theAttackerUtils.utilities.skills.find(skill => skill == 6); // basher skill
+                    const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
+                    if (withBasher && isWithHeavyWeapon) {
+                        this.calculateStun(theAttacker);
+                    };
+                }
             }
-            // const withBasher = this.currentCharDetails.utilities.skills.find(skill => skill == 6); // basher skill
-            // const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
-            // if (withBasher && isWithHeavyWeapon) this.calculateStun(CONSTANTS._opponent);
         } else {
-            
             const random_missed_Action = this.randomizer(1);
             const random_missed_ActionCode = random_missed_Action == 0 ? "Dodge" : "Block";
 
             this.generateLogs(this.init, { type: random_missed_ActionCode, charTitle: theDefender, attacker: theAttacker });
-            if (theAttacker == CONSTANTS._player) {
-                this.canCounter.opponent = false;
-            } else {
-                this.canCounter.player = false;
-            }
+            this.canCounter[theDefender] = false;
         }
     }
 }
