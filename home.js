@@ -1147,7 +1147,17 @@ class PlayerHome extends Phaser.Scene {
             case 44: // Champion skin
                 const currentSpeed_SKIN = this.currentCharDetails.attributes.speed;
                 const subtractedSpeed = currentSpeed_SKIN - Math.ceil(currentSpeed_SKIN * 0.1);
+                this.currentCharDetails.attributes.armor += 10;
                 this.currentCharDetails.attributes.speed = subtractedSpeed <= 0 ? 1 : subtractedSpeed;
+                break;
+            case 46: // surge of armor
+                this.currentCharDetails.attributes.armor += 7;
+                break;
+            case 9: // body armor
+                this.currentCharDetails.attributes.armor += 2;
+                break;
+            case 9: // leviathan armor
+                this.currentCharDetails.attributes.armor += 5;
                 break;
             default:
                 break;

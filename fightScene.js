@@ -58,12 +58,15 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(18);
+        // this.currentCharDetails.utilities.skills.push(23);
         // this.currentCharDetails.attributes.damage = 50;
         this.currentCharDetails.utilities.weapons.push(11);
+        this.currentCharDetails.utilities.weapons.push(12);
+        this.currentCharDetails.utilities.weapons.push(13);
+        this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(18);
-        this.loadedOpponent.utilities.weapons.push(11);
+        this.loadedOpponent.utilities.skills.push(23);
+        // this.loadedOpponent.utilities.weapons.push(11);
         // this.loadedOpponent.attributes.damage = 50;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
@@ -621,7 +624,7 @@ class PlayerFight extends Phaser.Scene {
         return result;
     }
 
-    calculateDisarm(disarm, target) {
+    calculateDisarm(attackerWeapon, target) {
 
         let additionalPercentage = 0;
 
@@ -629,16 +632,17 @@ class PlayerFight extends Phaser.Scene {
         const whoDisarm = target == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const attackerSKills = target == CONSTANTS._player ? this.opponentUtils.skills : this.playerUtils.skills;
         const attacker_shieldBreaker = attackerSKills.find(skill => skill == 13); // shield breaker skill
+        const attacker_shockWave = attackerSKills.find(skill => skill == 23); // shock wave skill
 
         // defender utils
         const weaponToRemove = target == CONSTANTS._player ? this.playerUtils.activeWeapon : this.opponentUtils.activeWeapon;
         const defender_heaterShield = weaponToRemove == 1; // heater shield weapon
 
-        if (attacker_shieldBreaker && defender_heaterShield) {
-            additionalPercentage += 15;
-        }
+        if (attacker_shieldBreaker && defender_heaterShield) additionalPercentage += 15;
 
-        const total = disarm + additionalPercentage;
+        if(attacker_shockWave) additionalPercentage += 100;
+
+        const total = attackerWeapon.disarm + additionalPercentage;
         let disarmPercentage = total || 0;
         let result = false; // Initialize the result
 
@@ -917,7 +921,14 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
 
         const isWithThrownWeapon = this.thrownWeapons.find(w => w == attackerWeapon.number);
-        let isAccurate = this.calculateAccuracy(attackerWeapon.accuracy);
+
+        let additionalAccuracy = 0;
+        const bullsEye = theAttackerSkills.skills.find(skill => skill == 33); // bulls eye skill 33 passive
+        
+        if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
+
+        const finalAccuracy = attackerWeapon.accuracy + additionalAccuracy;
+        let isAccurate = this.calculateAccuracy(finalAccuracy);
         let isDodgeOrBlock = false;
 
         if (isAccurate) {
@@ -942,10 +953,9 @@ class PlayerFight extends Phaser.Scene {
 
                 // Passive Vampire Skill 
                 const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
-                const isWiththrownWeapons = this.thrownWeapons.find(w => w == attackerWeapon.number);
                 let healPoints = 0; // default heal per hit
 
-                if (withVampire && !isWiththrownWeapons) healPoints += 5;
+                if (withVampire && !isWithThrownWeapon) healPoints += 5;
 
                 const isPlayerAttacker = theAttacker == CONSTANTS._player;
                 const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
@@ -966,7 +976,7 @@ class PlayerFight extends Phaser.Scene {
 
                 this.canCounter[theDefender] = false;
 
-                this.calculateDisarm(attackerWeapon.disarm, theDefender);
+                this.calculateDisarm(attackerWeapon, theDefender);
 
                 // Passive Basher Skill 
                 const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
