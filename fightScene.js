@@ -58,12 +58,13 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(6);
-        this.currentCharDetails.utilities.weapons.push(12);
+        this.currentCharDetails.utilities.skills.push(16);
+        this.currentCharDetails.attributes.damage = 50;
+        // this.currentCharDetails.utilities.weapons.push(12);
         // opponent
-        this.loadedOpponent.utilities.skills.push(6);
-        this.loadedOpponent.utilities.weapons.push(12);
-        // this.loadedOpponent.attributes.damage = 50;
+        this.loadedOpponent.utilities.skills.push(16);
+        // this.loadedOpponent.utilities.weapons.push(12);
+        this.loadedOpponent.attributes.damage = 50;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -425,7 +426,15 @@ class PlayerFight extends Phaser.Scene {
                 oldWeapon: action.oldWeapon || "none",
                 newWeapon: action.newWeapon || "none"
             };
-        } else {
+        } 
+        else if(action.type == "Regen") {
+            toPush.action = {
+                type: action.type,
+                by: action.charTitle,
+                healPoints: action.healPoints
+            };
+        }
+        else {
             toPush.action = {
                 type: action.type,
                 by: action.charTitle,
@@ -779,7 +788,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.player == false) {
                     this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
                 } else {
-                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._player});
+                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._player });
                     this.isStun.player = false;
                 }
                 this.init += 1;
@@ -787,7 +796,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.opponent == false) {
                     this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
                 } else {
-                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._opponent});
+                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._opponent });
                     this.isStun.opponent = false;
                 }
                 this.init += 1;
@@ -842,7 +851,7 @@ class PlayerFight extends Phaser.Scene {
         const defender = targetuser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const isStunned = this.calculateChance(15); // 15% chance to stun
 
-        if(isStunned){
+        if (isStunned) {
             this.generateLogs(this.init, { type: "Stunned", charTitle: defender, attacker: target });
         }
 
@@ -924,7 +933,6 @@ class PlayerFight extends Phaser.Scene {
         const theAttackerUtils = attacker == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
 
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
-        const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
 
         const isWithThrownWeapon = this.thrownWeapons.find(w => w == attackerWeapon.number);
@@ -949,8 +957,20 @@ class PlayerFight extends Phaser.Scene {
             }
 
             if (!isDodgeOrBlock) {
-                // Player attacks!
                 var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage); // Ensure life doesn't go below zero
+
+                // Passive Vampire Skill 
+                const withVampire = theAttackerUtils.utilities.skills.find(skill => skill == 16);
+                const isWiththrownWeapons = this.thrownWeapons.find(w => w == attackerWeapon.number);
+                if (withVampire && !isWiththrownWeapons) {
+                    let healPoints = 5;
+                    if(theAttacker == CONSTANTS._player){
+                        this.playerLife += healPoints;
+                    } else {
+                        this.opponentLife += healPoints;
+                    }
+                    this.generateLogs(this.init, { type: "Regen", charTitle: theAttacker, healPoints: `+${healPoints}` });
+                };
 
                 if (theAttacker == CONSTANTS._player) {
 
@@ -958,7 +978,7 @@ class PlayerFight extends Phaser.Scene {
                         this.init,
                         { type: "attack", charTitle: theAttacker },
                         { name: attackerWeapon.name, damage: attackerDamage },
-                        { p1: theAttackerLife, p2: remaining_defenderLife }
+                        { p1: this.playerLife, p2: remaining_defenderLife }
                     );
 
                     this.opponentLife = remaining_defenderLife;
@@ -969,7 +989,7 @@ class PlayerFight extends Phaser.Scene {
                         this.init,
                         { type: "attack", charTitle: theAttacker },
                         { name: attackerWeapon.name, damage: attackerDamage },
-                        { p1: remaining_defenderLife, p2: theAttackerLife }
+                        { p1: remaining_defenderLife, p2: this.opponentLife }
                     );
 
                     this.playerLife = remaining_defenderLife;
@@ -978,9 +998,10 @@ class PlayerFight extends Phaser.Scene {
 
                 this.calculateDisarm(attackerWeapon.disarm, theDefender);
 
+                // Passive Basher Skill 
                 const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
                 if (withBash) {
-                    const withBasher = theAttackerUtils.utilities.skills.find(skill => skill == 6); // basher skill
+                    const withBasher = theAttackerUtils.utilities.skills.find(skill => skill == 6);
                     const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
                     if (withBasher && isWithHeavyWeapon) {
                         this.calculateStun(theAttacker);
