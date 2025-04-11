@@ -69,9 +69,8 @@ class PlayerFight extends Phaser.Scene {
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
-        // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(48);
+        // this.loadedOpponent.utilities.skills.push(43);
         // this.loadedOpponent.utilities.weapons.push(11);
         // this.loadedOpponent.attributes.damage = 50;
         console.log({ loadedOpponent: this.loadedOpponent });
@@ -708,6 +707,31 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
+    calculateSureDisarm(target) {
+        // attacker and its utils
+        const whoDisarm = target == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+        let weaponToRemove = -1;
+        let weaponLength = 0;
+
+        if(target == CONSTANTS._player){
+            weaponLength = this.playerUtils.weapons.length;
+            if(weaponLength >= 1){
+                weaponToRemove = this.playerUtils.weapons[weaponLength - 1];
+                this.playerUtils.weapons.pop();
+            }
+        } else {
+            weaponLength = this.opponentUtils.weapons.length;
+            if(weaponLength >= 1){
+                weaponToRemove = this.opponentUtils.weapons[weaponLength - 1];
+                this.opponentUtils.weapons.pop();
+            }
+        }
+
+        if (weaponLength > 0) {
+            this.generateLogs(this.init, { type: "Sabotage", by: whoDisarm, weaponRemoved: weaponToRemove });
+        }
+    }
+
     calculateEvasion(evasion, target) {
 
         let additionSkillEvasion = 0;
@@ -896,7 +920,13 @@ class PlayerFight extends Phaser.Scene {
     calculateStun(targetuser) { // target user == attacker
         const target = targetuser == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const defender = targetuser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
-        const isStunned = this.calculateChance(15); // 15% chance to stun
+        const theDefenderSkills = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
+
+        const octopusV = theDefenderSkills.skills.find(skill => skill == 35); // octopus viscous skill 35 passive
+        const calculateIgnore = !!octopusV ? this.calculateChance(40) : false;
+
+        const stunValue = calculateIgnore ? 0 : 15;
+        const isStunned = this.calculateChance(stunValue); // 15% chance to stun default
 
         if (isStunned) {
             this.generateLogs(this.init, { type: "Stunned", by: defender, attacker: target });
@@ -978,6 +1008,7 @@ class PlayerFight extends Phaser.Scene {
 
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const theAttackerSkills = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const theDefenderSkills = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
 
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
@@ -987,6 +1018,22 @@ class PlayerFight extends Phaser.Scene {
         let additionalAccuracy = 0;
         const bullsEye = theAttackerSkills.skills.find(skill => skill == 33); // bulls eye skill 33 passive
         const futureEye = theAttackerSkills.skills.find(skill => skill == 39); // future eye skill 39 passive
+        const aura = theAttackerSkills.skills.find(skill => skill == 17); // aura skill 17 passive
+        const weapoBreaker = theAttackerSkills.skills.find(skill => skill == 43); // weapoBreaker skill 43 passive
+
+        // defender
+        const hardHeaded = theDefenderSkills.skills.find(skill => skill == 36); // hard headed skill 36 passive
+
+        if (hardHeaded) {
+            const adjustedDamage = attackerDamage.finalDamage * 0.1;
+            attackerDamage.finalDamage -= adjustedDamage;
+        }
+
+        if (aura) {
+            attackerWeapon.counter += 1;
+            attackerWeapon.evasion += 1;
+            attackerWeapon.block += 1;
+        }
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
         if (futureEye && !isWithThrownWeapon) additionalAccuracy += 25;
@@ -1040,7 +1087,11 @@ class PlayerFight extends Phaser.Scene {
 
                 this.canCounter[theDefender] = false;
 
-                this.calculateDisarm(attackerWeapon, theDefender);
+                if(weapoBreaker){
+                    this.calculateSureDisarm(theDefender);
+                } else {
+                    this.calculateDisarm(attackerWeapon, theDefender);
+                }
 
                 // Passive Basher Skill 
                 const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);

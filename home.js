@@ -1160,7 +1160,7 @@ class PlayerHome extends Phaser.Scene {
                 this.currentCharDetails.attributes.armor += 5;
                 break;
             case 17: // aura 
-                this.currentCharDetails.attributes.armor += 2;
+                this.currentCharDetails.attributes.armor += 1;
                 break;
             default:
                 break;
