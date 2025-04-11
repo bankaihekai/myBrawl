@@ -33,6 +33,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.canRevive = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -609,8 +614,18 @@ class PlayerFight extends Phaser.Scene {
                         var attacker = this.script[index].action.by;
                         var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
                         var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
-
+                        
                         this.updateLife(defender, remainingLife); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    if (this.script[index].action.type == "Revive") {
+                        var attacker = this.script[index].action.by;
+                        
+                        // with revive
+                        var rlRevive = attacker == CONSTANTS._player ? this.script[index].life.player : this.script[index].life.opponent;
+                        
+                        this.updateLife(attacker, rlRevive); // life to deduct, remaining life  
                         this.renderLife();
                     }
 
@@ -619,7 +634,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 100);
+            }, 1000);
         } else {
             this.showWinner(winner);
         }
@@ -826,6 +841,13 @@ class PlayerFight extends Phaser.Scene {
         if (playerSurvival) this.canSurvive.player = true;
         if (opponentSurvival) this.canSurvive.opponent = true;
 
+        // revive skill 28
+        const playerRevive = this.playerUtils.skills.find(s => s == 28);
+        const opponentRevive = this.opponentUtils.skills.find(s => s == 28);
+
+        if (playerRevive) this.canRevive.player = true;
+        if (opponentRevive) this.canRevive.opponent = true;
+
         // preemptive strike skill 48
         const playerFirstAttack = this.playerUtils.skills.find(s => s == 48);
         const opponentFirstAttack = this.opponentUtils.skills.find(s => s == 48);
@@ -1002,6 +1024,30 @@ class PlayerFight extends Phaser.Scene {
             this.calculateSpeed(false, true); // Reset Opponent speed counter
         }
 
+        if (this.playerLife <= 0 && this.canRevive.player) {
+            this.playerLife = this.life.max.player20;
+            this.canRevive.player = false;
+
+            this.generateLogs(
+                this.init,
+                { type: "Revive", by: CONSTANTS._player },
+                {},
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }    
+        if (this.opponentLife <= 0 && this.canRevive.opponent) {
+            this.opponentLife = this.life.max.opponent20;
+            this.canRevive.opponent = false;
+
+            this.generateLogs(
+                this.init,
+                { type: "Revive", by: CONSTANTS._opponent },
+                {},
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        } 
+        
+        
         if (this.playerLife > 0 && this.opponentLife > 0) {
 
             const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
