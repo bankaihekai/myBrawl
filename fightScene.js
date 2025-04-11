@@ -711,8 +711,8 @@ class PlayerFight extends Phaser.Scene {
             this.generateLogs(this.init, {
                 type: "Change weapon",
                 by: target,
-                oldWeapon: oldWeapon,
-                newWeapon: newWeapon
+                old: oldWeapon || -1,
+                new: newWeapon || -1
             });
 
             return CONSTANTS.weaponStats.find(w => w.number === newWeapon);
