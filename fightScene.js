@@ -28,6 +28,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.canSurvive = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -64,15 +69,16 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        // this.currentCharDetails.utilities.skills.push(23);
-        // this.currentCharDetails.attributes.damage = 50;
+        this.currentCharDetails.utilities.skills.push(41);
+        this.currentCharDetails.attributes.damage = 50;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
+        // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        // this.loadedOpponent.utilities.skills.push(43);
+        this.loadedOpponent.utilities.skills.push(41);
         // this.loadedOpponent.utilities.weapons.push(11);
-        // this.loadedOpponent.attributes.damage = 50;
+        this.loadedOpponent.attributes.damage = 50;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -813,7 +819,14 @@ class PlayerFight extends Phaser.Scene {
         this.opponentBlock = 0;
 
         this.init = 0;
+        // survival skill 41
+        const playerSurvival = this.playerUtils.skills.find(s => s == 41);
+        const opponentSurvival = this.opponentUtils.skills.find(s => s == 41);
 
+        if (playerSurvival) this.canSurvive.player = true;
+        if (opponentSurvival) this.canSurvive.opponent = true;
+
+        // preemptive strike skill 48
         const playerFirstAttack = this.playerUtils.skills.find(s => s == 48);
         const opponentFirstAttack = this.opponentUtils.skills.find(s => s == 48);
 
@@ -1061,6 +1074,19 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
                 var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage.finalDamage); // Ensure life doesn't go below zero
+
+                let survivable = false;
+                if(attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0){
+                    this.canSurvive.opponent = false;
+                    survivable = true;
+                } else if(attacker == CONSTANTS._opponent && this.canSurvive.player && remaining_defenderLife <= 0){
+                    this.canSurvive.player = false;
+                    survivable = true;
+                }
+
+                if(survivable){
+                    remaining_defenderLife = 1;
+                }
 
                 // Passive Vampire Skill 
                 const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
