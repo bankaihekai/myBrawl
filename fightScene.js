@@ -58,13 +58,13 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(16);
-        this.currentCharDetails.attributes.damage = 50;
-        // this.currentCharDetails.utilities.weapons.push(12);
+        this.currentCharDetails.utilities.skills.push(18);
+        // this.currentCharDetails.attributes.damage = 50;
+        this.currentCharDetails.utilities.weapons.push(11);
         // opponent
-        this.loadedOpponent.utilities.skills.push(16);
-        // this.loadedOpponent.utilities.weapons.push(12);
-        this.loadedOpponent.attributes.damage = 50;
+        this.loadedOpponent.utilities.skills.push(18);
+        this.loadedOpponent.utilities.weapons.push(11);
+        // this.loadedOpponent.attributes.damage = 50;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -417,44 +417,13 @@ class PlayerFight extends Phaser.Scene {
     generateLogs(init, action, weapon, life) {
 
         var toPush = {};
+
         toPush.init = init;
+        toPush.action = action;
 
-        if (action.type == "Change weapon") {
-            toPush.action = {
-                type: action.type,
-                by: action.charTitle,
-                oldWeapon: action.oldWeapon || "none",
-                newWeapon: action.newWeapon || "none"
-            };
-        } 
-        else if(action.type == "Regen") {
-            toPush.action = {
-                type: action.type,
-                by: action.charTitle,
-                healPoints: action.healPoints
-            };
-        }
-        else {
-            toPush.action = {
-                type: action.type,
-                by: action.charTitle,
-                attacker: action.attacker,
-            };
-        }
+        if (weapon) toPush.weapon = weapon;
 
-        if (weapon) {
-            toPush.weapon = {
-                name: weapon ? weapon.name : "",
-                damage: weapon ? weapon.damage : ""
-            };
-        }
-
-        if (life) {
-            toPush.life = {
-                player: life ? life.p1 : '',
-                opponent: life ? life.p2 : ''
-            }
-        }
+        if (life) toPush.life = life;
 
         this.script.push(toPush);
     }
@@ -470,23 +439,35 @@ class PlayerFight extends Phaser.Scene {
     calculateDamage(strength, opponentDefense, weapon, targetUser) {
 
         let additionalSkillDamage = 0;
+        let additionalCritBoost = 1;
         const weaponDamage = weapon ? weapon.damage : 0;
         const target = targetUser == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const targetSkills = target.skills;
         const thrownWeaponsResult = this.thrownWeapons.find(w => w == weapon.number);
-        const skill_javelinist = targetSkills.find(skill => skill == 5); // javelinist skill
+        const weaponCritical = this.calculateChance(weapon.critical);
 
-        if (skill_javelinist && thrownWeaponsResult) {
-            additionalSkillDamage += weaponDamage * 0.25;
+        // javelinist skill
+        const skill_javelinist = targetSkills.find(skill => skill == 5); 
+        if (skill_javelinist && thrownWeaponsResult) additionalSkillDamage += weaponDamage * 0.25;
+
+        // instant killer skill
+        const skill_instantKiller = targetSkills.find(skill => skill == 18); 
+        if (skill_instantKiller) additionalCritBoost += 1;
+
+        const additionalCritical = weaponCritical ? additionalCritBoost : 0;
+        const additionalDamage = strength * 1.5;
+        let totalDamage = additionalDamage + weaponDamage + additionalSkillDamage;
+
+        if(additionalCritical > 1){
+            totalDamage = totalDamage * additionalCritical;
         }
 
-        const weaponCritical = this.calculateChance(weapon.critical);
-        const additionalCritical = weaponCritical ? weaponDamage * 0.5 : 0;
-        const additionalDamage = strength * 1.5;
-        const totalDamage = additionalDamage + additionalCritical + weaponDamage + additionalSkillDamage;
-        const finalDamage = Math.round(Math.max(1, (totalDamage) - opponentDefense))
+        const finalDamage = Math.round(Math.max(1, (totalDamage) - opponentDefense));
 
-        return finalDamage;
+        return {
+            finalDamage: finalDamage,
+            withCrit: additionalCritical > 1,
+        };
     }
 
     calculateCombo(comboRate) {
@@ -930,7 +911,7 @@ class PlayerFight extends Phaser.Scene {
     processAttack(attacker, attackerWeapon, attackerDamage, defenderWeapon, comboInitMax) {
 
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
-        const theAttackerUtils = attacker == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
+        const theAttackerSkills = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
 
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
@@ -957,10 +938,10 @@ class PlayerFight extends Phaser.Scene {
             }
 
             if (!isDodgeOrBlock) {
-                var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage); // Ensure life doesn't go below zero
+                var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage.finalDamage); // Ensure life doesn't go below zero
 
                 // Passive Vampire Skill 
-                const withVampire = theAttackerUtils.utilities.skills.find(skill => skill == 16);
+                const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
                 const isWiththrownWeapons = this.thrownWeapons.find(w => w == attackerWeapon.number);
                 if (withVampire && !isWiththrownWeapons) {
                     let healPoints = 5;
@@ -977,7 +958,7 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(
                         this.init,
                         { type: "attack", charTitle: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage },
+                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit },
                         { p1: this.playerLife, p2: remaining_defenderLife }
                     );
 
@@ -988,7 +969,7 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(
                         this.init,
                         { type: "attack", charTitle: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage },
+                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit },
                         { p1: remaining_defenderLife, p2: this.opponentLife }
                     );
 
@@ -1001,7 +982,7 @@ class PlayerFight extends Phaser.Scene {
                 // Passive Basher Skill 
                 const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
                 if (withBash) {
-                    const withBasher = theAttackerUtils.utilities.skills.find(skill => skill == 6);
+                    const withBasher = theAttackerSkills.skills.find(skill => skill == 6);
                     const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
                     if (withBasher && isWithHeavyWeapon) {
                         this.calculateStun(theAttacker);
