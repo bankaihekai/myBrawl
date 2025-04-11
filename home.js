@@ -1159,6 +1159,9 @@ class PlayerHome extends Phaser.Scene {
             case 9: // leviathan armor
                 this.currentCharDetails.attributes.armor += 5;
                 break;
+            case 17: // aura 
+                this.currentCharDetails.attributes.armor += 2;
+                break;
             default:
                 break;
         }

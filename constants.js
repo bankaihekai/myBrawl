@@ -377,7 +377,7 @@ const CONSTANTS = {
             number: 38
         },
         {
-            "name": "Sniper Eye",
+            "name": "Future Eye",
             "description": "You see everything. Your enemies wish they could say the same.",
             "chance": 1.49,
             number: 39
@@ -713,7 +713,7 @@ const CONSTANTS = {
             number: 38
         },
         {
-            "name": "Sniper Eye",
+            "name": "Future Eye",
             "description": "You see everything. Your enemies wish they could say the same.",
             "chance": 1.49,
             number: 39

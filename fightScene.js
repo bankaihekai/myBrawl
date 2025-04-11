@@ -11,6 +11,7 @@ class PlayerFight extends Phaser.Scene {
         this.thrownWeapons = [5, 6, 20, 28];
         this.heavyWeapons = [1, 2, 4, 7, 12, 14, 15, 19, 21, 22, 25];
         this.sharpWeapons = [8, 10, 16, 17, 18, 23, 26, 27, 30, 32];
+        this.physicalWeapons = [-1,3];
         this.maxSpeed = 1000; // Threshold for cyclic comparison
 
         // for skill basher 6
@@ -19,6 +20,11 @@ class PlayerFight extends Phaser.Scene {
             opponent: false
         }
         this.canCounter = {
+            player: false,
+            opponent: false
+        }
+
+        this.firstAttack = {
             player: false,
             opponent: false
         }
@@ -99,7 +105,9 @@ class PlayerFight extends Phaser.Scene {
         this.life = {
             max: {
                 player: this.currentCharDetails.attributes.life,
-                opponent: this.loadedOpponent.attributes.life
+                opponent: this.loadedOpponent.attributes.life,
+                player20: this.currentCharDetails.attributes.life * 0.2, // 20% of life
+                opponent20: this.loadedOpponent.attributes.life * 0.2, // 20% of life
             },
             current: {
                 player: this.currentCharDetails.attributes.life,
@@ -446,20 +454,36 @@ class PlayerFight extends Phaser.Scene {
         const weaponDamage = weapon ? weapon.damage : 0;
         const target = targetUser == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const targetSkills = target.skills;
-        const thrownWeaponsResult = this.thrownWeapons.find(w => w == weapon.number);
+        const thrownWeaponsResult = this.thrownWeapons.find(w => w == weapon.number); // current used weapon type is thrown
+        const heavyWeaponsResult = this.heavyWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
+        const sharpWeaponsResult = this.sharpWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
+        const physicalWeaponsResult = this.physicalWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
         const weaponCritical = this.calculateChance(weapon.critical);
 
         // javelinist skill
         const skill_javelinist = targetSkills.find(skill => skill == 5); 
         if (skill_javelinist && thrownWeaponsResult) additionalSkillDamage += weaponDamage * 0.25;
 
+        // heavy lifter skill
+        const skill_heavyLifter = targetSkills.find(skill => skill == 37); 
+        if (skill_heavyLifter && heavyWeaponsResult) additionalSkillDamage += weaponDamage * 0.25;
+
+        // desolator skill
+        const skill_desolator = targetSkills.find(skill => skill == 50); 
+        if (skill_desolator && sharpWeaponsResult) additionalSkillDamage += weaponDamage * 0.25;
+        
+        // dragon punch skill
+        const skill_dragonPunch = targetSkills.find(skill => skill == 49); 
+        if (skill_dragonPunch && physicalWeaponsResult) additionalSkillDamage += weaponDamage * 2;
+        
         // instant killer skill
         const skill_instantKiller = targetSkills.find(skill => skill == 18); 
         if (skill_instantKiller) additionalCritBoost += 1;
 
         const additionalCritical = weaponCritical ? additionalCritBoost : 0;
-        const additionalDamage = strength * 1.5;
-        let totalDamage = additionalDamage + weaponDamage + additionalSkillDamage;
+        const statsDamage = strength * 1.5;
+
+        let totalDamage = statsDamage + weaponDamage + additionalSkillDamage;
 
         if(additionalCritical > 1){
             totalDamage = totalDamage * additionalCritical;
@@ -473,8 +497,17 @@ class PlayerFight extends Phaser.Scene {
         };
     }
 
-    calculateCombo(comboRate) {
-        let comboPercentage = comboRate || 0;
+    calculateCombo(comboRate, attacker) {
+
+        let additionalSkillCombo = 0;
+        const targetAttacker = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const bladeOfFurry = targetAttacker.skills.find(s => s == 47); // passive skill
+
+        if(bladeOfFurry) additionalSkillCombo += 150;
+
+        const finalCombo = additionalSkillCombo + comboRate;
+
+        let comboPercentage = finalCombo || 0;
         let result = 1; // Initialize the result
 
         if (comboPercentage >= 100) {
@@ -610,14 +643,21 @@ class PlayerFight extends Phaser.Scene {
         return result;
     }
 
-    calculateCounterAttack(counter) {
+    calculateCounterAttack(counter, defender) {
 
+        let additionalSkillCounter = 0;
         let counterPercentage = counter || 0;
         let result = false; // Initialize the result
+        const targetDefender = defender == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const counterStrike = targetDefender.skills.find(s => s == 45); // passive skill
+
+        if(counterStrike) additionalSkillCounter += 30;
+
+        const finalCounter = counterPercentage + additionalSkillCounter;
 
         // // Directly calculate the remaining chance (if below 100)
-        if (counterPercentage > 0) {
-            const isSuccessful = this.calculateChance(counterPercentage); // Attempt the remaining chance
+        if (finalCounter > 0) {
+            const isSuccessful = this.calculateChance(finalCounter); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> do counter attack
         }
 
@@ -670,9 +710,15 @@ class PlayerFight extends Phaser.Scene {
 
     calculateEvasion(evasion, target) {
 
+        let additionSkillEvasion = 0;
+        const targetDefender = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const phanthomSteps = targetDefender.skills.find(s => s == 40); // passive skill
+
+        if(phanthomSteps) additionSkillEvasion += 25;
+
         let evasionPercentage = evasion || 0;
         const additional = target == CONSTANTS._player ? this.playerEvasion : this.opponentEvasion;
-        const final = evasionPercentage + additional;
+        const final = evasionPercentage + additional + additionSkillEvasion;
         let result = false; // Initialize the result
 
         // // Directly calculate the remaining chance (if below 100)
@@ -754,13 +800,13 @@ class PlayerFight extends Phaser.Scene {
             const player_weaponNumber = this.playerUtils.activeWeapon || -1;
             let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
             let playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-            let playerCombo = this.calculateCombo(player_weaponToUse.combo);
+            let playerCombo = this.calculateCombo(player_weaponToUse.combo, CONSTANTS._player);
 
             // Opponent
             const opponent_weaponNumber = this.opponentUtils.activeWeapon || -1;
             let opponent_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == opponent_weaponNumber);
             let oppponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-            let opponentCombo = this.calculateCombo(opponent_weaponToUse.combo);
+            let opponentCombo = this.calculateCombo(opponent_weaponToUse.combo, CONSTANTS._opponent);
 
             this.playerBlock = player_weaponToUse.block || 0;
             this.opponentBlock = opponent_weaponToUse.block || 0;
@@ -924,8 +970,10 @@ class PlayerFight extends Phaser.Scene {
 
         let additionalAccuracy = 0;
         const bullsEye = theAttackerSkills.skills.find(skill => skill == 33); // bulls eye skill 33 passive
+        const futureEye = theAttackerSkills.skills.find(skill => skill == 39); // future eye skill 39 passive
         
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
+        if (futureEye && !isWithThrownWeapon) additionalAccuracy += 25;
 
         const finalAccuracy = attackerWeapon.accuracy + additionalAccuracy;
         let isAccurate = this.calculateAccuracy(finalAccuracy);
@@ -943,7 +991,7 @@ class PlayerFight extends Phaser.Scene {
             if (randomActionResult) {
                 this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: theAttacker });
                 const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
-                const counterResult = this.calculateCounterAttack(defenderWeapon.counter);
+                const counterResult = this.calculateCounterAttack(defenderWeapon.counter, theDefender);
                 this.canCounter[theDefender] = !!counterResult && !!withCounter ? true : false;
                 isDodgeOrBlock = true;
             }
