@@ -651,7 +651,7 @@ class PlayerFight extends Phaser.Scene {
         if (result) {
 
             if (weaponToRemove != null || weaponToRemove != undefined) {
-                this.generateLogs(this.init, { type: "disarm", charTitle: whoDisarm, weaponRemoved: weaponToRemove });
+                this.generateLogs(this.init, { type: "disarm", by: whoDisarm, weaponRemoved: weaponToRemove });
 
                 if (target == CONSTANTS._player) {
                     this.playerUtils.weapons = this.playerUtils.weapons.filter(w => w !== weaponToRemove);
@@ -710,9 +710,9 @@ class PlayerFight extends Phaser.Scene {
 
             this.generateLogs(this.init, {
                 type: "Change weapon",
-                charTitle: target,
-                oldWeapon,
-                newWeapon
+                by: target,
+                oldWeapon: oldWeapon,
+                newWeapon: newWeapon
             });
 
             return CONSTANTS.weaponStats.find(w => w.number === newWeapon);
@@ -769,7 +769,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.player == false) {
                     this.processTurns(CONSTANTS._player, playerDamage, playerCombo, player_weaponToUse, opponent_weaponToUse, oppponentDamage);
                 } else {
-                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._player });
+                    this.generateLogs(this.init, { type: "Cannot Move", by: CONSTANTS._player });
                     this.isStun.player = false;
                 }
                 this.init += 1;
@@ -777,7 +777,7 @@ class PlayerFight extends Phaser.Scene {
                 if (this.isStun.opponent == false) {
                     this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
                 } else {
-                    this.generateLogs(this.init, { type: "Cannot Move", charTitle: CONSTANTS._opponent });
+                    this.generateLogs(this.init, { type: "Cannot Move", by: CONSTANTS._opponent });
                     this.isStun.opponent = false;
                 }
                 this.init += 1;
@@ -819,7 +819,7 @@ class PlayerFight extends Phaser.Scene {
         const defender = targetUser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
 
         if (this.isStun[target]) {
-            this.generateLogs(this.init, { type: "Stunned", charTitle: defender, attacker: target });
+            this.generateLogs(this.init, { type: "Stunned", by: defender, attacker: target });
             this.isStun[target] = false;
             return true;
         }
@@ -833,7 +833,7 @@ class PlayerFight extends Phaser.Scene {
         const isStunned = this.calculateChance(15); // 15% chance to stun
 
         if (isStunned) {
-            this.generateLogs(this.init, { type: "Stunned", charTitle: defender, attacker: target });
+            this.generateLogs(this.init, { type: "Stunned", by: defender, attacker: target });
         }
 
         this.isStun[defender] = isStunned ? true : false;
@@ -865,7 +865,7 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
-        this.generateLogs(this.init, { type: "Move", charTitle: theAttacker });
+        this.generateLogs(this.init, { type: "Move", by: theAttacker });
 
         var changeWeaponResult = this.changeWeapon(theAttacker);
         if (changeWeaponResult) {
@@ -881,7 +881,7 @@ class PlayerFight extends Phaser.Scene {
 
             // theDefenderCounter
             if (theDefenderCounter && this.playerLife > 0 && this.opponentLife > 0) {
-                this.generateLogs(this.init, { type: "counter", charTitle: theDefender, attacker: theAttacker });
+                this.generateLogs(this.init, { type: "counter", by: theDefender, attacker: theAttacker });
                 this.processAttack(theDefender, defender_weaponToUse, defenderDamage, attacker_weaponToUse);
             }
         }
@@ -897,14 +897,14 @@ class PlayerFight extends Phaser.Scene {
 
             const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
             if (attackerWithThrownWeapon) {
-                this.generateLogs(this.init, { type: "Stop throwing", charTitle: theAttacker });
+                this.generateLogs(this.init, { type: "Stop throwing", by: theAttacker });
             } else {
-                this.generateLogs(this.init, { type: "Return", charTitle: theAttacker });
+                this.generateLogs(this.init, { type: "Return", by: theAttacker });
             }
 
         } else {
-            this.generateLogs(this.init, { type: "Stop", charTitle: theDefender });
-            this.generateLogs(this.init, { type: "Stop", charTitle: theAttacker });
+            this.generateLogs(this.init, { type: "Stop", by: theDefender });
+            this.generateLogs(this.init, { type: "Stop", by: theAttacker });
         }
     }
 
@@ -930,7 +930,7 @@ class PlayerFight extends Phaser.Scene {
                 this.calculateBlock(randomActionUtils, theDefender);
 
             if (randomActionResult) {
-                this.generateLogs(this.init, { type: randomActionCode, charTitle: theDefender, attacker: theAttacker });
+                this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: theAttacker });
                 const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
                 const counterResult = this.calculateCounterAttack(defenderWeapon.counter);
                 this.canCounter[theDefender] = !!counterResult && !!withCounter ? true : false;
@@ -943,38 +943,27 @@ class PlayerFight extends Phaser.Scene {
                 // Passive Vampire Skill 
                 const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
                 const isWiththrownWeapons = this.thrownWeapons.find(w => w == attackerWeapon.number);
-                if (withVampire && !isWiththrownWeapons) {
-                    let healPoints = 5;
-                    if(theAttacker == CONSTANTS._player){
-                        this.playerLife += healPoints;
-                    } else {
-                        this.opponentLife += healPoints;
-                    }
-                    this.generateLogs(this.init, { type: "Regen", charTitle: theAttacker, healPoints: `+${healPoints}` });
-                };
+                let healPoints = 0; // default heal per hit
 
-                if (theAttacker == CONSTANTS._player) {
+                if (withVampire && !isWiththrownWeapons) healPoints += 5;
 
-                    this.generateLogs(
-                        this.init,
-                        { type: "attack", charTitle: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit },
-                        { p1: this.playerLife, p2: remaining_defenderLife }
-                    );
+                const isPlayerAttacker = theAttacker == CONSTANTS._player;
+                const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
+                const logP2 = isPlayerAttacker ? remaining_defenderLife : this.opponentLife;
+                
+                this.generateLogs(
+                    this.init,
+                    { type: "attack", by: theAttacker },
+                    { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit, heal: healPoints },
+                    { player: logP1, opponent: logP2 }
+                );
 
+                if (isPlayerAttacker) {
                     this.opponentLife = remaining_defenderLife;
-                }
-                else {
-
-                    this.generateLogs(
-                        this.init,
-                        { type: "attack", charTitle: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit },
-                        { p1: remaining_defenderLife, p2: this.opponentLife }
-                    );
-
+                } else {
                     this.playerLife = remaining_defenderLife;
                 }
+
                 this.canCounter[theDefender] = false;
 
                 this.calculateDisarm(attackerWeapon.disarm, theDefender);
@@ -993,7 +982,7 @@ class PlayerFight extends Phaser.Scene {
             const random_missed_Action = this.randomizer(1);
             const random_missed_ActionCode = random_missed_Action == 0 ? "Dodge" : "Block";
 
-            this.generateLogs(this.init, { type: random_missed_ActionCode, charTitle: theDefender, attacker: theAttacker });
+            this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
             this.canCounter[theDefender] = false;
         }
     }
