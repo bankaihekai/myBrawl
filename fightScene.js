@@ -1122,7 +1122,7 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
 
-                const withWeaponStriker = weaponStriker ? this.calculateChance(100) : false;
+                const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
                 const allowWeaponStriker = attackerWeapon.number != -1  && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
                 const finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
 
