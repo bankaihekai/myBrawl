@@ -884,6 +884,23 @@ const CONSTANTS = {
     ],
     _player: "player",
     _opponent: "opponent",
+    _actions: {
+        attack: "Attack",
+        throw: "Throw",
+        dodge: "Dodge",
+        counter: "Counter",
+        block: "Block",
+        return: "Return",
+        stop: "Stop",
+        stopThrow: "Stop throwing",
+        revive: "Revive",
+        move: "Move",
+        cantMove: "Cannot move",
+        stunned: "Stunned",
+        changeWeapon: "Change weapon",
+        sabotage: "Sabotage",
+        disarm: "Disarm"
+    }
 };
 
 // Optionally freeze the object to prevent modification
