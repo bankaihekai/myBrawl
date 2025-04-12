@@ -38,6 +38,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.healthPotion = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -74,16 +79,16 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        // this.currentCharDetails.utilities.skills.push(41);
-        // this.currentCharDetails.attributes.damage = 50;
+        this.currentCharDetails.utilities.skills.push(1);
+        this.currentCharDetails.attributes.damage = 10;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        // this.loadedOpponent.utilities.skills.push(41);
+        this.loadedOpponent.utilities.skills.push(1);
         // this.loadedOpponent.utilities.weapons.push(11);
-        // this.loadedOpponent.attributes.damage = 50;
+        this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -115,9 +120,7 @@ class PlayerFight extends Phaser.Scene {
         this.life = {
             max: {
                 player: this.currentCharDetails.attributes.life,
-                opponent: this.loadedOpponent.attributes.life,
-                player20: this.currentCharDetails.attributes.life * 0.2, // 20% of life
-                opponent20: this.loadedOpponent.attributes.life * 0.2, // 20% of life
+                opponent: this.loadedOpponent.attributes.life
             },
             current: {
                 player: this.currentCharDetails.attributes.life,
@@ -620,7 +623,7 @@ class PlayerFight extends Phaser.Scene {
                         this.renderLife();
                     }
 
-                    if (actionType == CONSTANTS._actions.revive) {
+                    if (actionType == CONSTANTS._actions.revive || actionType == CONSTANTS._actions.drink) {
                         var attacker = this.script[index].action.by;
                         
                         // with revive
@@ -856,6 +859,13 @@ class PlayerFight extends Phaser.Scene {
         if (playerFirstAttack) this.firstAttack.player = true;
         if (opponentFirstAttack) this.firstAttack.opponent = true;
 
+        // health potion skill 1
+        const playerHealthPotion = this.playerUtils.skills.find(s => s == 1);
+        const opponentHealthPotion = this.opponentUtils.skills.find(s => s == 1);
+
+        if (playerHealthPotion) this.healthPotion.player = true;
+        if (opponentHealthPotion) this.healthPotion.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -993,11 +1003,41 @@ class PlayerFight extends Phaser.Scene {
 
         const theAttackerUtils = attacker == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
         const theAttackerActiveUtils = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
+        const theAttackerLifeMax = attacker == CONSTANTS._player ? this.life.max.player : this.life.max.opponent;
 
         const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+
+        // health potion skill
+        const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);
+        const healthPointsPlus = [250, 300, 350];
+        const hpRandom = this.randomizer(2);
+        const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
+        let finalHp = 0;
+        if(hpToUse != 0){
+            if(attacker == CONSTANTS._player){
+                const draftHP = this.playerLife + hpToUse;
+                const maxHpChecker = draftHP > this.life.max.player;
+                finalHp = maxHpChecker ? this.life.max.player - this.playerLife : hpToUse;
+                this.playerLife += finalHp;
+                this.healthPotion.player = false;
+            } else {
+                const draftHP = this.opponentLife + hpToUse;
+                const maxHpChecker = draftHP > this.life.max.opponent;
+                finalHp = maxHpChecker ? this.life.max.opponent - this.opponentLife : hpToUse;
+                this.opponentLife += finalHp;
+                this.healthPotion.opponent = false;
+            }
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.drink, by: theAttacker },
+                { heal: `+${finalHp}` },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
 
         var changeWeaponResult = this.changeWeapon(theAttacker);
         if (changeWeaponResult) {
@@ -1026,7 +1066,7 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.playerLife <= 0 && this.canRevive.player) {
-            this.playerLife = this.life.max.player20;
+            this.playerLife = this.life.max.player * 0.2;
             this.canRevive.player = false;
 
             this.generateLogs(
@@ -1037,7 +1077,7 @@ class PlayerFight extends Phaser.Scene {
             );
         }    
         if (this.opponentLife <= 0 && this.canRevive.opponent) {
-            this.opponentLife = this.life.max.opponent20;
+            this.opponentLife = this.life.max.opponent * 0.2;
             this.canRevive.opponent = false;
 
             this.generateLogs(

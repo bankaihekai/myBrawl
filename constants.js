@@ -899,7 +899,8 @@ const CONSTANTS = {
         stunned: "Stunned",
         changeWeapon: "Change weapon",
         sabotage: "Sabotage",
-        disarm: "Disarm"
+        disarm: "Disarm",
+        drink: "Drink"
     }
 };
 
