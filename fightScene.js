@@ -610,7 +610,8 @@ class PlayerFight extends Phaser.Scene {
                 if (index < this.script.length) {
                     console.log(JSON.stringify(this.script[index])); // Print the current script element
 
-                    if (this.script[index].action.type == CONSTANTS._actions.attack) {
+                    const actionType = this.script[index].action.type;
+                    if (actionType == CONSTANTS._actions.attack || actionType == CONSTANTS._actions.throw) {
                         var attacker = this.script[index].action.by;
                         var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
                         var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
@@ -619,7 +620,7 @@ class PlayerFight extends Phaser.Scene {
                         this.renderLife();
                     }
 
-                    if (this.script[index].action.type == CONSTANTS._actions.revive) {
+                    if (actionType == CONSTANTS._actions.revive) {
                         var attacker = this.script[index].action.by;
                         
                         // with revive
@@ -634,7 +635,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 1000);
+            }, 800);
         } else {
             this.showWinner(winner);
         }
@@ -1121,12 +1122,11 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
 
-                const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
-                if(withWeaponStriker) {
-                    attackerDamage.finalDamage = attackerDamage.finalDamage * 2;
-                };
+                const withWeaponStriker = weaponStriker ? this.calculateChance(100) : false;
+                const allowWeaponStriker = attackerWeapon.number != -1  && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
+                const finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
 
-                var remaining_defenderLife = Math.max(0, theDefenderLife - attackerDamage.finalDamage); // Ensure life doesn't go below zero
+                var remaining_defenderLife = Math.max(0, theDefenderLife -finalDamageUse); // Ensure life doesn't go below zero
 
                 let survivable = false;
                 if(attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0){
@@ -1151,13 +1151,21 @@ class PlayerFight extends Phaser.Scene {
                 const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
                 const logP2 = isPlayerAttacker ? remaining_defenderLife : this.opponentLife;
 
-                if(withWeaponStriker || isWithThrownWeapon){ // throw weapon
+                if(allowWeaponStriker || isWithThrownWeapon){ // throw weapon
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.throw, by: theAttacker },
                         { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: logP1, opponent: logP2 }
                     );
+
+                    if(withWeaponStriker){ // remove active weapon 
+                        if(theAttacker == CONSTANTS._player){
+                            this.playerUtils.activeWeapon = null;
+                        } else {
+                            this.opponentUtils.activeWeapon = null;
+                        }
+                    }
                 } else {
                     this.generateLogs(
                         this.init,
