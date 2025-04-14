@@ -43,6 +43,18 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+        this.PoisonPotion = {
+            player: {
+                available: false,
+                active: false,
+                count: 0
+            },
+            opponent: {
+                available: false,
+                active: false,
+                count: 0
+            }
+        }
     }
 
     create() {
@@ -618,17 +630,17 @@ class PlayerFight extends Phaser.Scene {
                         var attacker = this.script[index].action.by;
                         var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
                         var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
-                        
+
                         this.updateLife(defender, remainingLife); // life to deduct, remaining life  
                         this.renderLife();
                     }
 
                     if (actionType == CONSTANTS._actions.revive || actionType == CONSTANTS._actions.drink) {
                         var attacker = this.script[index].action.by;
-                        
+
                         // with revive
                         var rlRevive = attacker == CONSTANTS._player ? this.script[index].life.player : this.script[index].life.opponent;
-                        
+
                         this.updateLife(attacker, rlRevive); // life to deduct, remaining life  
                         this.renderLife();
                     }
@@ -738,15 +750,15 @@ class PlayerFight extends Phaser.Scene {
         let weaponToRemove = -1;
         let weaponLength = 0;
 
-        if(target == CONSTANTS._player){
+        if (target == CONSTANTS._player) {
             weaponLength = this.playerUtils.weapons.length;
-            if(weaponLength >= 1){
+            if (weaponLength >= 1) {
                 weaponToRemove = this.playerUtils.weapons[weaponLength - 1];
                 this.playerUtils.weapons.pop();
             }
         } else {
             weaponLength = this.opponentUtils.weapons.length;
-            if(weaponLength >= 1){
+            if (weaponLength >= 1) {
                 weaponToRemove = this.opponentUtils.weapons[weaponLength - 1];
                 this.opponentUtils.weapons.pop();
             }
@@ -865,6 +877,13 @@ class PlayerFight extends Phaser.Scene {
 
         if (playerHealthPotion) this.healthPotion.player = true;
         if (opponentHealthPotion) this.healthPotion.opponent = true;
+
+        // poison potion skill 19
+        const playerPoisonPotion = this.playerUtils.skills.find(s => s == 19);
+        const opponentPoisonPotion = this.opponentUtils.skills.find(s => s == 19);
+
+        if (playerPoisonPotion) this.PoisonPotion.player.available = true;
+        if (opponentPoisonPotion) this.PoisonPotion.opponent.available = true;
 
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
@@ -1017,8 +1036,8 @@ class PlayerFight extends Phaser.Scene {
         const hpRandom = this.randomizer(2);
         const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
         let finalHp = 0;
-        if(hpToUse != 0){
-            if(attacker == CONSTANTS._player){
+        if (hpToUse != 0) {
+            if (attacker == CONSTANTS._player) {
                 const draftHP = this.playerLife + hpToUse;
                 const maxHpChecker = draftHP > this.life.max.player;
                 finalHp = maxHpChecker ? this.life.max.player - this.playerLife : hpToUse;
@@ -1035,6 +1054,40 @@ class PlayerFight extends Phaser.Scene {
                 this.init,
                 { type: CONSTANTS._actions.drink, by: theAttacker },
                 { heal: `+${finalHp}` },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        // poision potion skill 19 (available, active, count)
+
+        if (this.PoisonPotion[theAttacker].available) {
+            if (this.calculateChance(15)) {
+                this.PoisonPotion[theAttacker].active = true;
+                this.PoisonPotion[theAttacker].available = false;
+                this.PoisonPotion[theAttacker].count = 5;
+            }
+        }
+
+        if (this.PoisonPotion.player.count <= 0) this.PoisonPotion.player.active = false;
+        if (this.PoisonPotion.player.active && this.PoisonPotion.player.count > 0) {
+            this.PoisonPotion.player.count -= 1;
+            this.opponentLife -= 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                { name: "Poison Potion", remaining: this.PoisonPotion.player.count, damage: 5 },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        if (this.PoisonPotion.opponent.count <= 0) this.PoisonPotion.opponent.active = false;
+        if (this.PoisonPotion.opponent.active && this.PoisonPotion.opponent.count > 0) {
+            this.PoisonPotion.opponent.count -= 1;
+            this.playerLife -= 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                { name: "Poison Potion", remaining: this.PoisonPotion.opponent.count, damage: 5 },
                 { player: this.playerLife, opponent: this.opponentLife }
             );
         }
@@ -1075,7 +1128,7 @@ class PlayerFight extends Phaser.Scene {
                 {},
                 { player: this.playerLife, opponent: this.opponentLife }
             );
-        }    
+        }
         if (this.opponentLife <= 0 && this.canRevive.opponent) {
             this.opponentLife = this.life.max.opponent * 0.2;
             this.canRevive.opponent = false;
@@ -1086,9 +1139,9 @@ class PlayerFight extends Phaser.Scene {
                 {},
                 { player: this.playerLife, opponent: this.opponentLife }
             );
-        } 
-        
-        
+        }
+
+
         if (this.playerLife > 0 && this.opponentLife > 0) {
 
             const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
@@ -1163,21 +1216,21 @@ class PlayerFight extends Phaser.Scene {
             if (!isDodgeOrBlock) {
 
                 const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
-                const allowWeaponStriker = attackerWeapon.number != -1  && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
+                const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
                 const finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
 
-                var remaining_defenderLife = Math.max(0, theDefenderLife -finalDamageUse); // Ensure life doesn't go below zero
+                var remaining_defenderLife = Math.max(0, theDefenderLife - finalDamageUse); // Ensure life doesn't go below zero
 
                 let survivable = false;
-                if(attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0){
+                if (attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0) {
                     this.canSurvive.opponent = false;
                     survivable = true;
-                } else if(attacker == CONSTANTS._opponent && this.canSurvive.player && remaining_defenderLife <= 0){
+                } else if (attacker == CONSTANTS._opponent && this.canSurvive.player && remaining_defenderLife <= 0) {
                     this.canSurvive.player = false;
                     survivable = true;
                 }
 
-                if(survivable){
+                if (survivable) {
                     remaining_defenderLife = 1;
                 }
 
@@ -1191,7 +1244,7 @@ class PlayerFight extends Phaser.Scene {
                 const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
                 const logP2 = isPlayerAttacker ? remaining_defenderLife : this.opponentLife;
 
-                if(allowWeaponStriker || isWithThrownWeapon){ // throw weapon
+                if (allowWeaponStriker || isWithThrownWeapon) { // throw weapon
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.throw, by: theAttacker },
@@ -1199,8 +1252,8 @@ class PlayerFight extends Phaser.Scene {
                         { player: logP1, opponent: logP2 }
                     );
 
-                    if(withWeaponStriker){ // remove active weapon 
-                        if(theAttacker == CONSTANTS._player){
+                    if (withWeaponStriker) { // remove active weapon 
+                        if (theAttacker == CONSTANTS._player) {
                             this.playerUtils.activeWeapon = null;
                         } else {
                             this.opponentUtils.activeWeapon = null;
@@ -1213,13 +1266,13 @@ class PlayerFight extends Phaser.Scene {
                         { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: logP1, opponent: logP2 }
                     );
-    
-                    if(weaponBreaker){
+
+                    if (weaponBreaker) {
                         this.calculateSureDisarm(theDefender);
                     } else {
                         this.calculateDisarm(attackerWeapon, theDefender);
                     }
-    
+
                     // Passive Basher Skill 
                     const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
                     if (withBash) {
@@ -1236,7 +1289,7 @@ class PlayerFight extends Phaser.Scene {
                 } else {
                     this.playerLife = remaining_defenderLife;
                 }
-    
+
                 this.canCounter[theDefender] = false;
             }
         } else {
