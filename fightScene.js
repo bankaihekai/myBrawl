@@ -60,6 +60,19 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.bandage = {
+            player: {
+                available: false,
+                active: false,
+                count: 0
+            },
+            opponent: {
+                available: false,
+                active: false,
+                count: 0
+            }
+        }
     }
 
     create() {
@@ -640,7 +653,10 @@ class PlayerFight extends Phaser.Scene {
                         this.renderLife();
                     }
 
-                    if (actionType == CONSTANTS._actions.revive || actionType == CONSTANTS._actions.drink) {
+                    if (actionType == CONSTANTS._actions.revive || 
+                        actionType == CONSTANTS._actions.drink || 
+                        actionType == CONSTANTS._actions.bandage
+                    ) {
                         var attacker = this.script[index].action.by;
 
                         // with revive
@@ -883,6 +899,13 @@ class PlayerFight extends Phaser.Scene {
         if (playerHealthPotion) this.healthPotion.player = true;
         if (opponentHealthPotion) this.healthPotion.opponent = true;
 
+        // bandage skill 32
+        const playerBandage = this.playerUtils.skills.find(s => s == 32);
+        const opponentBandage = this.opponentUtils.skills.find(s => s == 32);
+
+        if (playerBandage) this.bandage.player.available = true;
+        if (opponentBandage) this.bandage.opponent.available = true;
+
         // poison potion skill 19
         const playerPoisonPotion = this.playerUtils.skills.find(s => s == 19);
         const opponentPoisonPotion = this.opponentUtils.skills.find(s => s == 19);
@@ -1041,6 +1064,41 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+        
+        // bandage 32 skill
+        const halfLifeBandage = theAttackerLifeMax / 2;
+        if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage) {
+            if (this.calculateChance(15)) {
+                this.bandage[theAttacker].active = true;
+                this.bandage[theAttacker].available = false;
+                this.bandage[theAttacker].count = 5;
+            }
+        }
+
+        if (this.bandage.player.count <= 0) this.bandage.player.active = false;
+        if (this.bandage.player.active && this.bandage.player.count > 0) {
+            this.bandage.player.count -= 1;
+            this.playerLife += 5;   
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.bandage, by: CONSTANTS._player },
+                { heal: `+${5}`, remaining: this.bandage.player.count },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        if (this.bandage.opponent.count <= 0) this.bandage.opponent.active = false;
+        if (this.bandage.opponent.active && this.bandage.opponent.count > 0) {
+            this.bandage.opponent.count -= 1;
+            this.opponentLife += 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.bandage, by: CONSTANTS._opponent },
+                { heal: `+${5}`, remaining: this.bandage.opponent.count  },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
 
         // health potion 1 skill
         const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);

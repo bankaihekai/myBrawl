@@ -900,7 +900,8 @@ const CONSTANTS = {
         changeWeapon: "Change weapon",
         sabotage: "Sabotage",
         disarm: "Disarm",
-        drink: "Drink"
+        drink: "Drink",
+        bandage: "Bandage"
     }
 };
 
