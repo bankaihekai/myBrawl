@@ -1099,7 +1099,6 @@ class PlayerFight extends Phaser.Scene {
             );
         }
 
-
         // health potion 1 skill
         const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);
         const healthPointsPlus = [25, 30, 35];
@@ -1112,8 +1111,12 @@ class PlayerFight extends Phaser.Scene {
             finalHp = maxHpChecker ? theAttackerLifeMax - theAttackerLife : hpToUse;
             if (attacker == CONSTANTS._player) {
                 this.playerLife += finalHp;
+                this.PoisonPotion.opponent.active = false; // remove poison effect
+                this.PoisonPotion.opponent.count = 0;
             } else {
                 this.opponentLife += finalHp;
+                this.PoisonPotion.player.active = false; // remove poison effect
+                this.PoisonPotion.player.count = 0;
             }
             this.healthPotion[theAttacker] = false;
 
@@ -1126,7 +1129,6 @@ class PlayerFight extends Phaser.Scene {
         }
 
         // poision potion skill 19 (available, active, count)
-
         if (this.PoisonPotion[theAttacker].available) {
             if (this.calculateChance(15)) {
                 this.PoisonPotion[theAttacker].active = true;
