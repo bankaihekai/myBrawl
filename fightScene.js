@@ -1110,7 +1110,8 @@ class PlayerFight extends Phaser.Scene {
                 const finalBombDamage = bombDamage[bombNumber];
 
                 if(theAttacker == CONSTANTS._player){
-                    this.opponentLife -= finalBombDamage;
+                    const finalLifeBomb = this.opponentLife - finalBombDamage;
+                    this.opponentLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
@@ -1118,7 +1119,8 @@ class PlayerFight extends Phaser.Scene {
                         { player: this.playerLife, opponent: this.opponentLife }
                     );
                 } else {
-                    this.playerLife -= finalBombDamage;
+                    const finalLifeBomb = this.playerLife - finalBombDamage;
+                    this.playerLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
