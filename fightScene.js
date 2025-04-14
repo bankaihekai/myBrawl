@@ -96,16 +96,16 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(31);
-        // this.currentCharDetails.attributes.damage = 10;
+        this.currentCharDetails.utilities.skills.push(1);
+        this.currentCharDetails.attributes.damage = 10;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(31);
+        this.loadedOpponent.utilities.skills.push(1);
         // this.loadedOpponent.utilities.weapons.push(11);
-        // this.loadedOpponent.attributes.damage = 10;
+        this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -1042,26 +1042,23 @@ class PlayerFight extends Phaser.Scene {
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
 
-        // health potion skill
+        // health potion 1 skill
         const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);
-        const healthPointsPlus = [250, 300, 350];
+        const healthPointsPlus = [25, 30, 35];
         const hpRandom = this.randomizer(2);
         const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
         let finalHp = 0;
         if (hpToUse != 0) {
+            const draftHP = theAttackerLife + hpToUse;
+            const maxHpChecker = draftHP > this.life.max[theAttacker];
+            finalHp = maxHpChecker ? theAttackerLifeMax - theAttackerLife : hpToUse;
             if (attacker == CONSTANTS._player) {
-                const draftHP = this.playerLife + hpToUse;
-                const maxHpChecker = draftHP > this.life.max.player;
-                finalHp = maxHpChecker ? this.life.max.player - this.playerLife : hpToUse;
                 this.playerLife += finalHp;
-                this.healthPotion.player = false;
             } else {
-                const draftHP = this.opponentLife + hpToUse;
-                const maxHpChecker = draftHP > this.life.max.opponent;
-                finalHp = maxHpChecker ? this.life.max.opponent - this.opponentLife : hpToUse;
                 this.opponentLife += finalHp;
-                this.healthPotion.opponent = false;
             }
+            this.healthPotion[theAttacker] = false;
+
             this.generateLogs(
                 this.init,
                 { type: CONSTANTS._actions.drink, by: theAttacker },
