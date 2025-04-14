@@ -55,6 +55,11 @@ class PlayerFight extends Phaser.Scene {
                 count: 0
             }
         }
+
+        this.bomb = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -91,16 +96,16 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(1);
-        this.currentCharDetails.attributes.damage = 10;
+        this.currentCharDetails.utilities.skills.push(31);
+        // this.currentCharDetails.attributes.damage = 10;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(1);
+        this.loadedOpponent.utilities.skills.push(31);
         // this.loadedOpponent.utilities.weapons.push(11);
-        this.loadedOpponent.attributes.damage = 10;
+        // this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -885,6 +890,13 @@ class PlayerFight extends Phaser.Scene {
         if (playerPoisonPotion) this.PoisonPotion.player.available = true;
         if (opponentPoisonPotion) this.PoisonPotion.opponent.available = true;
 
+        // Bomb skill 31
+        const playerBomb = this.playerUtils.skills.find(s => s == 31);
+        const opponentBomb = this.opponentUtils.skills.find(s => s == 31);
+
+        if (playerBomb) this.bomb.player = true;
+        if (opponentBomb) this.bomb.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1090,6 +1102,36 @@ class PlayerFight extends Phaser.Scene {
                 { name: "Poison Potion", remaining: this.PoisonPotion.opponent.count, damage: 5 },
                 { player: this.playerLife, opponent: this.opponentLife }
             );
+        }
+
+        if(this.bomb[theAttacker]){
+            const executeBomb = this.calculateChance(15);
+            if(executeBomb){
+
+                const bombDamage = [15,16,17,18,19,20,21,22,23,24,25];
+                const bombNumber = this.randomizer(10);
+                const finalBombDamage = bombDamage[bombNumber];
+
+                if(theAttacker == CONSTANTS._player){
+                    this.opponentLife -= finalBombDamage;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                        { name: "Bomb", damage: finalBombDamage },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
+                } else {
+                    this.playerLife -= finalBombDamage;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                        { name: "Bomb", damage: finalBombDamage },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
+                }
+
+                this.bomb[theAttacker] = false;
+            }
         }
 
         var changeWeaponResult = this.changeWeapon(theAttacker);

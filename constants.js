@@ -214,8 +214,8 @@ const CONSTANTS = {
             number: 11
         },
         {
-            "name": "Poisonous Weapon",
-            "description": "Add poison to your weapon—because fights are more fun when they’re unfair!",
+            "name": "Poisonous touch",
+            "description": "Add poison to your weapon because fights are more fun when they’re unfair!",
             "chance": 1.19,
             number: 12
         },
@@ -550,8 +550,8 @@ const CONSTANTS = {
             number: 11
         },
         {
-            "name": "Poisonous Weapon",
-            "description": "Add poison to your weapon—because fights are more fun when they’re unfair!",
+            "name": "Poisonous touch",
+            "description": "Add poison to your weapon because fights are more fun when they’re unfair!",
             "chance": 1.19,
             number: 12
         },
