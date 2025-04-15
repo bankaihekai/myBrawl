@@ -73,6 +73,11 @@ class PlayerFight extends Phaser.Scene {
                 count: 0
             }
         }
+
+        this.poisonTouch = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -644,7 +649,11 @@ class PlayerFight extends Phaser.Scene {
                     console.log(JSON.stringify(this.script[index])); // Print the current script element
 
                     const actionType = this.script[index].action.type;
-                    if (actionType == CONSTANTS._actions.attack || actionType == CONSTANTS._actions.throw) {
+
+                    // attacker who execute the action
+                    if (actionType == CONSTANTS._actions.attack || 
+                        actionType == CONSTANTS._actions.throw
+                    ) {
                         var attacker = this.script[index].action.by;
                         var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
                         var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
@@ -653,6 +662,17 @@ class PlayerFight extends Phaser.Scene {
                         this.renderLife();
                     }
 
+                    // attacker who dealt poison
+                    if (actionType == CONSTANTS._actions.poison) {
+                        var attacker = this.script[index].action.attacker;
+                        var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+
+                        this.updateLife(defender, remainingLife); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who use the revive drink bandage
                     if (actionType == CONSTANTS._actions.revive || 
                         actionType == CONSTANTS._actions.drink || 
                         actionType == CONSTANTS._actions.bandage
@@ -920,6 +940,13 @@ class PlayerFight extends Phaser.Scene {
         if (playerBomb) this.bomb.player = true;
         if (opponentBomb) this.bomb.opponent = true;
 
+        // poison touch skill 12
+        const playerPoisonTouch = this.playerUtils.skills.find(s => s == 12);
+        const opponentPoisonTouch = this.opponentUtils.skills.find(s => s == 12);
+
+        if (playerPoisonTouch) this.poisonTouch.player = true;
+        if (opponentPoisonTouch) this.poisonTouch.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1113,10 +1140,12 @@ class PlayerFight extends Phaser.Scene {
                 this.playerLife += finalHp;
                 this.PoisonPotion.opponent.active = false; // remove poison effect
                 this.PoisonPotion.opponent.count = 0;
+                this.poisonTouch.opponent = false;
             } else {
                 this.opponentLife += finalHp;
                 this.PoisonPotion.player.active = false; // remove poison effect
                 this.PoisonPotion.player.count = 0;
+                this.poisonTouch.player = false;
             }
             this.healthPotion[theAttacker] = false;
 
@@ -1191,6 +1220,24 @@ class PlayerFight extends Phaser.Scene {
 
                 this.bomb[theAttacker] = false;
             }
+        }
+
+        if(this.poisonTouch[theAttacker]){
+
+            if(theAttacker == CONSTANTS._player){
+                const finalLifePoision = this.opponentLife - 1;
+                this.opponentLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+            } else {
+                const finalLifePoision = this.playerLife - 1;
+                this.playerLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+            }
+
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                { name: "Poison Touch", remaining: "unli", damage: 1 },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
         }
 
         var changeWeaponResult = this.changeWeapon(theAttacker);
