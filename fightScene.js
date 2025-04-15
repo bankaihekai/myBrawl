@@ -19,6 +19,7 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
         this.canCounter = {
             player: false,
             opponent: false
@@ -43,6 +44,7 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
         this.PoisonPotion = {
             player: {
                 available: false,
@@ -117,6 +119,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.steal = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -153,14 +160,19 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(11);
-        this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        this.currentCharDetails.attributes.damage = 10;
+        this.currentCharDetails.utilities.skills.push(26);
+        this.currentCharDetails.utilities.weapons.push(11);
+        this.currentCharDetails.utilities.weapons.push(12);
+        this.currentCharDetails.utilities.weapons.push(13);
+        // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
+        // this.currentCharDetails.attributes.damage = 10;
         // opponent
-        this.loadedOpponent.utilities.skills.push(11);
-        // this.loadedOpponent.utilities.weapons.push(11);
-        this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
-        this.loadedOpponent.attributes.damage = 10;
+        this.loadedOpponent.utilities.skills.push(26);
+        this.loadedOpponent.utilities.weapons.push(1);
+        this.loadedOpponent.utilities.weapons.push(2);
+        this.loadedOpponent.utilities.weapons.push(3);
+        // this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
+        // this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -891,26 +903,46 @@ class PlayerFight extends Phaser.Scene {
         return result;
     }
 
-    changeWeapon(target) {
-        const randomChance = 25;
+    changeWeapon(target, isSteal, weaponToSteal) {
+
         const isPlayer = target == CONSTANTS._player;
+        const randomChance = 25;
         const utils = isPlayer ? this.playerUtils : this.opponentUtils;
-        const randomChanceResult = this.calculateChance(randomChance);
+        const theDefender = isPlayer ? CONSTANTS._opponent : CONSTANTS._player;
 
-        if (utils.weapons.length > 0 && randomChanceResult) {
-            const oldWeapon = utils.activeWeapon;
-            const newWeapon = this.randomArrayIndex(utils.weapons);
-            utils.weapons = utils.weapons.filter(w => w !== oldWeapon && w !== newWeapon);
-            utils.activeWeapon = newWeapon;
+        if (isSteal) {
 
-            this.generateLogs(this.init, {
-                type: CONSTANTS._actions.changeWeapon,
-                by: target,
-                old: oldWeapon || -1,
-                new: newWeapon || -1
-            });
+            if (target == CONSTANTS._player) { // player execute steal
+                this.playerUtils.activeWeapon = weaponToSteal; // change player weapon to opponent's
+                this.opponentUtils.activeWeapon = null; // remove defender weapon
+            } else {
+                this.opponentUtils.activeWeapon = weaponToSteal; // change opponents weapon to player's
+                this.playerUtils.activeWeapon = null; // remove defender weapon
+            }
 
-            return CONSTANTS.weaponStats.find(w => w.number === newWeapon);
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.skill, by: target },
+                { skill: "Steal", target: theDefender, weapon: weaponToSteal }
+            );
+            return CONSTANTS.weaponStats.find(w => w.number === weaponToSteal);
+        } else {
+            const randomChanceResult = this.calculateChance(randomChance);
+            if (utils.weapons.length > 0 && randomChanceResult) {
+                const oldWeapon = utils.activeWeapon;
+                const newWeapon = this.randomArrayIndex(utils.weapons);
+                utils.weapons = utils.weapons.filter(w => w !== oldWeapon && w !== newWeapon);
+                utils.activeWeapon = newWeapon;
+
+                this.generateLogs(this.init, {
+                    type: CONSTANTS._actions.changeWeapon,
+                    by: target,
+                    old: oldWeapon || -1,
+                    new: newWeapon || -1
+                });
+
+                return CONSTANTS.weaponStats.find(w => w.number === newWeapon);
+            }
         }
     }
 
@@ -1024,6 +1056,13 @@ class PlayerFight extends Phaser.Scene {
 
         if (scarePlayer) this.scare.player = true;
         if (scareOpponent) this.scare.opponent = true;
+
+        // steal skill 25
+        const stealPlayer = this.playerUtils.skills.find(skill => skill == 26);
+        const stealOpponent = this.opponentUtils.skills.find(skill => skill == 26);
+
+        if (stealPlayer) this.steal.player = true;
+        if (stealOpponent) this.steal.opponent = true;
 
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
@@ -1165,59 +1204,79 @@ class PlayerFight extends Phaser.Scene {
         const theAttackerActiveUtils = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
         const theAttackerLifeMax = attacker == CONSTANTS._player ? this.life.max.player : this.life.max.opponent;
-        
+
         const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
         const theDefenderActiveUtils = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
 
+        let isChangeWeapon = false;
+        var changeWeaponResult = this.changeWeapon(theAttacker);
+        if (changeWeaponResult) {
+            attacker_weaponToUse = changeWeaponResult;
+            attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
+            isChangeWeapon = true;
+        };
+
+        if (this.steal[theAttacker] && skillFlag != 1 && !isChangeWeapon) {
+            const calculateSteal = this.calculateChance(15);
+            if (calculateSteal && theDefenderActiveUtils.activeWeapon != null && theDefenderActiveUtils.activeWeapon != -1) {
+
+                var stealWeaponResult = this.changeWeapon(theAttacker, true, theDefenderActiveUtils.activeWeapon);
+                if (stealWeaponResult) {
+                    attacker_weaponToUse = stealWeaponResult;
+                    attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
+                };
+            }
+        }
+
         // pet master skill 11 -> steal pets
         const defenderPets = theDefenderActiveUtils.pets.length;
-        if(this.scare[theAttacker] && defenderPets > 0 && skillFlag != 1){
-            const executeScarePet = this.calculateChance(100);
-            if(executeScarePet){
+        if (this.scare[theAttacker] && defenderPets > 0 && skillFlag != 1) {
+            const executeScarePet = this.calculateChance(15);
+            if (executeScarePet) {
                 const petToScare = theDefenderActiveUtils.pets;
 
-                if(theAttacker == CONSTANTS._player){
+                if (theAttacker == CONSTANTS._player) {
                     this.opponentUtils.pets = [];
                 } else {
                     this.playerUtils.pets = [];
                 }
-                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Scare", target: theDefender, pets: petToScare});
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Scare", target: theDefender, pets: petToScare });
                 this.scare[theAttacker] = false;
                 skillFlag = 1;
             }
         }
 
         // pet master skill 11 -> steal pets
-        if(this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1){
+        if (this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1) {
             const executeStealPet = this.calculateChance(15);
-            if(executeStealPet){
+            if (executeStealPet) {
                 const petToSteal = theDefenderActiveUtils.pets;
                 const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
 
-                if(theAttacker == CONSTANTS._player){
+                if (theAttacker == CONSTANTS._player) {
                     this.playerUtils.pets = newPets;
                     this.opponentUtils.pets = [];
                 } else {
                     this.playerUtils.pets = [];
                     this.opponentUtils.pets = newPets;
                 }
-                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Pet Master", target: theDefender, pets: petToSteal});
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Pet Master", target: theDefender, pets: petToSteal });
                 this.petMaster[theAttacker] = false;
                 skillFlag = 1;
             }
         }
 
         // genjutsu debuff skill 2
-        if(this.genjutsu[theAttacker] && skillFlag != 1){
+        if (this.genjutsu[theAttacker] && skillFlag != 1) {
             const executeGenjutsu = this.calculateChance(15);
-            if(executeGenjutsu){ // remove current opponent buff
+            if (executeGenjutsu) { // remove current opponent buff
                 this.buff[theDefender].aura = false;
                 this.debuff[theDefender].genjutsu = true; // affect debuff
                 this.genjutsu[theAttacker] = false;
-                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Genjutsu", target: theDefender});
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Genjutsu", target: theDefender });
                 skillFlag = 1;
             }
         }
@@ -1359,7 +1418,7 @@ class PlayerFight extends Phaser.Scene {
         if (this.discharge[theAttacker] && theAttackerDischarge >= 4 && skillFlag != 1) {
             const executeDischarge = this.calculateChance(15);
             if (executeDischarge) {
-        
+
                 let dischargeDamage = 0;
                 let weaponNumber = [];
 
@@ -1389,7 +1448,7 @@ class PlayerFight extends Phaser.Scene {
                     { name: "Discharge", weapons: weaponNumber, damage: dischargeDamage },
                     { player: this.playerLife < 0 ? 0 : this.playerLife, opponent: this.opponentLife < 0 ? 0 : this.opponentLife }
                 );
-        
+
                 this.discharge[theAttacker] = false;
                 skillFlag = 1;
             }
@@ -1412,12 +1471,6 @@ class PlayerFight extends Phaser.Scene {
                 { player: this.playerLife, opponent: this.opponentLife }
             );
         }
-
-        var changeWeaponResult = this.changeWeapon(theAttacker);
-        if (changeWeaponResult) {
-            attacker_weaponToUse = changeWeaponResult;
-            attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
-        };
 
         // Opponent attacks!
         for (let i = 1; i <= attackerCombo; i++) {
@@ -1473,7 +1526,7 @@ class PlayerFight extends Phaser.Scene {
             }
 
         } else {
-            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: CONSTANTS._player.concat(" and ",CONSTANTS._opponent) });
+            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: CONSTANTS._player.concat(" and ", CONSTANTS._opponent) });
         }
     }
 
@@ -1508,7 +1561,7 @@ class PlayerFight extends Phaser.Scene {
             attackerWeapon.block += 3;
         }
 
-        if(this.debuff[theAttacker].genjutsu){
+        if (this.debuff[theAttacker].genjutsu) {
             attackerWeapon.counter -= 5;
             attackerWeapon.evasion -= 5;
             attackerWeapon.block -= 5;
