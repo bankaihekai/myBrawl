@@ -102,6 +102,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.discharge = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -991,6 +996,13 @@ class PlayerFight extends Phaser.Scene {
         if (genjutsuPlayer) this.genjutsu.player = true;
         if (genjutsuOpponent) this.genjutsu.opponent = true;
 
+        // discharge skill 25
+        const dischargePlayer = this.playerUtils.skills.find(skill => skill == 25);
+        const dischargeOpponent = this.opponentUtils.skills.find(skill => skill == 25);
+
+        if (dischargePlayer) this.discharge.player = true;
+        if (dischargeOpponent) this.discharge.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1274,6 +1286,46 @@ class PlayerFight extends Phaser.Scene {
                 }
 
                 this.bomb[theAttacker] = false;
+            }
+        }
+
+        const theAttackerDischarge = theAttackerActiveUtils.weapons.length; // 4 weapons to be thrown
+        if (this.discharge[theAttacker] && theAttackerDischarge >= 4) {
+            const executeDischarge = this.calculateChance(100);
+            if (executeDischarge) {
+        
+                let dischargeDamage = 0;
+                let weaponNumber = [];
+
+                for (let i = 0; i < 4; i++) {
+                    const weaponDischarge = theAttackerActiveUtils.weapons[i];
+                    const weaponDetails = CONSTANTS.weaponStats.find(w => w.number == weaponDischarge);
+                    dischargeDamage += weaponDetails.damage;
+                    weaponNumber.push(weaponDetails.number);
+                }
+
+                const additionalDischargeDamage = Math.floor(dischargeDamage * 0.5);
+                dischargeDamage += additionalDischargeDamage;
+
+                if (theAttacker == CONSTANTS._player) {
+                    // this.playerUtils.weapons = weaponNumber.filter(w => w !=)
+                    const remainingWeapon = this.playerUtils.weapons.filter(w => !weaponNumber.includes(w));
+                    this.playerUtils.weapons = remainingWeapon;
+                    this.opponentLife -= dischargeDamage;
+                } else {
+                    const remainingWeapon = this.opponentUtils.weapons.filter(w => !weaponNumber.includes(w));
+                    this.opponentUtils.weapons = remainingWeapon;
+                    this.playerLife -= dischargeDamage;
+                }
+
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: theAttacker },
+                    { name: "Discharge", weapons: weaponNumber, damage: dischargeDamage },
+                    { player: this.playerLife < 0 ? 0 : this.playerLife, opponent: this.opponentLife < 0 ? 0 : this.opponentLife }
+                );
+        
+                this.discharge[theAttacker] = false;
             }
         }
 
