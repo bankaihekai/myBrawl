@@ -124,6 +124,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.rage = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -160,19 +165,19 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(26);
-        this.currentCharDetails.utilities.weapons.push(11);
-        this.currentCharDetails.utilities.weapons.push(12);
-        this.currentCharDetails.utilities.weapons.push(13);
+        this.currentCharDetails.utilities.skills.push(14);
+        // this.currentCharDetails.utilities.weapons.push(11);
+        // this.currentCharDetails.utilities.weapons.push(12);
+        // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        // this.currentCharDetails.attributes.damage = 10;
+        this.currentCharDetails.attributes.damage = 10;
         // opponent
-        this.loadedOpponent.utilities.skills.push(26);
-        this.loadedOpponent.utilities.weapons.push(1);
-        this.loadedOpponent.utilities.weapons.push(2);
-        this.loadedOpponent.utilities.weapons.push(3);
+        this.loadedOpponent.utilities.skills.push(14);
+        // this.loadedOpponent.utilities.weapons.push(1);
+        // this.loadedOpponent.utilities.weapons.push(2);
+        // this.loadedOpponent.utilities.weapons.push(3);
         // this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
-        // this.loadedOpponent.attributes.damage = 10;
+        this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -1064,6 +1069,13 @@ class PlayerFight extends Phaser.Scene {
         if (stealPlayer) this.steal.player = true;
         if (stealOpponent) this.steal.opponent = true;
 
+        // rage skill 25
+        const ragePlayer = this.playerUtils.skills.find(skill => skill == 14);
+        const rageOpponent = this.opponentUtils.skills.find(skill => skill == 14);
+
+        if (ragePlayer) this.rage.player = true;
+        if (rageOpponent) this.rage.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1593,9 +1605,16 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
 
+                const withRage = this.rage[theAttacker] && this.calculateChance(100);
                 const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
                 const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
-                const finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
+                let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
+                if(withRage) {
+                    finalDamageUse = Math.floor(finalDamageUse * 1.6);
+                    console.log(finalDamageUse);
+                    this.rage[theAttacker] = false;
+                    this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender});
+                }
 
                 var remaining_defenderLife = Math.max(0, theDefenderLife - finalDamageUse); // Ensure life doesn't go below zero
 
@@ -1626,7 +1645,7 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.throw, by: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit, heal: healPoints },
+                        { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: logP1, opponent: logP2 }
                     );
 
@@ -1641,7 +1660,7 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.attack, by: theAttacker },
-                        { name: attackerWeapon.name, damage: attackerDamage.finalDamage, crit: attackerDamage.withCrit, heal: healPoints },
+                        { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: logP1, opponent: logP2 }
                     );
 
