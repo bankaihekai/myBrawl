@@ -1414,8 +1414,7 @@ class PlayerFight extends Phaser.Scene {
             }
 
         } else {
-            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: theDefender });
-            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: theAttacker });
+            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: CONSTANTS._player.concat(" and ",CONSTANTS._opponent) });
         }
     }
 
