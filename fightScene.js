@@ -78,6 +78,15 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.buff = {
+            player: {
+                aura: false,
+            },
+            opponent: {
+                aura: false,
+            }
+        }
     }
 
     create() {
@@ -651,7 +660,7 @@ class PlayerFight extends Phaser.Scene {
                     const actionType = this.script[index].action.type;
 
                     // attacker who execute the action
-                    if (actionType == CONSTANTS._actions.attack || 
+                    if (actionType == CONSTANTS._actions.attack ||
                         actionType == CONSTANTS._actions.throw
                     ) {
                         var attacker = this.script[index].action.by;
@@ -673,8 +682,8 @@ class PlayerFight extends Phaser.Scene {
                     }
 
                     // attacker who use the revive drink bandage
-                    if (actionType == CONSTANTS._actions.revive || 
-                        actionType == CONSTANTS._actions.drink || 
+                    if (actionType == CONSTANTS._actions.revive ||
+                        actionType == CONSTANTS._actions.drink ||
                         actionType == CONSTANTS._actions.bandage
                     ) {
                         var attacker = this.script[index].action.by;
@@ -835,9 +844,15 @@ class PlayerFight extends Phaser.Scene {
     calculateBlock(block, target) {
 
         let blockPercentage = block || 0;
-        const additional = target == CONSTANTS._player ? this.playerBlock : this.opponentBlock;
-        const final = blockPercentage + additional;
         let result = false; // Initialize the result
+        let skillAdditionalBlock = 0;
+
+        const targetDefender = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const shieldSkill = targetDefender.skills.find(s => s == 27);
+        if (shieldSkill) skillAdditionalBlock += 15;
+
+        const additional = target == CONSTANTS._player ? this.playerBlock : this.opponentBlock;
+        const final = blockPercentage + additional + skillAdditionalBlock;
 
         // // Directly calculate the remaining chance (if below 100)
         if (final > 0) {
@@ -946,6 +961,13 @@ class PlayerFight extends Phaser.Scene {
 
         if (playerPoisonTouch) this.poisonTouch.player = true;
         if (opponentPoisonTouch) this.poisonTouch.opponent = true;
+
+        // aura skill 17
+        const auraPlayer = this.playerUtils.skills.find(skill => skill == 17);
+        const auraOpponent = this.opponentUtils.skills.find(skill => skill == 17);
+
+        if (auraPlayer) this.buff.player.aura = true;
+        if (auraOpponent) this.buff.opponent.aura = true;
 
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
@@ -1091,7 +1113,7 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
-        
+
         // bandage 32 skill
         const halfLifeBandage = theAttackerLifeMax / 2;
         if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage) {
@@ -1105,7 +1127,7 @@ class PlayerFight extends Phaser.Scene {
         if (this.bandage.player.count <= 0) this.bandage.player.active = false;
         if (this.bandage.player.active && this.bandage.player.count > 0) {
             this.bandage.player.count -= 1;
-            this.playerLife += 5;   
+            this.playerLife += 5;
             this.generateLogs(
                 this.init,
                 { type: CONSTANTS._actions.bandage, by: CONSTANTS._player },
@@ -1121,7 +1143,7 @@ class PlayerFight extends Phaser.Scene {
             this.generateLogs(
                 this.init,
                 { type: CONSTANTS._actions.bandage, by: CONSTANTS._opponent },
-                { heal: `+${5}`, remaining: this.bandage.opponent.count  },
+                { heal: `+${5}`, remaining: this.bandage.opponent.count },
                 { player: this.playerLife, opponent: this.opponentLife }
             );
         }
@@ -1190,15 +1212,15 @@ class PlayerFight extends Phaser.Scene {
             );
         }
 
-        if(this.bomb[theAttacker]){
+        if (this.bomb[theAttacker]) {
             const executeBomb = this.calculateChance(15);
-            if(executeBomb){
+            if (executeBomb) {
 
-                const bombDamage = [15,16,17,18,19,20,21,22,23,24,25];
+                const bombDamage = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25];
                 const bombNumber = this.randomizer(10);
                 const finalBombDamage = bombDamage[bombNumber];
 
-                if(theAttacker == CONSTANTS._player){
+                if (theAttacker == CONSTANTS._player) {
                     const finalLifeBomb = this.opponentLife - finalBombDamage;
                     this.opponentLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
                     this.generateLogs(
@@ -1222,9 +1244,9 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
-        if(this.poisonTouch[theAttacker]){
+        if (this.poisonTouch[theAttacker]) {
 
-            if(theAttacker == CONSTANTS._player){
+            if (theAttacker == CONSTANTS._player) {
                 const finalLifePoision = this.opponentLife - 1;
                 this.opponentLife = finalLifePoision < 0 ? 0 : finalLifePoision;
             } else {
@@ -1319,7 +1341,6 @@ class PlayerFight extends Phaser.Scene {
         let additionalAccuracy = 0;
         const bullsEye = theAttackerSkills.skills.find(skill => skill == 33); // bulls eye skill 33 passive
         const futureEye = theAttackerSkills.skills.find(skill => skill == 39); // future eye skill 39 passive
-        const aura = theAttackerSkills.skills.find(skill => skill == 17); // aura skill 17 passive
         const weaponBreaker = theAttackerSkills.skills.find(skill => skill == 43); // weapoBreaker skill 43 passive
         const weaponStriker = theAttackerSkills.skills.find(skill => skill == 42); // weaponStriker skill 42 passive
 
@@ -1331,7 +1352,7 @@ class PlayerFight extends Phaser.Scene {
             attackerDamage.finalDamage -= adjustedDamage;
         }
 
-        if (aura) {
+        if (this.buff[theAttacker].aura) {
             attackerWeapon.counter += 1;
             attackerWeapon.evasion += 1;
             attackerWeapon.block += 1;
