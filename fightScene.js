@@ -87,6 +87,21 @@ class PlayerFight extends Phaser.Scene {
                 aura: false,
             }
         }
+
+        // true if player affected with debuff
+        this.debuff = {
+            player: {
+                genjutsu: false
+            },
+            opponent: {
+                genjutsu: false
+            }
+        }
+
+        this.genjutsu = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -123,14 +138,14 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(1);
+        this.currentCharDetails.utilities.skills.push(2);
         this.currentCharDetails.attributes.damage = 10;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(1);
+        this.loadedOpponent.utilities.skills.push(2);
         // this.loadedOpponent.utilities.weapons.push(11);
         this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
@@ -969,6 +984,13 @@ class PlayerFight extends Phaser.Scene {
         if (auraPlayer) this.buff.player.aura = true;
         if (auraOpponent) this.buff.opponent.aura = true;
 
+        // genjutsu skill 17
+        const genjutsuPlayer = this.playerUtils.skills.find(skill => skill == 2);
+        const genjutsuOpponent = this.opponentUtils.skills.find(skill => skill == 2);
+
+        if (genjutsuPlayer) this.genjutsu.player = true;
+        if (genjutsuOpponent) this.genjutsu.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1113,6 +1135,17 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+
+        // genjutsu debuff skill 2
+        if(this.genjutsu[theAttacker]){
+            const executeGenjutsu = this.calculateChance(100);
+            if(executeGenjutsu){ // remove current opponent buff
+                this.buff[theDefender].aura = false;
+                this.debuff[theDefender].genjutsu = true; // affect debuff
+                this.genjutsu[theAttacker] = false;
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Genjutsu", target: theDefender});
+            }
+        }
 
         // bandage 32 skill
         const halfLifeBandage = theAttackerLifeMax / 2;
@@ -1353,9 +1386,15 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.buff[theAttacker].aura) {
-            attackerWeapon.counter += 1;
-            attackerWeapon.evasion += 1;
-            attackerWeapon.block += 1;
+            attackerWeapon.counter += 3;
+            attackerWeapon.evasion += 3;
+            attackerWeapon.block += 3;
+        }
+
+        if(this.debuff[theAttacker].genjutsu){
+            attackerWeapon.counter -= 5;
+            attackerWeapon.evasion -= 5;
+            attackerWeapon.block -= 5;
         }
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
