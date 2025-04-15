@@ -143,15 +143,17 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(2);
+        // this.currentCharDetails.utilities.skills.push(2);
+        this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 10;
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        this.loadedOpponent.utilities.skills.push(2);
+        // this.loadedOpponent.utilities.skills.push(2);
         // this.loadedOpponent.utilities.weapons.push(11);
+        this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
         this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
@@ -1135,6 +1137,7 @@ class PlayerFight extends Phaser.Scene {
 
     processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage) {
 
+        let skillFlag = 0; // flag for skill that should not be execute at the same time
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
 
@@ -1156,16 +1159,18 @@ class PlayerFight extends Phaser.Scene {
                 this.debuff[theDefender].genjutsu = true; // affect debuff
                 this.genjutsu[theAttacker] = false;
                 this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Genjutsu", target: theDefender});
+                skillFlag = 1;
             }
         }
 
         // bandage 32 skill
         const halfLifeBandage = theAttackerLifeMax / 2;
-        if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage) {
+        if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage && skillFlag != 1) {
             if (this.calculateChance(15)) {
                 this.bandage[theAttacker].active = true;
                 this.bandage[theAttacker].available = false;
                 this.bandage[theAttacker].count = 5;
+                skillFlag = 1;
             }
         }
 
@@ -1199,7 +1204,7 @@ class PlayerFight extends Phaser.Scene {
         const hpRandom = this.randomizer(2);
         const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
         let finalHp = 0;
-        if (hpToUse != 0) {
+        if (hpToUse != 0 && skillFlag != 1) {
             const draftHP = theAttackerLife + hpToUse;
             const maxHpChecker = draftHP > this.life.max[theAttacker];
             finalHp = maxHpChecker ? theAttackerLifeMax - theAttackerLife : hpToUse;
@@ -1215,7 +1220,7 @@ class PlayerFight extends Phaser.Scene {
                 this.poisonTouch.player = false;
             }
             this.healthPotion[theAttacker] = false;
-
+            skillFlag = 1;
             this.generateLogs(
                 this.init,
                 { type: CONSTANTS._actions.drink, by: theAttacker },
@@ -1225,11 +1230,12 @@ class PlayerFight extends Phaser.Scene {
         }
 
         // poision potion skill 19 (available, active, count)
-        if (this.PoisonPotion[theAttacker].available) {
+        if (this.PoisonPotion[theAttacker].available && skillFlag != 1) {
             if (this.calculateChance(15)) {
                 this.PoisonPotion[theAttacker].active = true;
                 this.PoisonPotion[theAttacker].available = false;
                 this.PoisonPotion[theAttacker].count = 5;
+                skillFlag = 1;
             }
         }
 
@@ -1257,7 +1263,7 @@ class PlayerFight extends Phaser.Scene {
             );
         }
 
-        if (this.bomb[theAttacker]) {
+        if (this.bomb[theAttacker] && skillFlag != 1) {
             const executeBomb = this.calculateChance(15);
             if (executeBomb) {
 
@@ -1286,12 +1292,13 @@ class PlayerFight extends Phaser.Scene {
                 }
 
                 this.bomb[theAttacker] = false;
+                skillFlag = 1;
             }
         }
 
         const theAttackerDischarge = theAttackerActiveUtils.weapons.length; // 4 weapons to be thrown
-        if (this.discharge[theAttacker] && theAttackerDischarge >= 4) {
-            const executeDischarge = this.calculateChance(100);
+        if (this.discharge[theAttacker] && theAttackerDischarge >= 4 && skillFlag != 1) {
+            const executeDischarge = this.calculateChance(15);
             if (executeDischarge) {
         
                 let dischargeDamage = 0;
@@ -1308,7 +1315,6 @@ class PlayerFight extends Phaser.Scene {
                 dischargeDamage += additionalDischargeDamage;
 
                 if (theAttacker == CONSTANTS._player) {
-                    // this.playerUtils.weapons = weaponNumber.filter(w => w !=)
                     const remainingWeapon = this.playerUtils.weapons.filter(w => !weaponNumber.includes(w));
                     this.playerUtils.weapons = remainingWeapon;
                     this.opponentLife -= dischargeDamage;
@@ -1326,6 +1332,7 @@ class PlayerFight extends Phaser.Scene {
                 );
         
                 this.discharge[theAttacker] = false;
+                skillFlag = 1;
             }
         }
 

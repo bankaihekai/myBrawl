@@ -459,8 +459,7 @@ class CreateScene extends Phaser.Scene {
             document.getElementById("submitPasswordBtn").addEventListener("click", () => {
                 const password = document.getElementById("passwordInput").value;
                 const user_name = document.getElementById("usernameInput").value;
-                console.log({ password: password });
-                console.log({ user_name: user_name });
+
                 if (user_name && password) {
                     const activeUserName = this.existingUsers.filter(data => data.name == user_name);
 
