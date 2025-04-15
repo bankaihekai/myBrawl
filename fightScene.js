@@ -112,6 +112,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.scare = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -1013,6 +1018,13 @@ class PlayerFight extends Phaser.Scene {
         if (petMasterPlayer) this.petMaster.player = true;
         if (petMasterOpponent) this.petMaster.opponent = true;
 
+        // scare skill 25
+        const scarePlayer = this.playerUtils.skills.find(skill => skill == 22);
+        const scareOpponent = this.opponentUtils.skills.find(skill => skill == 22);
+
+        if (scarePlayer) this.scare.player = true;
+        if (scareOpponent) this.scare.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1162,8 +1174,25 @@ class PlayerFight extends Phaser.Scene {
 
         // pet master skill 11 -> steal pets
         const defenderPets = theDefenderActiveUtils.pets.length;
+        if(this.scare[theAttacker] && defenderPets > 0 && skillFlag != 1){
+            const executeScarePet = this.calculateChance(100);
+            if(executeScarePet){
+                const petToScare = theDefenderActiveUtils.pets;
+
+                if(theAttacker == CONSTANTS._player){
+                    this.opponentUtils.pets = [];
+                } else {
+                    this.playerUtils.pets = [];
+                }
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Scare", target: theDefender, pets: petToScare});
+                this.scare[theAttacker] = false;
+                skillFlag = 1;
+            }
+        }
+
+        // pet master skill 11 -> steal pets
         if(this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1){
-            const executeStealPet = this.calculateChance(100);
+            const executeStealPet = this.calculateChance(15);
             if(executeStealPet){
                 const petToSteal = theDefenderActiveUtils.pets;
                 const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
@@ -1177,12 +1206,13 @@ class PlayerFight extends Phaser.Scene {
                 }
                 this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Pet Master", target: theDefender, pets: petToSteal});
                 this.petMaster[theAttacker] = false;
+                skillFlag = 1;
             }
         }
 
         // genjutsu debuff skill 2
         if(this.genjutsu[theAttacker] && skillFlag != 1){
-            const executeGenjutsu = this.calculateChance(100);
+            const executeGenjutsu = this.calculateChance(15);
             if(executeGenjutsu){ // remove current opponent buff
                 this.buff[theDefender].aura = false;
                 this.debuff[theDefender].genjutsu = true; // affect debuff
