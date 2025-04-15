@@ -107,6 +107,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.petMaster = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -143,15 +148,11 @@ class PlayerFight extends Phaser.Scene {
         // // TEST CODE
         // // ---------------------------------------
         // player
-        // this.currentCharDetails.utilities.skills.push(2);
+        this.currentCharDetails.utilities.skills.push(11);
         this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 10;
-        // this.currentCharDetails.utilities.weapons.push(11);
-        // this.currentCharDetails.utilities.weapons.push(12);
-        // this.currentCharDetails.utilities.weapons.push(13);
-        // this.currentCharDetails.utilities.weapons.push(14);
         // opponent
-        // this.loadedOpponent.utilities.skills.push(2);
+        this.loadedOpponent.utilities.skills.push(11);
         // this.loadedOpponent.utilities.weapons.push(11);
         this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
         this.loadedOpponent.attributes.damage = 10;
@@ -1005,6 +1006,13 @@ class PlayerFight extends Phaser.Scene {
         if (dischargePlayer) this.discharge.player = true;
         if (dischargeOpponent) this.discharge.opponent = true;
 
+        // pet master skill 25
+        const petMasterPlayer = this.playerUtils.skills.find(skill => skill == 11);
+        const petMasterOpponent = this.opponentUtils.skills.find(skill => skill == 11);
+
+        if (petMasterPlayer) this.petMaster.player = true;
+        if (petMasterOpponent) this.petMaster.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1145,14 +1153,35 @@ class PlayerFight extends Phaser.Scene {
         const theAttackerActiveUtils = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
         const theAttackerLifeMax = attacker == CONSTANTS._player ? this.life.max.player : this.life.max.opponent;
-
+        
         const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
+        const theDefenderActiveUtils = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
         this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
 
+        // pet master skill 11 -> steal pets
+        const defenderPets = theDefenderActiveUtils.pets.length;
+        if(this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1){
+            const executeStealPet = this.calculateChance(100);
+            if(executeStealPet){
+                const petToSteal = theDefenderActiveUtils.pets;
+                const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
+
+                if(theAttacker == CONSTANTS._player){
+                    this.playerUtils.pets = newPets;
+                    this.opponentUtils.pets = [];
+                } else {
+                    this.playerUtils.pets = [];
+                    this.opponentUtils.pets = newPets;
+                }
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, {skill: "Pet Master", target: theDefender, pets: petToSteal});
+                this.petMaster[theAttacker] = false;
+            }
+        }
+
         // genjutsu debuff skill 2
-        if(this.genjutsu[theAttacker]){
+        if(this.genjutsu[theAttacker] && skillFlag != 1){
             const executeGenjutsu = this.calculateChance(100);
             if(executeGenjutsu){ // remove current opponent buff
                 this.buff[theDefender].aura = false;
