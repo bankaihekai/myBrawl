@@ -137,6 +137,11 @@ class PlayerFight extends Phaser.Scene {
             player: 0,
             opponent: 0
         }
+
+        this.spellMaster = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -1098,6 +1103,13 @@ class PlayerFight extends Phaser.Scene {
         if (lightningBoltPlayer) this.lightningBolt.player = 2;
         if (lightningBoltOpponent) this.lightningBolt.opponent = 2;
 
+        // spellmaster skill 31
+        const playerSpellMaster = this.playerUtils.skills.find(s => s == 15);
+        const opponentSpellMaster = this.opponentUtils.skills.find(s => s == 15);
+
+        if (playerSpellMaster) this.spellMaster.player = true;
+        if (opponentSpellMaster) this.spellMaster.opponent = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1267,18 +1279,19 @@ class PlayerFight extends Phaser.Scene {
 
         // lightningbolt skill 20 
         const withSpellBook = theAttackerActiveUtils.activeWeapon == 11; // with spell book
-        const executeBolt = this.calculateChance(100);
+        const executeBolt = this.calculateChance(15);
         if (this.lightningBolt[theAttacker] == 2 && withSpellBook && skillFlag != 1 && executeBolt) {
             const boltDamage = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
             const boltNumber = this.randomizer(10);
-            const finalBoltDamage = boltDamage[boltNumber];
+            const withSpellMaster = this.spellMaster[theAttacker];
+            const finalBoltDamage = withSpellMaster ? boltDamage[boltNumber] * 1.5 : boltDamage[boltNumber];
 
             if (theAttacker == CONSTANTS._player) {
                 const finalLifeBolt = this.opponentLife - finalBoltDamage;
                 this.opponentLife = finalLifeBolt < 0 ? 0 : finalLifeBolt;
                 this.generateLogs(
                     this.init,
-                    { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
                     { name: "Lightning Bolt", damage: finalBoltDamage },
                     { player: this.playerLife, opponent: this.opponentLife }
                 );
@@ -1460,7 +1473,7 @@ class PlayerFight extends Phaser.Scene {
                     this.opponentLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
                     this.generateLogs(
                         this.init,
-                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
                         { name: "Bomb", damage: finalBombDamage },
                         { player: this.playerLife, opponent: this.opponentLife }
                     );
@@ -1668,7 +1681,7 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
 
-                const withRage = this.rage[theAttacker] && this.calculateChance(100);
+                const withRage = this.rage[theAttacker] && this.calculateChance(15);
                 const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
                 const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
                 let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
