@@ -84,9 +84,11 @@ class PlayerFight extends Phaser.Scene {
         this.buff = {
             player: {
                 aura: false,
+                susanoo: false,
             },
             opponent: {
                 aura: false,
+                susanoo: false,
             }
         }
 
@@ -1040,6 +1042,13 @@ class PlayerFight extends Phaser.Scene {
         if (auraPlayer) this.buff.player.aura = true;
         if (auraOpponent) this.buff.opponent.aura = true;
 
+        // susanoo skill 17
+        const susanooPlayer = this.playerUtils.skills.find(skill => skill == 4);
+        const susanooOpponent = this.opponentUtils.skills.find(skill => skill == 4);
+
+        if (susanooPlayer) this.buff.player.susanoo = true;
+        if (susanooOpponent) this.buff.opponent.susanoo = true;
+
         // genjutsu skill 17
         const genjutsuPlayer = this.playerUtils.skills.find(skill => skill == 2);
         const genjutsuOpponent = this.opponentUtils.skills.find(skill => skill == 2);
@@ -1260,7 +1269,7 @@ class PlayerFight extends Phaser.Scene {
         const withSpellBook = theAttackerActiveUtils.activeWeapon == 11; // with spell book
         const executeBolt = this.calculateChance(100);
         if (this.lightningBolt[theAttacker] == 2 && withSpellBook && skillFlag != 1 && executeBolt) {
-            const boltDamage = [25,26,27,28,29,30,31,32,33,34,35];
+            const boltDamage = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
             const boltNumber = this.randomizer(10);
             const finalBoltDamage = boltDamage[boltNumber];
 
@@ -1330,6 +1339,7 @@ class PlayerFight extends Phaser.Scene {
             const executeGenjutsu = this.calculateChance(15);
             if (executeGenjutsu) { // remove current opponent buff
                 this.buff[theDefender].aura = false;
+                this.buff[theDefender].susanoo = false;
                 this.debuff[theDefender].genjutsu = true; // affect debuff
                 this.genjutsu[theAttacker] = false;
                 this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Genjutsu", target: theDefender });
@@ -1611,10 +1621,19 @@ class PlayerFight extends Phaser.Scene {
             attackerDamage.finalDamage -= adjustedDamage;
         }
 
-        if (this.buff[theAttacker].aura) {
+        if (this.buff[theDefender].aura) {
             attackerWeapon.counter += 3;
             attackerWeapon.evasion += 3;
             attackerWeapon.block += 3;
+        }
+
+        if (this.buff[theAttacker].susanoo) {
+            attackerWeapon.finalDamage += 10;
+            additionalAccuracy += 10;
+        }
+
+        if (this.buff[theDefender].susanoo) {
+            attackerWeapon.block += 10;
         }
 
         if (this.debuff[theAttacker].genjutsu) {
@@ -1655,7 +1674,6 @@ class PlayerFight extends Phaser.Scene {
                 let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
                 if (withRage) {
                     finalDamageUse = Math.floor(finalDamageUse * 1.6);
-                    console.log(finalDamageUse);
                     this.rage[theAttacker] = false;
                     this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender });
                 }

@@ -164,7 +164,7 @@ const CONSTANTS = {
             number: 3
         },
         {
-            "name": "Susano",
+            "name": "Susanoo",
             "description": "Summon a giant warrior spirit to flex on your enemies while protecting you.",
             "chance": 1.19,
             number: 4
@@ -500,7 +500,7 @@ const CONSTANTS = {
             number: 3
         },
         {
-            "name": "Susano",
+            "name": "Susanoo",
             "description": "Summon a giant warrior spirit to flex on your enemies while protecting you.",
             "chance": 1.19,
             number: 4
