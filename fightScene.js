@@ -129,6 +129,12 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        // 0- false 1- true 2-partial
+        this.lightningBolt = {
+            player: 0,
+            opponent: 0
+        }
     }
 
     create() {
@@ -177,7 +183,7 @@ class PlayerFight extends Phaser.Scene {
         // this.loadedOpponent.utilities.weapons.push(2);
         // this.loadedOpponent.utilities.weapons.push(3);
         // this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
-        this.loadedOpponent.attributes.damage = 10;
+        // this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -1076,6 +1082,13 @@ class PlayerFight extends Phaser.Scene {
         if (ragePlayer) this.rage.player = true;
         if (rageOpponent) this.rage.opponent = true;
 
+        // lightningBolt skill 25
+        const lightningBoltPlayer = this.playerUtils.skills.find(skill => skill == 20);
+        const lightningBoltOpponent = this.opponentUtils.skills.find(skill => skill == 20);
+
+        if (lightningBoltPlayer) this.lightningBolt.player = 2;
+        if (lightningBoltOpponent) this.lightningBolt.opponent = 2;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1241,6 +1254,37 @@ class PlayerFight extends Phaser.Scene {
                     attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
                 };
             }
+        }
+
+        // lightningbolt skill 20 
+        const withSpellBook = theAttackerActiveUtils.activeWeapon == 11; // with spell book
+        const executeBolt = this.calculateChance(100);
+        if (this.lightningBolt[theAttacker] == 2 && withSpellBook && skillFlag != 1 && executeBolt) {
+            const boltDamage = [25,26,27,28,29,30,31,32,33,34,35];
+            const boltNumber = this.randomizer(10);
+            const finalBoltDamage = boltDamage[boltNumber];
+
+            if (theAttacker == CONSTANTS._player) {
+                const finalLifeBolt = this.opponentLife - finalBoltDamage;
+                this.opponentLife = finalLifeBolt < 0 ? 0 : finalLifeBolt;
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                    { name: "Lightning Bolt", damage: finalBoltDamage },
+                    { player: this.playerLife, opponent: this.opponentLife }
+                );
+            } else {
+                const finalLifeBomb = this.playerLife - finalBoltDamage;
+                this.playerLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                    { name: "Lightning Bolt", damage: finalBoltDamage },
+                    { player: this.playerLife, opponent: this.opponentLife }
+                );
+            }
+            this.lightningBolt[theAttacker] = 0;
+            skillFlag = 1;
         }
 
         // pet master skill 11 -> steal pets
@@ -1609,11 +1653,11 @@ class PlayerFight extends Phaser.Scene {
                 const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
                 const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
                 let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
-                if(withRage) {
+                if (withRage) {
                     finalDamageUse = Math.floor(finalDamageUse * 1.6);
                     console.log(finalDamageUse);
                     this.rage[theAttacker] = false;
-                    this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender});
+                    this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender });
                 }
 
                 var remaining_defenderLife = Math.max(0, theDefenderLife - finalDamageUse); // Ensure life doesn't go below zero
