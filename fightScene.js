@@ -147,6 +147,19 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.hollowForm = {
+            player: {
+                available: false,
+                active: false,
+                count: 0
+            },
+            opponent: {
+                available: false,
+                active: false,
+                count: 0
+            }
+        }
     }
 
     create() {
@@ -195,7 +208,7 @@ class PlayerFight extends Phaser.Scene {
         // this.loadedOpponent.utilities.weapons.push(2);
         // this.loadedOpponent.utilities.weapons.push(3);
         // this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
-        // this.loadedOpponent.attributes.damage = 10;
+        this.loadedOpponent.attributes.damage = 10;
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
@@ -609,7 +622,7 @@ class PlayerFight extends Phaser.Scene {
             totalDamage = totalDamage * additionalCritical;
         }
 
-        const finalDamage = Math.round(Math.max(1, (totalDamage) - opponentDefense));
+        const finalDamage = Math.round(Math.max(1, (totalDamage) - (opponentDefense * 1.5)));
 
         return {
             finalDamage: finalDamage,
@@ -1135,6 +1148,13 @@ class PlayerFight extends Phaser.Scene {
         if (thornsPlayer) this.thorns.player = true;
         if (thornsOpponent) this.thorns.opponent = true;
 
+        // hollow form skill 3
+        const playerHollow = this.playerUtils.skills.find(s => s == 3);
+        const opponentHollow = this.opponentUtils.skills.find(s => s == 3);
+
+        if (playerHollow) this.hollowForm.player.available = true;
+        if (opponentHollow) this.hollowForm.opponent.available = true;
+
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
             this.firstAttack.player = false;
@@ -1300,6 +1320,28 @@ class PlayerFight extends Phaser.Scene {
                     attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
                 };
             }
+        }
+
+        const calculateHollow = this.hollowForm[theAttacker].available ? this.calculateChance(15) : false;
+        if (this.hollowForm[theAttacker].count <= 0 && this.hollowForm[theAttacker].active) {
+            this.hollowForm[theAttacker].active = false;
+            this.hollowForm[theAttacker].count = 0;
+            this.hollowForm[theAttacker].available = false;
+        }
+        if (calculateHollow) {
+            this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Hollow Form" });
+            this.hollowForm[theAttacker].active = true;
+            this.hollowForm[theAttacker].count = 2;
+            this.hollowForm[theAttacker].available = false;
+        }
+
+        if (this.hollowForm[theAttacker]) {
+            const hollowForm = theAttackerActiveUtils.skills.find(s => s == 3); // passive skill
+
+            if (hollowForm && this.hollowForm[theAttacker].active && this.hollowForm[theAttacker].count > 0) {
+                attackerCombo += 2;
+                this.hollowForm[theAttacker].count -= 1;
+            };
         }
 
         // lightningbolt skill 20 
@@ -1689,12 +1731,17 @@ class PlayerFight extends Phaser.Scene {
 
         if (isAccurate) {
 
+            let additionalSkillDodge = 0;
             const randomAction = this.randomizer(1);
             const randomActionCode = randomAction == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
             const randomActionUtils = randomAction == 0 ? defenderWeapon.evasion : defenderWeapon.block;
+
+            if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) additionalSkillDodge += 20;
+
+            const finalSkillDodge = additionalSkillDodge + randomActionUtils;
             const randomActionResult = randomAction == 0 ?
-                this.calculateEvasion(randomActionUtils, theDefender) :
-                this.calculateBlock(randomActionUtils, theDefender);
+                this.calculateEvasion(finalSkillDodge, theDefender) :
+                this.calculateBlock(finalSkillDodge, theDefender);
 
             if (randomActionResult) {
                 this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: theAttacker });
@@ -1776,14 +1823,14 @@ class PlayerFight extends Phaser.Scene {
                         this.playerLife = remaining_defenderLife;
                     }
 
-                    if(this.thorns[theAttacker]){
+                    if (this.thorns[theAttacker]) {
                         let remaingLifeThorns = 0;
                         const thornsDamage = Math.floor(finalDamageUse * 0.15);
-                        
-                        if(isPlayerAttacker){
-                            remaingLifeThorns = Math.max(0, this.playerLife - thornsDamage); 
+
+                        if (isPlayerAttacker) {
+                            remaingLifeThorns = Math.max(0, this.playerLife - thornsDamage);
                         } else {
-                            remaingLifeThorns = Math.max(0, this.opponentLife - thornsDamage); 
+                            remaingLifeThorns = Math.max(0, this.opponentLife - thornsDamage);
                         }
                         const tlogP1 = isPlayerAttacker ? remaingLifeThorns : this.playerLife;
                         const tlogP2 = !isPlayerAttacker ? remaingLifeThorns : this.opponentLife;
@@ -1791,7 +1838,7 @@ class PlayerFight extends Phaser.Scene {
                         this.generateLogs(
                             this.init,
                             { type: CONSTANTS._actions.thorns, by: theDefender },
-                            { skill: "Thorns", damage: thornsDamage},
+                            { skill: "Thorns", damage: thornsDamage },
                             { player: tlogP1, opponent: tlogP2 }
                         );
 
