@@ -142,6 +142,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.thorns = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -721,9 +726,9 @@ class PlayerFight extends Phaser.Scene {
                     if (actionType == CONSTANTS._actions.attack ||
                         actionType == CONSTANTS._actions.throw
                     ) {
-                        var attacker = this.script[index].action.by;
-                        var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
-                        var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+                        const attacker = this.script[index].action.by;
+                        const defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
 
                         this.updateLife(defender, remainingLife); // life to deduct, remaining life  
                         this.renderLife();
@@ -731,9 +736,9 @@ class PlayerFight extends Phaser.Scene {
 
                     // attacker who dealt poison
                     if (actionType == CONSTANTS._actions.poison) {
-                        var attacker = this.script[index].action.attacker;
-                        var defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
-                        var remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+                        const attacker = this.script[index].action.attacker;
+                        const defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
 
                         this.updateLife(defender, remainingLife); // life to deduct, remaining life  
                         this.renderLife();
@@ -742,14 +747,27 @@ class PlayerFight extends Phaser.Scene {
                     // attacker who use the revive drink bandage
                     if (actionType == CONSTANTS._actions.revive ||
                         actionType == CONSTANTS._actions.drink ||
-                        actionType == CONSTANTS._actions.bandage
+                        actionType == CONSTANTS._actions.bandage ||
+                        actionType == CONSTANTS._actions.thorns
                     ) {
-                        var attacker = this.script[index].action.by;
+                        const attacker = this.script[index].action.by;
 
                         // with revive
-                        var rlRevive = attacker == CONSTANTS._player ? this.script[index].life.player : this.script[index].life.opponent;
+                        const rlRevive = attacker == CONSTANTS._player ? this.script[index].life.player : this.script[index].life.opponent;
 
                         this.updateLife(attacker, rlRevive); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who have self inflicted damage
+                    if (
+                        actionType == CONSTANTS._actions.thorns
+                    ) {
+                        const defender = this.script[index].action.by; // the one with thorns defender
+                        const attackerToBeHurt = defender == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLifeLeft = defender == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+
+                        this.updateLife(attackerToBeHurt, remainingLifeLeft); // life to deduct, remaining life  
                         this.renderLife();
                     }
 
@@ -1047,14 +1065,14 @@ class PlayerFight extends Phaser.Scene {
         if (auraPlayer) this.buff.player.aura = true;
         if (auraOpponent) this.buff.opponent.aura = true;
 
-        // susanoo skill 17
+        // susanoo skill 4
         const susanooPlayer = this.playerUtils.skills.find(skill => skill == 4);
         const susanooOpponent = this.opponentUtils.skills.find(skill => skill == 4);
 
         if (susanooPlayer) this.buff.player.susanoo = true;
         if (susanooOpponent) this.buff.opponent.susanoo = true;
 
-        // genjutsu skill 17
+        // genjutsu skill 2
         const genjutsuPlayer = this.playerUtils.skills.find(skill => skill == 2);
         const genjutsuOpponent = this.opponentUtils.skills.find(skill => skill == 2);
 
@@ -1068,47 +1086,54 @@ class PlayerFight extends Phaser.Scene {
         if (dischargePlayer) this.discharge.player = true;
         if (dischargeOpponent) this.discharge.opponent = true;
 
-        // pet master skill 25
+        // pet master skill 11
         const petMasterPlayer = this.playerUtils.skills.find(skill => skill == 11);
         const petMasterOpponent = this.opponentUtils.skills.find(skill => skill == 11);
 
         if (petMasterPlayer) this.petMaster.player = true;
         if (petMasterOpponent) this.petMaster.opponent = true;
 
-        // scare skill 25
+        // scare skill 22
         const scarePlayer = this.playerUtils.skills.find(skill => skill == 22);
         const scareOpponent = this.opponentUtils.skills.find(skill => skill == 22);
 
         if (scarePlayer) this.scare.player = true;
         if (scareOpponent) this.scare.opponent = true;
 
-        // steal skill 25
+        // steal skill 26
         const stealPlayer = this.playerUtils.skills.find(skill => skill == 26);
         const stealOpponent = this.opponentUtils.skills.find(skill => skill == 26);
 
         if (stealPlayer) this.steal.player = true;
         if (stealOpponent) this.steal.opponent = true;
 
-        // rage skill 25
+        // rage skill 14
         const ragePlayer = this.playerUtils.skills.find(skill => skill == 14);
         const rageOpponent = this.opponentUtils.skills.find(skill => skill == 14);
 
         if (ragePlayer) this.rage.player = true;
         if (rageOpponent) this.rage.opponent = true;
 
-        // lightningBolt skill 25
+        // lightningBolt skill 20
         const lightningBoltPlayer = this.playerUtils.skills.find(skill => skill == 20);
         const lightningBoltOpponent = this.opponentUtils.skills.find(skill => skill == 20);
 
         if (lightningBoltPlayer) this.lightningBolt.player = 2;
         if (lightningBoltOpponent) this.lightningBolt.opponent = 2;
 
-        // spellmaster skill 31
+        // spellmaster skill 15
         const playerSpellMaster = this.playerUtils.skills.find(s => s == 15);
         const opponentSpellMaster = this.opponentUtils.skills.find(s => s == 15);
 
         if (playerSpellMaster) this.spellMaster.player = true;
         if (opponentSpellMaster) this.spellMaster.opponent = true;
+
+        // thorns skill 30
+        const thornsPlayer = this.playerUtils.skills.find(skill => skill == 30);
+        const thornsOpponent = this.opponentUtils.skills.find(skill => skill == 30);
+
+        if (thornsPlayer) this.thorns.player = true;
+        if (thornsOpponent) this.thorns.opponent = true;
 
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
@@ -1731,6 +1756,12 @@ class PlayerFight extends Phaser.Scene {
                             this.opponentUtils.activeWeapon = null;
                         }
                     }
+
+                    if (isPlayerAttacker) {
+                        this.opponentLife = remaining_defenderLife;
+                    } else {
+                        this.playerLife = remaining_defenderLife;
+                    }
                 } else {
                     this.generateLogs(
                         this.init,
@@ -1738,6 +1769,38 @@ class PlayerFight extends Phaser.Scene {
                         { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: logP1, opponent: logP2 }
                     );
+
+                    if (isPlayerAttacker) {
+                        this.opponentLife = remaining_defenderLife;
+                    } else {
+                        this.playerLife = remaining_defenderLife;
+                    }
+
+                    if(this.thorns[theAttacker]){
+                        let remaingLifeThorns = 0;
+                        const thornsDamage = Math.floor(finalDamageUse * 0.15);
+                        
+                        if(isPlayerAttacker){
+                            remaingLifeThorns = Math.max(0, this.playerLife - thornsDamage); 
+                        } else {
+                            remaingLifeThorns = Math.max(0, this.opponentLife - thornsDamage); 
+                        }
+                        const tlogP1 = isPlayerAttacker ? remaingLifeThorns : this.playerLife;
+                        const tlogP2 = !isPlayerAttacker ? remaingLifeThorns : this.opponentLife;
+
+                        this.generateLogs(
+                            this.init,
+                            { type: CONSTANTS._actions.thorns, by: theDefender },
+                            { skill: "Thorns", damage: thornsDamage},
+                            { player: tlogP1, opponent: tlogP2 }
+                        );
+
+                        if (isPlayerAttacker) {
+                            this.playerLife = remaingLifeThorns;
+                        } else {
+                            this.opponentLife = remaingLifeThorns;
+                        }
+                    }
 
                     if (weaponBreaker) {
                         this.calculateSureDisarm(theDefender);
@@ -1754,12 +1817,6 @@ class PlayerFight extends Phaser.Scene {
                             this.calculateStun(theAttacker);
                         };
                     }
-                }
-
-                if (isPlayerAttacker) {
-                    this.opponentLife = remaining_defenderLife;
-                } else {
-                    this.playerLife = remaining_defenderLife;
                 }
 
                 this.canCounter[theDefender] = false;

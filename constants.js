@@ -323,8 +323,8 @@ const CONSTANTS = {
             require: 53
         },
         {
-            "name": "Tangle",
-            "description": "Wrap your enemies up like spaghetti—just don't forget the sauce.",
+            "name": "Thorns",
+            "description": "Sharing is caring... especially when it comes to pain.",
             "chance": 0.89,
             number: 30
         },
@@ -659,8 +659,8 @@ const CONSTANTS = {
             require: 53
         },
         {
-            "name": "Tangle",
-            "description": "Wrap your enemies up like spaghetti—just don't forget the sauce.",
+            "name": "Thorns",
+            "description": "Sharing is caring... especially when it comes to pain.",
             "chance": 0.89,
             number: 30
         },
@@ -903,7 +903,8 @@ const CONSTANTS = {
         drink: "Drink",
         bandage: "Bandage",
         poison: "Poison",
-        skill: "Skill"
+        skill: "Skill",
+        thorns: "Thorns"
     }
 };
 
