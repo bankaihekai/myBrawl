@@ -160,6 +160,11 @@ class PlayerFight extends Phaser.Scene {
                 count: 0
             }
         }
+
+        this.trueStrike = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -612,6 +617,13 @@ class PlayerFight extends Phaser.Scene {
         // instant killer skill
         const skill_instantKiller = targetSkills.find(skill => skill == 18);
         if (skill_instantKiller) additionalCritBoost += 1;
+
+        // true strike skill
+        const trueStrike = targetSkills.find(skill => skill == 34);
+        const calculateTrueStrike = this.calculateChance(15);
+        if (trueStrike && this.trueStrike[targetUser] && calculateTrueStrike) {
+            additionalCritBoost += 0.2;
+        };
 
         const additionalCritical = weaponCritical ? additionalCritBoost : 0;
         const statsDamage = strength * 1.5;
@@ -1154,6 +1166,13 @@ class PlayerFight extends Phaser.Scene {
 
         if (playerHollow) this.hollowForm.player.available = true;
         if (opponentHollow) this.hollowForm.opponent.available = true;
+
+        // true strike skill 34
+        const playerTrueStrike = this.playerUtils.skills.find(s => s == 34);
+        const opponentTrueStrike = this.opponentUtils.skills.find(s => s == 34);
+
+        if (playerTrueStrike) this.trueStrike.player = true;
+        if (opponentTrueStrike) this.trueStrike.opponent = true;
 
         if (this.firstAttack.player && playerFirstAttack) {
             this.currentPlayerSpeed += 1000;
@@ -1724,6 +1743,10 @@ class PlayerFight extends Phaser.Scene {
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
         if (futureEye && !isWithThrownWeapon) additionalAccuracy += 25;
+        if(this.trueStrike[theAttacker]){
+            additionalAccuracy += 100;
+            this.trueStrike[theAttacker] = false;
+        }
 
         const finalAccuracy = attackerWeapon.accuracy + additionalAccuracy;
         let isAccurate = this.calculateAccuracy(finalAccuracy);

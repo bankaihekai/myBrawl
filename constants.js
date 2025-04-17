@@ -153,7 +153,7 @@ const CONSTANTS = {
         },
         {
             "name": "Genjutsu",
-            "description": "Confuse your enemies so badly they forget how to fight—basically, a Jedi mind trick.",
+            "description": "Confuse your enemies so badly they forget how to fight basically, a Jedi mind trick.",
             "chance": 1.19,
             number: 2
         },
@@ -293,7 +293,7 @@ const CONSTANTS = {
         },
         {
             "name": "Discharge",
-            "description": "Hurl random weapons at your enemy—because why use one when you can use four?",
+            "description": "Hurl random weapons at your enemy because why use one when you can use four?",
             "chance": 1.19,
             number: 25
         },
@@ -347,8 +347,8 @@ const CONSTANTS = {
             number: 33
         },
         {
-            "name": "Backstab",
-            "description": "The ultimate trust exercise—your enemy fails every time.",
+            "name": "True Strike",
+            "description": "The ultimate trust exercise your enemy fails every time.",
             "chance": 1.49,
             number: 34
         },
@@ -457,7 +457,7 @@ const CONSTANTS = {
         },
         {
             "name": "Surge Of Life",
-            "description": "Longevity is the best—because respawning sucks",
+            "description": "Longevity is the best because respawning sucks",
             "chance": 10,
             number: 52
         },
@@ -489,7 +489,7 @@ const CONSTANTS = {
         },
         {
             "name": "Genjutsu",
-            "description": "Confuse your enemies so badly they forget how to fight—basically, a Jedi mind trick.",
+            "description": "Confuse your enemies so badly they forget how to fight basically, a Jedi mind trick.",
             "chance": 1.19,
             number: 2
         },
@@ -629,7 +629,7 @@ const CONSTANTS = {
         },
         {
             "name": "Discharge",
-            "description": "Hurl random weapons at your enemy—because why use one when you can use four?",
+            "description": "Hurl random weapons at your enemy because why use one when you can use four?",
             "chance": 1.19,
             number: 25
         },
@@ -683,8 +683,8 @@ const CONSTANTS = {
             number: 33
         },
         {
-            "name": "Backstab",
-            "description": "The ultimate trust exercise—your enemy fails every time.",
+            "name": "True Strike",
+            "description": "The ultimate trust exercise your enemy fails every time.",
             "chance": 1.49,
             number: 34
         },
@@ -793,7 +793,7 @@ const CONSTANTS = {
         },
         {
             "name": "Surge Of Life",
-            "description": "Longevity is the best—because respawning sucks",
+            "description": "Longevity is the best because respawning sucks",
             "chance": 10,
             number: 52
         },
