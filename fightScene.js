@@ -205,17 +205,14 @@ class PlayerFight extends Phaser.Scene {
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
-        // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
+        this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 10;
         // opponent
         this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
         // this.loadedOpponent.utilities.weapons.push(2);
         // this.loadedOpponent.utilities.weapons.push(3);
-        // this.loadedOpponent.utilities.pets.push({ "name": "Dog", types: 'B' });
         this.loadedOpponent.attributes.damage = 10;
-        console.log({ loadedOpponent: this.loadedOpponent });
-        console.log({ loadedCharacter: this.currentCharDetails });
 
         // ----------------------------------------
         // TEST CODE
@@ -255,10 +252,27 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
+        let playerPetWithStats = this.currentCharDetails.utilities.pets.map(pet  => {
+            const playerPetStat = CONSTANTS._petStats.find(p => p.name == pet.name);
+            return {
+                ...playerPetStat,
+                type: pet.types
+            };
+        });
+        console.log('playerPetWithStats', playerPetWithStats)
+
+        let opponentPetWithStats = this.loadedOpponent.utilities.pets.map(pet  => {
+            const opponentPetStat = CONSTANTS._petStats.find(p => p.name == pet.name);
+            return {
+                ...opponentPetStat,
+                type: pet.types
+            };
+        });
+
         this.playerUtils = {
             skills: this.currentCharDetails.utilities.skills || [],
             weapons: this.currentCharDetails.utilities.weapons || [],
-            pets: this.currentCharDetails.utilities.pets || [],
+            pets: playerPetWithStats || [],
             activeWeapon: null,
             activeSkill: null
         }
@@ -266,10 +280,15 @@ class PlayerFight extends Phaser.Scene {
         this.opponentUtils = {
             skills: this.loadedOpponent.utilities.skills || [],
             weapons: this.loadedOpponent.utilities.weapons || [],
-            pets: this.loadedOpponent.utilities.pets || [],
+            pets: opponentPetWithStats || [],
             activeWeapon: null,
             activeSkill: null
         }
+
+        // console.log({ loadedOpponent: this.loadedOpponent });
+        // console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ playerUtils: this.playerUtils });
+        console.log({ opponentUtils: this.opponentUtils });
 
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
