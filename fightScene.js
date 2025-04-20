@@ -259,7 +259,6 @@ class PlayerFight extends Phaser.Scene {
                 type: pet.types
             };
         });
-        console.log('playerPetWithStats', playerPetWithStats)
 
         let opponentPetWithStats = this.loadedOpponent.utilities.pets.map(pet  => {
             const opponentPetStat = CONSTANTS._petStats.find(p => p.name == pet.name);
