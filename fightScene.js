@@ -252,17 +252,19 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
-        let playerPetWithStats = this.currentCharDetails.utilities.pets.map(pet  => {
+        let playerPetWithStats = this.currentCharDetails.utilities.pets.map((pet, i) => {
             const playerPetStat = CONSTANTS._petStats.find(p => p.name == pet.name);
             return {
+                index: i,
                 ...playerPetStat,
                 type: pet.types
             };
         });
 
-        let opponentPetWithStats = this.loadedOpponent.utilities.pets.map(pet  => {
+        let opponentPetWithStats = this.loadedOpponent.utilities.pets.map((pet, i) => {
             const opponentPetStat = CONSTANTS._petStats.find(p => p.name == pet.name);
             return {
+                index: i,
                 ...opponentPetStat,
                 type: pet.types
             };
