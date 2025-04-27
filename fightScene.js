@@ -206,6 +206,8 @@ class PlayerFight extends Phaser.Scene {
         // this.currentCharDetails.utilities.weapons.push(12);
         // this.currentCharDetails.utilities.weapons.push(13);
         this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
+        this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
+        this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 10;
         // opponent
         this.loadedOpponent.utilities.skills.push(14);
@@ -273,7 +275,42 @@ class PlayerFight extends Phaser.Scene {
         this.playerUtils = {
             skills: this.currentCharDetails.utilities.skills || [],
             weapons: this.currentCharDetails.utilities.weapons || [],
-            pets: playerPetWithStats || [],
+            // pets: playerPetWithStats || [],
+            pets: [
+                {
+                    "index": 0,
+                    "name": "Dog",
+                    "hp": 25,
+                    "strength": 8,
+                    "agility": 6,
+                    "speed": 4,
+                    "comboRate": 110,
+                    "dodge": 15,
+                    "type": "A"
+                },
+                {
+                    "index": 1,
+                    "name": "Dog",
+                    "hp": 0,
+                    "strength": 8,
+                    "agility": 6,
+                    "speed": 4,
+                    "comboRate": 110,
+                    "dodge": 15,
+                    "type": "A"
+                },
+                {
+                    "index": 2,
+                    "name": "Dog",
+                    "hp": 25,
+                    "strength": 8,
+                    "agility": 6,
+                    "speed": 4,
+                    "comboRate": 110,
+                    "dodge": 15,
+                    "type": "A"
+                }
+            ] || [],
             activeWeapon: null,
             activeSkill: null
         }
@@ -288,8 +325,8 @@ class PlayerFight extends Phaser.Scene {
 
         // console.log({ loadedOpponent: this.loadedOpponent });
         // console.log({ loadedCharacter: this.currentCharDetails });
-        console.log({ playerUtils: this.playerUtils });
-        console.log({ opponentUtils: this.opponentUtils });
+        console.log({ playerUtils: this.playerUtils.pets });
+        console.log({ opponentUtils: this.opponentUtils.pets });
 
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
@@ -1239,7 +1276,25 @@ class PlayerFight extends Phaser.Scene {
                 this.init += 1;
             } else if (this.currentOpponentSpeed >= this.maxSpeed && this.currentOpponentSpeed > this.currentPlayerSpeed) {
                 if (this.isStun.opponent == false) {
-                    this.processTurns(CONSTANTS._opponent, oppponentDamage, opponentCombo, opponent_weaponToUse, player_weaponToUse, playerDamage);
+                    const opponentTargets = this.playerUtils.pets.filter(p => p.hp !== 0);
+                    let opponentTargetNumbers = opponentTargets.map(o => { return o.index; });
+                    opponentTargetNumbers.push(this.playerUtils.pets.length);
+                    const opponentTarget = this.randomArrayIndex(opponentTargetNumbers);
+                    if (opponentTarget == this.playerUtils.pets.length) { // attack player character
+                        console.log('attack opponent', opponentTarget)
+                        this.processTurns(
+                            CONSTANTS._opponent, oppponentDamage, opponentCombo,
+                            opponent_weaponToUse, player_weaponToUse, playerDamage
+                        );
+                    } else {
+                        // this.processTurnsToPets(
+                        //     CONSTANTS._opponent, oppponentDamage, opponentCombo,
+                        //     opponent_weaponToUse, this.playerUtils.pets[opponentTarget]
+                        // );
+                        const petRemainingLife = this.playerUtils.pets[opponentTarget].hp - 25;
+                        this.playerUtils.pets[opponentTarget].hp = petRemainingLife > 0 ? petRemainingLife : 0;
+                        console.log('atack pet target damage 25 ->', this.playerUtils.pets[opponentTarget]);
+                    }
                 } else {
                     this.generateLogs(this.init, { type: CONSTANTS._actions.cantMove, by: CONSTANTS._opponent });
                     this.isStun.opponent = false;
@@ -1763,7 +1818,7 @@ class PlayerFight extends Phaser.Scene {
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
         if (futureEye && !isWithThrownWeapon) additionalAccuracy += 25;
-        if(this.trueStrike[theAttacker]){
+        if (this.trueStrike[theAttacker]) {
             additionalAccuracy += 100;
             this.trueStrike[theAttacker] = false;
         }
@@ -1917,6 +1972,397 @@ class PlayerFight extends Phaser.Scene {
 
             this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
             this.canCounter[theDefender] = false;
+        }
+    }
+
+    processTurnsToPets(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, petDetails) {
+
+        let skillFlag = 0; // flag for skill that should not be execute at the same time
+        const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+
+        const theAttackerUtils = attacker == CONSTANTS._player ? this.currentCharDetails : this.loadedOpponent;
+        const theAttackerActiveUtils = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const theAttackerLife = attacker == CONSTANTS._player ? this.playerLife : this.opponentLife;
+        const theAttackerLifeMax = attacker == CONSTANTS._player ? this.life.max.player : this.life.max.opponent;
+
+        const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
+        const theDefenderActiveUtils = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
+        const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
+
+        this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+
+        let isChangeWeapon = false;
+        var changeWeaponResult = this.changeWeapon(theAttacker);
+        if (changeWeaponResult) {
+            attacker_weaponToUse = changeWeaponResult;
+            attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
+            isChangeWeapon = true;
+        };
+
+        if (this.steal[theAttacker] && skillFlag != 1 && !isChangeWeapon) {
+            const calculateSteal = this.calculateChance(15);
+            if (calculateSteal && theDefenderActiveUtils.activeWeapon != null && theDefenderActiveUtils.activeWeapon != -1) {
+
+                var stealWeaponResult = this.changeWeapon(theAttacker, true, theDefenderActiveUtils.activeWeapon);
+                if (stealWeaponResult) {
+                    attacker_weaponToUse = stealWeaponResult;
+                    attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
+                };
+            }
+        }
+
+        const calculateHollow = this.hollowForm[theAttacker].available ? this.calculateChance(15) : false;
+        if (this.hollowForm[theAttacker].count <= 0 && this.hollowForm[theAttacker].active) {
+            this.hollowForm[theAttacker].active = false;
+            this.hollowForm[theAttacker].count = 0;
+            this.hollowForm[theAttacker].available = false;
+        }
+        if (calculateHollow) {
+            this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Hollow Form" });
+            this.hollowForm[theAttacker].active = true;
+            this.hollowForm[theAttacker].count = 2;
+            this.hollowForm[theAttacker].available = false;
+        }
+
+        if (this.hollowForm[theAttacker]) {
+            const hollowForm = theAttackerActiveUtils.skills.find(s => s == 3); // passive skill
+
+            if (hollowForm && this.hollowForm[theAttacker].active && this.hollowForm[theAttacker].count > 0) {
+                attackerCombo += 2;
+                this.hollowForm[theAttacker].count -= 1;
+            };
+        }
+
+        // lightningbolt skill 20 
+        const withSpellBook = theAttackerActiveUtils.activeWeapon == 11; // with spell book
+        const executeBolt = this.calculateChance(15);
+        if (this.lightningBolt[theAttacker] == 2 && withSpellBook && skillFlag != 1 && executeBolt) {
+            const boltDamage = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
+            const boltNumber = this.randomizer(10);
+            const withSpellMaster = this.spellMaster[theAttacker];
+            const finalBoltDamage = withSpellMaster ? boltDamage[boltNumber] * 1.5 : boltDamage[boltNumber];
+
+            if (theAttacker == CONSTANTS._player) {
+                const finalLifeBolt = this.opponentLife - finalBoltDamage;
+                this.opponentLife = finalLifeBolt < 0 ? 0 : finalLifeBolt;
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                    { name: "Lightning Bolt", damage: finalBoltDamage },
+                    { player: this.playerLife, opponent: this.opponentLife }
+                );
+            } else {
+                const finalLifeBomb = this.playerLife - finalBoltDamage;
+                this.playerLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                    { name: "Lightning Bolt", damage: finalBoltDamage },
+                    { player: this.playerLife, opponent: this.opponentLife }
+                );
+            }
+            this.lightningBolt[theAttacker] = 0;
+            skillFlag = 1;
+        }
+
+        // pet master skill 11 -> steal pets
+        const defenderPets = theDefenderActiveUtils.pets.length;
+        if (this.scare[theAttacker] && defenderPets > 0 && skillFlag != 1) {
+            const executeScarePet = this.calculateChance(15);
+            if (executeScarePet) {
+                const petToScare = theDefenderActiveUtils.pets;
+
+                if (theAttacker == CONSTANTS._player) {
+                    this.opponentUtils.pets = [];
+                } else {
+                    this.playerUtils.pets = [];
+                }
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Scare", target: theDefender, pets: petToScare });
+                this.scare[theAttacker] = false;
+                skillFlag = 1;
+            }
+        }
+
+        // pet master skill 11 -> steal pets
+        if (this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1) {
+            const executeStealPet = this.calculateChance(15);
+            if (executeStealPet) {
+                const petToSteal = theDefenderActiveUtils.pets;
+                const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
+
+                if (theAttacker == CONSTANTS._player) {
+                    this.playerUtils.pets = newPets;
+                    this.opponentUtils.pets = [];
+                } else {
+                    this.playerUtils.pets = [];
+                    this.opponentUtils.pets = newPets;
+                }
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Pet Master", target: theDefender, pets: petToSteal });
+                this.petMaster[theAttacker] = false;
+                skillFlag = 1;
+            }
+        }
+
+        // genjutsu debuff skill 2
+        if (this.genjutsu[theAttacker] && skillFlag != 1) {
+            const executeGenjutsu = this.calculateChance(15);
+            if (executeGenjutsu) { // remove current opponent buff
+                this.buff[theDefender].aura = false;
+                this.buff[theDefender].susanoo = false;
+                this.debuff[theDefender].genjutsu = true; // affect debuff
+                this.genjutsu[theAttacker] = false;
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Genjutsu", target: theDefender });
+                skillFlag = 1;
+            }
+        }
+
+        // bandage 32 skill
+        const halfLifeBandage = theAttackerLifeMax / 2;
+        if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage && skillFlag != 1) {
+            if (this.calculateChance(15)) {
+                this.bandage[theAttacker].active = true;
+                this.bandage[theAttacker].available = false;
+                this.bandage[theAttacker].count = 5;
+                skillFlag = 1;
+            }
+        }
+
+        if (this.bandage.player.count <= 0) this.bandage.player.active = false;
+        if (this.bandage.player.active && this.bandage.player.count > 0) {
+            this.bandage.player.count -= 1;
+            this.playerLife += 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.bandage, by: CONSTANTS._player },
+                { heal: `+${5}`, remaining: this.bandage.player.count },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        if (this.bandage.opponent.count <= 0) this.bandage.opponent.active = false;
+        if (this.bandage.opponent.active && this.bandage.opponent.count > 0) {
+            this.bandage.opponent.count -= 1;
+            this.opponentLife += 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.bandage, by: CONSTANTS._opponent },
+                { heal: `+${5}`, remaining: this.bandage.opponent.count },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        // health potion 1 skill
+        const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);
+        const healthPointsPlus = [25, 30, 35];
+        const hpRandom = this.randomizer(2);
+        const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
+        let finalHp = 0;
+        if (hpToUse != 0 && skillFlag != 1) {
+            const draftHP = theAttackerLife + hpToUse;
+            const maxHpChecker = draftHP > this.life.max[theAttacker];
+            finalHp = maxHpChecker ? theAttackerLifeMax - theAttackerLife : hpToUse;
+            if (attacker == CONSTANTS._player) {
+                this.playerLife += finalHp;
+                this.PoisonPotion.opponent.active = false; // remove poison effect
+                this.PoisonPotion.opponent.count = 0;
+                this.poisonTouch.opponent = false;
+            } else {
+                this.opponentLife += finalHp;
+                this.PoisonPotion.player.active = false; // remove poison effect
+                this.PoisonPotion.player.count = 0;
+                this.poisonTouch.player = false;
+            }
+            this.healthPotion[theAttacker] = false;
+            skillFlag = 1;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.drink, by: theAttacker },
+                { heal: `+${finalHp}` },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        // poision potion skill 19 (available, active, count)
+        if (this.PoisonPotion[theAttacker].available && skillFlag != 1) {
+            if (this.calculateChance(15)) {
+                this.PoisonPotion[theAttacker].active = true;
+                this.PoisonPotion[theAttacker].available = false;
+                this.PoisonPotion[theAttacker].count = 5;
+                skillFlag = 1;
+            }
+        }
+
+        if (this.PoisonPotion.player.count <= 0) this.PoisonPotion.player.active = false;
+        if (this.PoisonPotion.player.active && this.PoisonPotion.player.count > 0) {
+            this.PoisonPotion.player.count -= 1;
+            this.opponentLife -= 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                { name: "Poison Potion", remaining: this.PoisonPotion.player.count, damage: 5 },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        if (this.PoisonPotion.opponent.count <= 0) this.PoisonPotion.opponent.active = false;
+        if (this.PoisonPotion.opponent.active && this.PoisonPotion.opponent.count > 0) {
+            this.PoisonPotion.opponent.count -= 1;
+            this.playerLife -= 5;
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                { name: "Poison Potion", remaining: this.PoisonPotion.opponent.count, damage: 5 },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        if (this.bomb[theAttacker] && skillFlag != 1) {
+            const executeBomb = this.calculateChance(15);
+            if (executeBomb) {
+
+                const bombDamage = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25];
+                const bombNumber = this.randomizer(10);
+                const finalBombDamage = bombDamage[bombNumber];
+
+                if (theAttacker == CONSTANTS._player) {
+                    const finalLifeBomb = this.opponentLife - finalBombDamage;
+                    this.opponentLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                        { name: "Bomb", damage: finalBombDamage },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
+                } else {
+                    const finalLifeBomb = this.playerLife - finalBombDamage;
+                    this.playerLife = finalLifeBomb < 0 ? 0 : finalLifeBomb;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                        { name: "Bomb", damage: finalBombDamage },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
+                }
+
+                this.bomb[theAttacker] = false;
+                skillFlag = 1;
+            }
+        }
+
+        const theAttackerDischarge = theAttackerActiveUtils.weapons.length; // 4 weapons to be thrown
+        if (this.discharge[theAttacker] && theAttackerDischarge >= 4 && skillFlag != 1) {
+            const executeDischarge = this.calculateChance(15);
+            if (executeDischarge) {
+
+                let dischargeDamage = 0;
+                let weaponNumber = [];
+
+                for (let i = 0; i < 4; i++) {
+                    const weaponDischarge = theAttackerActiveUtils.weapons[i];
+                    const weaponDetails = CONSTANTS.weaponStats.find(w => w.number == weaponDischarge);
+                    dischargeDamage += weaponDetails.damage;
+                    weaponNumber.push(weaponDetails.number);
+                }
+
+                const additionalDischargeDamage = Math.floor(dischargeDamage * 0.5);
+                dischargeDamage += additionalDischargeDamage;
+
+                if (theAttacker == CONSTANTS._player) {
+                    const remainingWeapon = this.playerUtils.weapons.filter(w => !weaponNumber.includes(w));
+                    this.playerUtils.weapons = remainingWeapon;
+                    this.opponentLife -= dischargeDamage;
+                } else {
+                    const remainingWeapon = this.opponentUtils.weapons.filter(w => !weaponNumber.includes(w));
+                    this.opponentUtils.weapons = remainingWeapon;
+                    this.playerLife -= dischargeDamage;
+                }
+
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: theAttacker },
+                    { name: "Discharge", weapons: weaponNumber, damage: dischargeDamage },
+                    { player: this.playerLife < 0 ? 0 : this.playerLife, opponent: this.opponentLife < 0 ? 0 : this.opponentLife }
+                );
+
+                this.discharge[theAttacker] = false;
+                skillFlag = 1;
+            }
+        }
+
+        if (this.poisonTouch[theAttacker]) {
+
+            if (theAttacker == CONSTANTS._player) {
+                const finalLifePoision = this.opponentLife - 1;
+                this.opponentLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+            } else {
+                const finalLifePoision = this.playerLife - 1;
+                this.playerLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+            }
+
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                { name: "Poison Touch", remaining: "unli", damage: 1 },
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+        // Opponent attacks!
+        for (let i = 1; i <= attackerCombo; i++) {
+            if (this.playerLife > 0 && this.opponentLife > 0) {
+                this.processAttack(theAttacker, attacker_weaponToUse, attackerDamage, defender_weaponToUse, [i, attackerCombo]);
+            }
+
+            // theDefenderCounter
+            if (theDefenderCounter && this.playerLife > 0 && this.opponentLife > 0) {
+                this.generateLogs(this.init, { type: CONSTANTS._actions.counter, by: theDefender, attacker: theAttacker });
+                this.processAttack(theDefender, defender_weaponToUse, defenderDamage, attacker_weaponToUse);
+            }
+        }
+
+        // params player , opponent
+        if (attacker == CONSTANTS._player) {
+            this.calculateSpeed(true, false); // Reset Opponent speed counter
+        } else {
+            this.calculateSpeed(false, true); // Reset Opponent speed counter
+        }
+
+        if (this.playerLife <= 0 && this.canRevive.player) {
+            this.playerLife = this.life.max.player * 0.2;
+            this.canRevive.player = false;
+
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.revive, by: CONSTANTS._player },
+                {},
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+        if (this.opponentLife <= 0 && this.canRevive.opponent) {
+            this.opponentLife = this.life.max.opponent * 0.2;
+            this.canRevive.opponent = false;
+
+            this.generateLogs(
+                this.init,
+                { type: CONSTANTS._actions.revive, by: CONSTANTS._opponent },
+                {},
+                { player: this.playerLife, opponent: this.opponentLife }
+            );
+        }
+
+
+        if (this.playerLife > 0 && this.opponentLife > 0) {
+
+            const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
+            if (attackerWithThrownWeapon) {
+                this.generateLogs(this.init, { type: CONSTANTS._actions.stopThrow, by: theAttacker });
+            } else {
+                this.generateLogs(this.init, { type: CONSTANTS._actions.return, by: theAttacker });
+            }
+
+        } else {
+            this.generateLogs(this.init, { type: CONSTANTS._actions.stop, by: CONSTANTS._player.concat(" and ", CONSTANTS._opponent) });
         }
     }
 }
