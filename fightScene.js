@@ -1269,9 +1269,9 @@ class PlayerFight extends Phaser.Scene {
             if (this.currentPlayerSpeed >= this.maxSpeed && this.currentPlayerSpeed > this.currentOpponentSpeed) {
                 if (this.isStun.player == false) {
                     const playerTargets = this.opponentUtils.pets.filter(p => p.hp !== 0);
-                    let opponentTargetNumbers = playerTargets.map(o => { return o.index; });
-                    opponentTargetNumbers.push(this.opponentUtils.pets.length);
-                    const playerTarget = this.randomArrayIndex(opponentTargetNumbers);
+                    let playerTargetNumbers = playerTargets.map(o => { return o.index; });
+                    playerTargetNumbers.push(this.opponentUtils.pets.length);
+                    const playerTarget = this.randomArrayIndex(playerTargetNumbers);
                     if (playerTarget == this.opponentUtils.pets.length) { // attack opponent character
                         this.processTurns(
                             CONSTANTS._player, playerDamage, playerCombo, 
@@ -1291,9 +1291,9 @@ class PlayerFight extends Phaser.Scene {
             } else if (this.currentOpponentSpeed >= this.maxSpeed && this.currentOpponentSpeed > this.currentPlayerSpeed) {
                 if (this.isStun.opponent == false) {
                     const opponentTargets = this.playerUtils.pets.filter(p => p.hp !== 0);
-                    let playerTargetNumbers = opponentTargets.map(o => { return o.index; });
-                    playerTargetNumbers.push(this.playerUtils.pets.length);
-                    const opponentTarget = this.randomArrayIndex(playerTargetNumbers);
+                    let opponentTargetNumbers = opponentTargets.map(o => { return o.index; });
+                    opponentTargetNumbers.push(this.playerUtils.pets.length);
+                    const opponentTarget = this.randomArrayIndex(opponentTargetNumbers);
                     if (opponentTarget == this.playerUtils.pets.length) { // attack player character
                         this.processTurns(
                             CONSTANTS._opponent, opponentDamage, opponentCombo,
@@ -1392,6 +1392,13 @@ class PlayerFight extends Phaser.Scene {
     processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, petDetails) {
 
         const withPet = !!petDetails && petDetails && petDetails.hp > 0;
+        
+        console.log('attacker', attacker);
+        console.log('withPet', withPet);
+        console.log('petDetails', petDetails);
+        console.log('this.playerUtils.pets', this.playerUtils.pets)
+        console.log("------");
+
         let skillFlag = 0; // flag for skill that should not be execute at the same time
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
