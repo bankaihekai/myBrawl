@@ -1066,152 +1066,8 @@ class PlayerFight extends Phaser.Scene {
         this.opponentBlock = 0;
 
         this.init = 0;
-        // survival skill 41
-        const playerSurvival = this.playerUtils.skills.find(s => s == 41);
-        const opponentSurvival = this.opponentUtils.skills.find(s => s == 41);
-
-        if (playerSurvival) this.canSurvive.player = true;
-        if (opponentSurvival) this.canSurvive.opponent = true;
-
-        // revive skill 28
-        const playerRevive = this.playerUtils.skills.find(s => s == 28);
-        const opponentRevive = this.opponentUtils.skills.find(s => s == 28);
-
-        if (playerRevive) this.canRevive.player = true;
-        if (opponentRevive) this.canRevive.opponent = true;
-
-        // preemptive strike skill 48
-        const playerFirstAttack = this.playerUtils.skills.find(s => s == 48);
-        const opponentFirstAttack = this.opponentUtils.skills.find(s => s == 48);
-
-        if (playerFirstAttack) this.firstAttack.player = true;
-        if (opponentFirstAttack) this.firstAttack.opponent = true;
-
-        // health potion skill 1
-        const playerHealthPotion = this.playerUtils.skills.find(s => s == 1);
-        const opponentHealthPotion = this.opponentUtils.skills.find(s => s == 1);
-
-        if (playerHealthPotion) this.healthPotion.player = true;
-        if (opponentHealthPotion) this.healthPotion.opponent = true;
-
-        // bandage skill 32
-        const playerBandage = this.playerUtils.skills.find(s => s == 32);
-        const opponentBandage = this.opponentUtils.skills.find(s => s == 32);
-
-        if (playerBandage) this.bandage.player.available = true;
-        if (opponentBandage) this.bandage.opponent.available = true;
-
-        // poison potion skill 19
-        const playerPoisonPotion = this.playerUtils.skills.find(s => s == 19);
-        const opponentPoisonPotion = this.opponentUtils.skills.find(s => s == 19);
-
-        if (playerPoisonPotion) this.PoisonPotion.player.available = true;
-        if (opponentPoisonPotion) this.PoisonPotion.opponent.available = true;
-
-        // Bomb skill 31
-        const playerBomb = this.playerUtils.skills.find(s => s == 31);
-        const opponentBomb = this.opponentUtils.skills.find(s => s == 31);
-
-        if (playerBomb) this.bomb.player = true;
-        if (opponentBomb) this.bomb.opponent = true;
-
-        // poison touch skill 12
-        const playerPoisonTouch = this.playerUtils.skills.find(s => s == 12);
-        const opponentPoisonTouch = this.opponentUtils.skills.find(s => s == 12);
-
-        if (playerPoisonTouch) this.poisonTouch.player = true;
-        if (opponentPoisonTouch) this.poisonTouch.opponent = true;
-
-        // aura skill 17
-        const auraPlayer = this.playerUtils.skills.find(skill => skill == 17);
-        const auraOpponent = this.opponentUtils.skills.find(skill => skill == 17);
-
-        if (auraPlayer) this.buff.player.aura = true;
-        if (auraOpponent) this.buff.opponent.aura = true;
-
-        // susanoo skill 4
-        const susanooPlayer = this.playerUtils.skills.find(skill => skill == 4);
-        const susanooOpponent = this.opponentUtils.skills.find(skill => skill == 4);
-
-        if (susanooPlayer) this.buff.player.susanoo = true;
-        if (susanooOpponent) this.buff.opponent.susanoo = true;
-
-        // genjutsu skill 2
-        const genjutsuPlayer = this.playerUtils.skills.find(skill => skill == 2);
-        const genjutsuOpponent = this.opponentUtils.skills.find(skill => skill == 2);
-
-        if (genjutsuPlayer) this.genjutsu.player = true;
-        if (genjutsuOpponent) this.genjutsu.opponent = true;
-
-        // discharge skill 25
-        const dischargePlayer = this.playerUtils.skills.find(skill => skill == 25);
-        const dischargeOpponent = this.opponentUtils.skills.find(skill => skill == 25);
-
-        if (dischargePlayer) this.discharge.player = true;
-        if (dischargeOpponent) this.discharge.opponent = true;
-
-        // pet master skill 11
-        const petMasterPlayer = this.playerUtils.skills.find(skill => skill == 11);
-        const petMasterOpponent = this.opponentUtils.skills.find(skill => skill == 11);
-
-        if (petMasterPlayer) this.petMaster.player = true;
-        if (petMasterOpponent) this.petMaster.opponent = true;
-
-        // scare skill 22
-        const scarePlayer = this.playerUtils.skills.find(skill => skill == 22);
-        const scareOpponent = this.opponentUtils.skills.find(skill => skill == 22);
-
-        if (scarePlayer) this.scare.player = true;
-        if (scareOpponent) this.scare.opponent = true;
-
-        // steal skill 26
-        const stealPlayer = this.playerUtils.skills.find(skill => skill == 26);
-        const stealOpponent = this.opponentUtils.skills.find(skill => skill == 26);
-
-        if (stealPlayer) this.steal.player = true;
-        if (stealOpponent) this.steal.opponent = true;
-
-        // rage skill 14
-        const ragePlayer = this.playerUtils.skills.find(skill => skill == 14);
-        const rageOpponent = this.opponentUtils.skills.find(skill => skill == 14);
-
-        if (ragePlayer) this.rage.player = true;
-        if (rageOpponent) this.rage.opponent = true;
-
-        // lightningBolt skill 20
-        const lightningBoltPlayer = this.playerUtils.skills.find(skill => skill == 20);
-        const lightningBoltOpponent = this.opponentUtils.skills.find(skill => skill == 20);
-
-        if (lightningBoltPlayer) this.lightningBolt.player = 2;
-        if (lightningBoltOpponent) this.lightningBolt.opponent = 2;
-
-        // spellmaster skill 15
-        const playerSpellMaster = this.playerUtils.skills.find(s => s == 15);
-        const opponentSpellMaster = this.opponentUtils.skills.find(s => s == 15);
-
-        if (playerSpellMaster) this.spellMaster.player = true;
-        if (opponentSpellMaster) this.spellMaster.opponent = true;
-
-        // thorns skill 30
-        const thornsPlayer = this.playerUtils.skills.find(skill => skill == 30);
-        const thornsOpponent = this.opponentUtils.skills.find(skill => skill == 30);
-
-        if (thornsPlayer) this.thorns.player = true;
-        if (thornsOpponent) this.thorns.opponent = true;
-
-        // hollow form skill 3
-        const playerHollow = this.playerUtils.skills.find(s => s == 3);
-        const opponentHollow = this.opponentUtils.skills.find(s => s == 3);
-
-        if (playerHollow) this.hollowForm.player.available = true;
-        if (opponentHollow) this.hollowForm.opponent.available = true;
-
-        // true strike skill 34
-        const playerTrueStrike = this.playerUtils.skills.find(s => s == 34);
-        const opponentTrueStrike = this.opponentUtils.skills.find(s => s == 34);
-
-        if (playerTrueStrike) this.trueStrike.player = true;
-        if (opponentTrueStrike) this.trueStrike.opponent = true;
+        
+        this.validateSkills();
 
         const playerSpeedDetails = {
             key: "Player",
@@ -1261,9 +1117,6 @@ class PlayerFight extends Phaser.Scene {
 
             this.playerBlock = player_weaponToUse.block || 0;
             this.opponentBlock = opponent_weaponToUse.block || 0;
-
-            this.currentPlayerSpeed += player_weaponToUse.speed; // negative values
-            this.currentOpponentSpeed += opponent_weaponToUse.speed; // negative values
 
             if(isPlayer){
                 if (this.isStun.player == false) {
@@ -2199,5 +2052,154 @@ class PlayerFight extends Phaser.Scene {
         }
     
         return attackersQueue.slice(0, queueIndex);
+    }
+
+    validateSkills() {
+        // survival skill 41
+        const playerSurvival = this.playerUtils.skills.find(s => s == 41);
+        const opponentSurvival = this.opponentUtils.skills.find(s => s == 41);
+
+        if (playerSurvival) this.canSurvive.player = true;
+        if (opponentSurvival) this.canSurvive.opponent = true;
+
+        // revive skill 28
+        const playerRevive = this.playerUtils.skills.find(s => s == 28);
+        const opponentRevive = this.opponentUtils.skills.find(s => s == 28);
+
+        if (playerRevive) this.canRevive.player = true;
+        if (opponentRevive) this.canRevive.opponent = true;
+
+        // preemptive strike skill 48
+        const playerFirstAttack = this.playerUtils.skills.find(s => s == 48);
+        const opponentFirstAttack = this.opponentUtils.skills.find(s => s == 48);
+
+        if (playerFirstAttack) this.firstAttack.player = true;
+        if (opponentFirstAttack) this.firstAttack.opponent = true;
+
+        // health potion skill 1
+        const playerHealthPotion = this.playerUtils.skills.find(s => s == 1);
+        const opponentHealthPotion = this.opponentUtils.skills.find(s => s == 1);
+
+        if (playerHealthPotion) this.healthPotion.player = true;
+        if (opponentHealthPotion) this.healthPotion.opponent = true;
+
+        // bandage skill 32
+        const playerBandage = this.playerUtils.skills.find(s => s == 32);
+        const opponentBandage = this.opponentUtils.skills.find(s => s == 32);
+
+        if (playerBandage) this.bandage.player.available = true;
+        if (opponentBandage) this.bandage.opponent.available = true;
+
+        // poison potion skill 19
+        const playerPoisonPotion = this.playerUtils.skills.find(s => s == 19);
+        const opponentPoisonPotion = this.opponentUtils.skills.find(s => s == 19);
+
+        if (playerPoisonPotion) this.PoisonPotion.player.available = true;
+        if (opponentPoisonPotion) this.PoisonPotion.opponent.available = true;
+
+        // Bomb skill 31
+        const playerBomb = this.playerUtils.skills.find(s => s == 31);
+        const opponentBomb = this.opponentUtils.skills.find(s => s == 31);
+
+        if (playerBomb) this.bomb.player = true;
+        if (opponentBomb) this.bomb.opponent = true;
+
+        // poison touch skill 12
+        const playerPoisonTouch = this.playerUtils.skills.find(s => s == 12);
+        const opponentPoisonTouch = this.opponentUtils.skills.find(s => s == 12);
+
+        if (playerPoisonTouch) this.poisonTouch.player = true;
+        if (opponentPoisonTouch) this.poisonTouch.opponent = true;
+
+        // aura skill 17
+        const auraPlayer = this.playerUtils.skills.find(skill => skill == 17);
+        const auraOpponent = this.opponentUtils.skills.find(skill => skill == 17);
+
+        if (auraPlayer) this.buff.player.aura = true;
+        if (auraOpponent) this.buff.opponent.aura = true;
+
+        // susanoo skill 4
+        const susanooPlayer = this.playerUtils.skills.find(skill => skill == 4);
+        const susanooOpponent = this.opponentUtils.skills.find(skill => skill == 4);
+
+        if (susanooPlayer) this.buff.player.susanoo = true;
+        if (susanooOpponent) this.buff.opponent.susanoo = true;
+
+        // genjutsu skill 2
+        const genjutsuPlayer = this.playerUtils.skills.find(skill => skill == 2);
+        const genjutsuOpponent = this.opponentUtils.skills.find(skill => skill == 2);
+
+        if (genjutsuPlayer) this.genjutsu.player = true;
+        if (genjutsuOpponent) this.genjutsu.opponent = true;
+
+        // discharge skill 25
+        const dischargePlayer = this.playerUtils.skills.find(skill => skill == 25);
+        const dischargeOpponent = this.opponentUtils.skills.find(skill => skill == 25);
+
+        if (dischargePlayer) this.discharge.player = true;
+        if (dischargeOpponent) this.discharge.opponent = true;
+
+        // pet master skill 11
+        const petMasterPlayer = this.playerUtils.skills.find(skill => skill == 11);
+        const petMasterOpponent = this.opponentUtils.skills.find(skill => skill == 11);
+
+        if (petMasterPlayer) this.petMaster.player = true;
+        if (petMasterOpponent) this.petMaster.opponent = true;
+
+        // scare skill 22
+        const scarePlayer = this.playerUtils.skills.find(skill => skill == 22);
+        const scareOpponent = this.opponentUtils.skills.find(skill => skill == 22);
+
+        if (scarePlayer) this.scare.player = true;
+        if (scareOpponent) this.scare.opponent = true;
+
+        // steal skill 26
+        const stealPlayer = this.playerUtils.skills.find(skill => skill == 26);
+        const stealOpponent = this.opponentUtils.skills.find(skill => skill == 26);
+
+        if (stealPlayer) this.steal.player = true;
+        if (stealOpponent) this.steal.opponent = true;
+
+        // rage skill 14
+        const ragePlayer = this.playerUtils.skills.find(skill => skill == 14);
+        const rageOpponent = this.opponentUtils.skills.find(skill => skill == 14);
+
+        if (ragePlayer) this.rage.player = true;
+        if (rageOpponent) this.rage.opponent = true;
+
+        // lightningBolt skill 20
+        const lightningBoltPlayer = this.playerUtils.skills.find(skill => skill == 20);
+        const lightningBoltOpponent = this.opponentUtils.skills.find(skill => skill == 20);
+
+        if (lightningBoltPlayer) this.lightningBolt.player = 2;
+        if (lightningBoltOpponent) this.lightningBolt.opponent = 2;
+
+        // spellmaster skill 15
+        const playerSpellMaster = this.playerUtils.skills.find(s => s == 15);
+        const opponentSpellMaster = this.opponentUtils.skills.find(s => s == 15);
+
+        if (playerSpellMaster) this.spellMaster.player = true;
+        if (opponentSpellMaster) this.spellMaster.opponent = true;
+
+        // thorns skill 30
+        const thornsPlayer = this.playerUtils.skills.find(skill => skill == 30);
+        const thornsOpponent = this.opponentUtils.skills.find(skill => skill == 30);
+
+        if (thornsPlayer) this.thorns.player = true;
+        if (thornsOpponent) this.thorns.opponent = true;
+
+        // hollow form skill 3
+        const playerHollow = this.playerUtils.skills.find(s => s == 3);
+        const opponentHollow = this.opponentUtils.skills.find(s => s == 3);
+
+        if (playerHollow) this.hollowForm.player.available = true;
+        if (opponentHollow) this.hollowForm.opponent.available = true;
+
+        // true strike skill 34
+        const playerTrueStrike = this.playerUtils.skills.find(s => s == 34);
+        const opponentTrueStrike = this.opponentUtils.skills.find(s => s == 34);
+
+        if (playerTrueStrike) this.trueStrike.player = true;
+        if (opponentTrueStrike) this.trueStrike.opponent = true;
     }
 }
