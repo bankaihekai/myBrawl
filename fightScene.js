@@ -1054,8 +1054,6 @@ class PlayerFight extends Phaser.Scene {
         this.playerLife = this.currentCharDetails.attributes.life;
         this.opponentLife = this.loadedOpponent.attributes.life;
 
-        this.currentPlayerSpeed = 0; // Player speed counter
-        this.currentOpponentSpeed = 0; // Opponent speed counter
         this.playerSpeed = this.currentCharDetails.attributes.speed;
         this.opponentSpeed = this.loadedOpponent.attributes.speed;
 
@@ -1251,13 +1249,15 @@ class PlayerFight extends Phaser.Scene {
             const player_weaponNumber = this.playerUtils.activeWeapon || -1;
             let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
             let playerDamage = this.calculateDamage(this.currentCharDetails.attributes.damage, this.loadedOpponent.attributes.armor, player_weaponToUse, CONSTANTS._player);
-            let playerCombo = this.calculateCombo(player_weaponToUse.combo, CONSTANTS._player);
+            let playerFinalCombo = player_weaponToUse.combo - player_weaponToUse.speed;
+            let playerCombo = this.calculateCombo(playerFinalCombo, CONSTANTS._player);
 
             // Opponent
             const opponent_weaponNumber = this.opponentUtils.activeWeapon || -1;
             let opponent_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == opponent_weaponNumber);
             let opponentDamage = this.calculateDamage(this.loadedOpponent.attributes.damage, this.currentCharDetails.attributes.armor, opponent_weaponToUse, CONSTANTS._opponent);
-            let opponentCombo = this.calculateCombo(opponent_weaponToUse.combo, CONSTANTS._opponent);
+            let opponentFinalCombo = opponent_weaponToUse.combo - opponent_weaponToUse.speed;
+            let opponentCombo = this.calculateCombo(opponentFinalCombo, CONSTANTS._opponent);
 
             this.playerBlock = player_weaponToUse.block || 0;
             this.opponentBlock = opponent_weaponToUse.block || 0;
