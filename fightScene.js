@@ -311,7 +311,7 @@ class PlayerFight extends Phaser.Scene {
         // console.log({ loadedCharacter: this.currentCharDetails });
         console.log({ playerUtils: this.playerUtils.pets });
         console.log({ opponentUtils: this.opponentUtils.pets });
-        
+
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
         // this.renderCreateCharacter();
@@ -848,15 +848,6 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    calculateSpeed(changePlayer, changeOpponent) {
-        if (changePlayer) {
-            this.currentPlayerSpeed -= this.maxSpeed; // Player speed counter
-        }
-        if (changeOpponent) {
-            this.currentOpponentSpeed -= this.maxSpeed; // Opponent speed counter
-        }
-    }
-
     calculateAccuracy(accuracy) {
 
         let accuracyPercentage = accuracy || 0;
@@ -1066,7 +1057,7 @@ class PlayerFight extends Phaser.Scene {
         this.opponentBlock = 0;
 
         this.init = 0;
-        
+
         this.validateSkills();
 
         const playerSpeedDetails = {
@@ -1081,25 +1072,22 @@ class PlayerFight extends Phaser.Scene {
         }
         let listOfAttackers = [playerSpeedDetails, opponentSpeedDetails];
         listOfAttackers = listOfAttackers.concat(
-            this.playerUtils.pets, 
+            this.playerUtils.pets,
             this.opponentUtils.pets
         );
 
         const queueOfAttackers = this.sortAttackers(listOfAttackers);
-        console.log('queueofAttackers', queueOfAttackers);
 
         // Loop until one character's life reaches zero
         for (let i = 0; i < queueOfAttackers.length; i++) {
 
-            if(this.playerLife <= 0 || this.opponentLife <= 0) {
+            if (this.playerLife <= 0 || this.opponentLife <= 0) {
                 break; // Exit the loop if one character's life is zero
             }
-            
+
             const attacker = queueOfAttackers[i];
             const isPlayer = attacker == "Player";
             const isOpponent = attacker == "Opponent";
-            const isPlayerPet = attacker.substring(0,2) == "PP";
-            const isOpponentPet = attacker.substring(0,2) == "OP";
 
             // Player
             const player_weaponNumber = this.playerUtils.activeWeapon || -1;
@@ -1118,7 +1106,7 @@ class PlayerFight extends Phaser.Scene {
             this.playerBlock = player_weaponToUse.block || 0;
             this.opponentBlock = opponent_weaponToUse.block || 0;
 
-            if(isPlayer){
+            if (isPlayer) {
                 if (this.isStun.player == false) {
                     const playerTargets = this.opponentUtils.pets.filter(p => p.hp !== 0);
                     let playerTargetNumbers = playerTargets.map(o => { return o.index; });
@@ -1141,7 +1129,7 @@ class PlayerFight extends Phaser.Scene {
                 }
             }
 
-            if(isOpponent){
+            if (isOpponent) {
                 if (this.isStun.opponent == false) {
                     const opponentTargets = this.playerUtils.pets.filter(p => p.hp !== 0);
                     let opponentTargetNumbers = opponentTargets.map(o => { return o.index; });
@@ -1162,14 +1150,6 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(this.init, { type: CONSTANTS._actions.cantMove, by: CONSTANTS._opponent });
                     this.isStun.opponent = false;
                 }
-            }
-
-            if(isPlayerPet){
-
-            }
-
-            if(isOpponentPet){
-
             }
 
             this.init = i;
@@ -1704,13 +1684,6 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
-        // params player , opponent
-        if (attacker == CONSTANTS._player) {
-            this.calculateSpeed(true, false); // Reset Opponent speed counter
-        } else {
-            this.calculateSpeed(false, true); // Reset Opponent speed counter
-        }
-
         if (this.playerLife <= 0 && this.canRevive.player) {
             this.playerLife = this.life.max.player * 0.2;
             this.canRevive.player = false;
@@ -1858,7 +1831,7 @@ class PlayerFight extends Phaser.Scene {
                         remaining_defenderLife = 1;
                     }
                 } else {
-                    if(theAttacker == CONSTANTS._player) {
+                    if (theAttacker == CONSTANTS._player) {
                         const petRemainingLife = this.opponentUtils.pets[petDetails.index].hp - finalDamageUse;
                         this.opponentUtils.pets[petDetails.index] = petRemainingLife < 0 ? 0 : petRemainingLife;
                     } else {
@@ -1984,7 +1957,7 @@ class PlayerFight extends Phaser.Scene {
         const baseSpeedBonus = 300;
         const attackerCount = listOfAttackers.length;
         const skippedPlayers = new Set(); // To track skipped players
-    
+
         // First attack skill
         if (this.firstAttack.player && this.firstAttack.opponent) {
             const randAttacker = this.randomizer(1);
@@ -1994,28 +1967,28 @@ class PlayerFight extends Phaser.Scene {
         } else if (this.firstAttack.opponent) {
             attackersQueue[queueIndex++] = listOfAttackers[1].key;
         }
-    
+
         if (attackerCount < 2) {
             return attackersQueue.slice(0, queueIndex);
         }
-    
+
         for (let step = 0; step < queueLimit; step++) {
             const readyAttackers = [];
             const availableAttackers = []; // To handle skipped players
-    
+
             for (let i = 0; i < attackerCount; i++) {
                 const attacker = listOfAttackers[i];
                 if (attacker.hp <= 0) continue;
-    
+
                 attacker.current += (attacker.speed + baseSpeedBonus);
-    
+
                 if (attacker.current >= maxSpeed) {
                     readyAttackers.push(attacker);
                 } else {
                     availableAttackers.push(attacker); // Track players who are not ready yet
                 }
             }
-    
+
             if (readyAttackers.length > 1) {
                 readyAttackers.sort((a, b) => {
                     // First sort by current progress, then by speed
@@ -2025,14 +1998,14 @@ class PlayerFight extends Phaser.Scene {
                     return b.current - a.current; // Sort by progress (catch up first)
                 });
             }
-    
+
             // If there are skipped players, give them a guaranteed turn after a few rounds
             if (availableAttackers.length > 0 && attackersQueue.length < queueLimit) {
                 availableAttackers.forEach((attacker) => {
                     if (!skippedPlayers.has(attacker.key)) {
                         skippedPlayers.add(attacker.key); // Mark player as skipped
                     }
-    
+
                     // Give skipped players a guaranteed turn after being skipped for a few rounds
                     if (skippedPlayers.has(attacker.key) && attackersQueue.length < queueLimit) {
                         attackersQueue[queueIndex++] = attacker.key;
@@ -2040,17 +2013,17 @@ class PlayerFight extends Phaser.Scene {
                     }
                 });
             }
-    
+
             // Push ready attackers to the queue if space allows
             for (const attacker of readyAttackers) {
                 if (queueIndex >= queueLimit) break;
                 attacker.current -= maxSpeed;
                 attackersQueue[queueIndex++] = attacker.key;
             }
-    
+
             if (queueIndex >= queueLimit) break;
         }
-    
+
         return attackersQueue.slice(0, queueIndex);
     }
 
