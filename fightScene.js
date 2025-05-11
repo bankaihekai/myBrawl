@@ -302,13 +302,28 @@ class PlayerFight extends Phaser.Scene {
         this.opponentUtils = {
             skills: this.loadedOpponent.utilities.skills || [],
             weapons: this.loadedOpponent.utilities.weapons || [],
-            pets: opponentPetWithStats || [],
+            // pets: opponentPetWithStats || [],
+            pets: [
+                {
+                    "index": 0,
+                    "name": "Dog",
+                    "hp": 25,
+                    "strength": 8,
+                    "agility": 6,
+                    "speed": 4,
+                    "comboRate": 110,
+                    "dodge": 15,
+                    "type": "A",
+                    "key": "OP0",
+                    "current": 0
+                }
+            ] || [],
             activeWeapon: null,
             activeSkill: null
         }
 
-        // console.log({ loadedOpponent: this.loadedOpponent });
-        // console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ loadedOpponent: this.loadedOpponent });
+        console.log({ loadedCharacter: this.currentCharDetails });
         console.log({ playerUtils: this.playerUtils.pets });
         console.log({ opponentUtils: this.opponentUtils.pets });
 
@@ -813,8 +828,7 @@ class PlayerFight extends Phaser.Scene {
                     // attacker who use the revive drink bandage
                     if (actionType == CONSTANTS._actions.revive ||
                         actionType == CONSTANTS._actions.drink ||
-                        actionType == CONSTANTS._actions.bandage ||
-                        actionType == CONSTANTS._actions.thorns
+                        actionType == CONSTANTS._actions.bandage
                     ) {
                         const attacker = this.script[index].action.by;
 
@@ -837,12 +851,21 @@ class PlayerFight extends Phaser.Scene {
                         this.renderLife();
                     }
 
+                    // attacker who execute the action
+                    if (actionType == "Pet attack"
+                    ) {
+                        const defender = this.script[index].action.target;
+
+                        this.updateLife(defender, this.script[index].life[defender]); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
                     index++; // Move to the next element
                 } else {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 800);
+            }, 100);
         } else {
             this.showWinner(winner);
         }
@@ -1141,6 +1164,7 @@ class PlayerFight extends Phaser.Scene {
                             opponent_weaponToUse, player_weaponToUse, playerDamage
                         );
                     } else {
+                        console.log("pet attack opponent ", this.init)
                         this.processTurns(
                             CONSTANTS._opponent, opponentDamage, opponentCombo,
                             opponent_weaponToUse, player_weaponToUse, playerDamage, this.playerUtils.pets[opponentTarget]
@@ -1724,13 +1748,16 @@ class PlayerFight extends Phaser.Scene {
 
     processAttack(attacker, attackerWeapon, attackerDamage, defenderWeapon, comboInitMax, petDetails) {
 
-        const withPet = !!petDetails && petDetails && petDetails.hp > 0;
+        const withPet = !!petDetails && petDetails && petDetails.hp > 0; // target pets
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const theAttackerSkills = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const theDefenderSkills = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
 
         const theDefender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const theDefenderLife = attacker == CONSTANTS._player ? this.opponentLife : this.playerLife;
+        const theDefenderUtils = attacker == CONSTANTS._player ? this.loadedOpponent : this.currentCharDetails;
+
+        const isPlayerAttacker = theAttacker == CONSTANTS._player;
 
         const isWithThrownWeapon = this.thrownWeapons.find(w => w == attackerWeapon.number);
 
@@ -1778,8 +1805,8 @@ class PlayerFight extends Phaser.Scene {
 
         const finalAccuracy = attackerWeapon.accuracy + additionalAccuracy;
         let isAccurate = this.calculateAccuracy(finalAccuracy);
-        isAccurate = withPet ? true : isAccurate;
         let isDodgeOrBlock = false;
+        let healPoints = 0; // default heal per hit
 
         if (isAccurate) {
 
@@ -1842,11 +1869,8 @@ class PlayerFight extends Phaser.Scene {
 
                 // Passive Vampire Skill 
                 const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
-                let healPoints = 0; // default heal per hit
 
                 if (withVampire && !isWithThrownWeapon && !withWeaponStriker) healPoints += 5;
-
-                const isPlayerAttacker = theAttacker == CONSTANTS._player;
 
                 if (!withPet) {
                     const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
@@ -1930,22 +1954,118 @@ class PlayerFight extends Phaser.Scene {
                         }
                     }
                 } else {
+                    // hit enemy pet
+                    const petRemainingLife = theAttacker == CONSTANTS._player ? this.opponentUtils.pets[petDetails.index].hp : this.playerUtils.pets[petDetails.index].hp;
                     this.generateLogs(
                         this.init,
-                        { type: CONSTANTS._actions.attack, by: theAttacker, target: "pet" },
+                        { type: CONSTANTS._actions.attack, by: theAttacker, target: petDetails.key, remainingLife: petRemainingLife, alive: petRemainingLife > 0 },
                         { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
                         { player: this.playerLife, opponent: this.opponentLife }
                     );
                 }
 
                 this.canCounter[theDefender] = false;
+            } else {
+                const random_missed_Action = this.randomizer(1);
+                const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
+
+                this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
+                this.canCounter[theDefender] = false;
+            }
+
+            // get chance to use your pet attacks
+            const playersNotDead = this.playerLife > 0 && this.opponentLife > 0;
+            if (withPet == false && playersNotDead) {
+                const petToAttack = theAttackerSkills.pets.filter(p => p.hp !== 0);
+
+                if (petToAttack.length > 0 && playersNotDead) {
+                    petToAttack.forEach(pet => {
+
+                        if (!playersNotDead) return;
+                        const petToDefend = theDefenderSkills.pets.filter(p => p.hp !== 0);
+                        let isAttackCharacter = false;
+
+                        if (petToDefend && petToDefend.length > 0 && petToDefend.pets) {
+                            let TargetNumbers = petToDefend.map(o => { return o.index; });
+                            TargetNumbers.push(this.playerUtils.pets.length);
+                            const mainTarget = this.randomArrayIndex(TargetNumbers);
+
+                            if (mainTarget == theDefenderSkills.pets.length) {
+                                isAttackCharacter = true;
+                            } else {
+                                // attack pet
+                                const petDamageDealts = this.calculatePetDamage(pet.strength, 0);
+                                const theTargetPet = Math.max(0, theDefenderSkills.pets[mainTarget].hp - petDamageDealts);
+
+                                if (theAttacker == CONSTANTS._player) {
+                                    this.opponentUtils.pets[mainTarget].hp = theTargetPet;
+                                    const isAlive = theTargetPet > 0 ? true : false;
+                                    this.generateLogs(this.init, { type: "Pet to Pet attack", by: pet.key, target: this.opponentUtils.pets[mainTarget].key, damage: petDamageDealt, remainingLife: theTargetPet, alive: isAlive});
+                                } else {
+                                    this.playerUtils.pets[mainTarget].hp = theTargetPet;
+                                    const isAlive = theTargetPet > 0 ? true : false;
+                                    this.generateLogs(this.init, { type: "Pet to Pet attack", by: pet.key, target: this.playerUtils.pets[mainTarget].key, damage: petDamageDealt, remainingLife: theTargetPet, alive: isAlive});
+                                }
+                            }
+                        } else {
+                            isAttackCharacter = true;
+                        }
+
+                        if (isAttackCharacter) {
+                            const defenderArmor = attacker == CONSTANTS._player ? this.currentCharDetails.attributes.armor : this.loadedOpponent.attributes.armor;
+                            const petDamageDealt = this.calculatePetDamage(pet.strength, defenderArmor);
+                            const defenderDamage = this.calculateDamage(theDefenderUtils.attributes.damage, theDefenderUtils.attributes.armor, defenderWeapon, theAttacker);
+                            const finalSkillDodge1 = additionalSkillDodge + randomActionUtils;
+                            const randomActionResult2 = randomAction == 0 ?
+                                this.calculateEvasion(finalSkillDodge1, theDefender) :
+                                this.calculateBlock(finalSkillDodge1, theDefender);
+
+                            if (randomActionResult2) {
+                                this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: pet.key });
+                                const counterResult1 = this.calculateCounterAttack(defenderWeapon.counter, theDefender);
+                                if (counterResult1) {
+                                    if (isPlayerAttacker) {
+                                        this.playerUtils.pets[pet.index].hp = Math.max(0, this.playerUtils.pets[pet.index].hp - defenderDamage.finalDamage);
+                                    } else {
+                                        this.opponentUtils.pets[pet.index].hp = Math.max(0, this.opponentUtils.pets[pet.index].hp - defenderDamage.finalDamage);
+                                    }
+                                    this.generateLogs(
+                                        this.init,
+                                        { type: CONSTANTS._actions.attack, by: theDefender, target: pet.key },
+                                        { name: defenderWeapon.name, damage: defenderDamage.finalDamage, crit: defenderDamage.withCrit, heal: healPoints },
+                                        { player: this.playerLife, opponent: this.opponentLife }
+                                    );
+                                }
+                            } else {
+                                if (isPlayerAttacker) {
+                                    const rLife = Math.max(0, this.opponentLife - petDamageDealt);
+                                    this.opponentLife = rLife;
+                                } else {
+                                    const rLife = Math.max(0, this.playerLife - petDamageDealt);
+                                    this.playerLife = rLife;
+                                }
+
+                                this.generateLogs(
+                                    this.init,
+                                    { type: "Pet attack", by: pet.key, target: theDefender },
+                                    { name: "Nature strike", damage: petDamageDealt },
+                                    { player: this.playerLife, opponent: this.opponentLife }
+                                );
+                            }
+                        }
+                    });
+                }
             }
         } else {
             const random_missed_Action = this.randomizer(1);
             const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
 
-            this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
-            this.canCounter[theDefender] = false;
+            if (withPet) {
+                this.generateLogs(this.init, { type: CONSTANTS._actions.dodge, by: petDetails.key, attacker: theAttacker });
+            } else {
+                this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
+                this.canCounter[theDefender] = false;
+            }
         }
     }
 
@@ -2174,5 +2294,15 @@ class PlayerFight extends Phaser.Scene {
 
         if (playerTrueStrike) this.trueStrike.player = true;
         if (opponentTrueStrike) this.trueStrike.opponent = true;
+    }
+
+    calculatePetDamage(damage, EnemyArmor) {
+
+        const defenderArmor = EnemyArmor || 0; // default armor value
+        const damageInitial = damage || 1;
+        const damageStats = damageInitial * 1.5;
+
+        let result = Math.max(1, damageStats - defenderArmor);
+        return result;
     }
 }

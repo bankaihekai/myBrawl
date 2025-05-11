@@ -883,12 +883,12 @@ const CONSTANTS = {
         { number: 32, name: "Knife", damage: 8, combo: 180, speed: 0, counter: 3, accuracy: 90, evasion: 30, block: 15, disarm: 8, critical: 5 }
     ],
     _petStats: [
-        { name: "Bear",  hp: 120, strength: 12, agility: 4, speed: 3, comboRate: 0,   dodge: 5 },
-        { name: "Dog",   hp: 25,  strength: 8,  agility: 6, speed: 4, comboRate: 110, dodge: 15 },
-        { name: "Snake", hp: 15,  strength: 10, agility: 6, speed: 6, comboRate: 120, dodge: 15 },
-        { name: "Rat",   hp: 5,   strength: 7,  agility: 8, speed: 7, comboRate: 110, dodge: 5 },
-        { name: "Cat",   hp: 20,  strength: 6,  agility: 6, speed: 5, comboRate: 120, dodge: 17 },
-        { name: "Bird",  hp: 8,   strength: 5,  agility: 7, speed: 6, comboRate: 150, dodge: 10 }
+        { name: "Bear",  hp: 120, strength: 12, agility: 4, speed: 3, comboRate: 0,   dodge: 5, accuracy: 60 },
+        { name: "Dog",   hp: 25,  strength: 8,  agility: 6, speed: 4, comboRate: 110, dodge: 15, accuracy: 80 },
+        { name: "Snake", hp: 15,  strength: 10, agility: 6, speed: 6, comboRate: 120, dodge: 15, accuracy: 80 },
+        { name: "Rat",   hp: 5,   strength: 7,  agility: 8, speed: 7, comboRate: 110, dodge: 5, accuracy: 80 },
+        { name: "Cat",   hp: 20,  strength: 6,  agility: 6, speed: 5, comboRate: 120, dodge: 17, accuracy: 80 },
+        { name: "Bird",  hp: 8,   strength: 5,  agility: 7, speed: 6, comboRate: 150, dodge: 10, accuracy: 80 }
     ],
     _player: "player",
     _opponent: "opponent",
