@@ -656,9 +656,9 @@ class CreateScene extends Phaser.Scene {
                 const bytes = CryptoJS.AES.decrypt(activeUserDetails, CONSTANTS._charDetailsKey.concat("1"));
                 const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
                 // console.log("Character logged In!", decryptedData);
-                // this.scene.start("playerHome");
+                this.scene.start("playerHome");
                 
-                this.scene.start("playerSelect");
+                // this.scene.start("playerSelect");
             } catch (error) {
                 console.error(CONSTANTS._errorMessages.failedDecrypt, error);
             }
