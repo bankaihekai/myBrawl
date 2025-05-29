@@ -1,0 +1,13 @@
+[
+    {
+        "path": "assets/img/sprite/pets",
+        "files": [
+            {
+                "type": "spritesheet",
+                "key": "allPets",
+                "url": "allPets.png",
+                "frameConfig": { "frameWidth": 100, "frameHeight": 100 }
+            }
+        ]
+    }
+]

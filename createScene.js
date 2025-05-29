@@ -34,6 +34,7 @@ class CreateScene extends Phaser.Scene {
                 speed: 1,
                 armor: 1
             },
+            armorName: '',
             psd: '',
             logs: {
                 utility: []

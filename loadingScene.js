@@ -33,6 +33,7 @@ class LoadingScene extends Phaser.Scene {
         this.load.pack('spriteCharacter_Bundles', 'spriteBundles/spritesCharacter.json');
         this.load.pack('spriteUtilities_Bundles', 'spriteBundles/spritesUtilities.json');
         this.load.pack('spriteMisc_Bundles', 'spriteBundles/spritesMisc.json');
+        this.load.pack('spritePets_Bundles', 'spriteBundles/spritesPets.json');
         // this.load.atlas('femaleBody', '../assets/img/sprites/body/femaleBody.png', '../assets/img/sprites/body/femaleBody.json');
         // this.load.atlas('maleBody', '../assets/img/sprites/body/maleBody.png', '../assets/img/sprites/body/maleBody.json');
     }

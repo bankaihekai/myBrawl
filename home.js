@@ -83,6 +83,7 @@ class PlayerHome extends Phaser.Scene {
         this.createName();
         this.calculateLevelUp();
         this.renderButtons();
+        console.log(this.currentCharDetails);
 
         // Define your desired numbers
         const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
@@ -144,10 +145,8 @@ class PlayerHome extends Phaser.Scene {
         container.add(charAttireSprite);
 
         const armorResult = this.currentCharDetails.utilities.skills.find(skill => skill == 44);
-        if (armorResult) {
-            const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
-            const charArmor = currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
-            const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, charArmor)
+        if (armorResult && !!this.currentCharDetails.armorName) {
+            const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, this.currentCharDetails.armorName)
                 .setFrame(0) // set to 1 because no other skill yet added
                 .setScale(charDetails.scale)
                 .setOrigin(charDetails.origin);
@@ -288,7 +287,11 @@ class PlayerHome extends Phaser.Scene {
                 const fractionalPart = Math.round((quotient - integerPart) * 10);
                 const remainingCount = 10 - fractionalPart;
                 const integerPartColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : getColor(integerPart);
-                const remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
+                var remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
+
+                if (value >= 151) {
+                    remainingColor = CONSTANTS._colors[13];
+                }
 
                 let setOfColor = [];
 
@@ -376,6 +379,139 @@ class PlayerHome extends Phaser.Scene {
             strokeThickness: 3 // Border thickness
         });
         this.barContainer.add(valueLabel);
+    }
+
+    createBarStatus2(petAttributes) {
+
+        const barWidth = 80; // Total width of the bar
+        const barHeight = 15; // Height of each segment
+        const maxSegments = 10; // Always 10 segments per bar
+        const segmentWidth = barWidth / maxSegments; // Width of each segment
+
+        // CREATE COLORED BARs
+        // this.creteBars(this.characterContainer);
+
+        const getColor = (value) => {
+            // Return colors based on value ranges
+            if (value == 0) return CONSTANTS._colors[1]; // 01-10 slight Yellow-Green
+            if (value == 1) return CONSTANTS._colors[2]; // 11-20 Yellow-Green
+            if (value == 2) return CONSTANTS._colors[3]; // 21-30 Yellow
+            if (value == 3) return CONSTANTS._colors[4]; // 31-40 Yellow-Orange
+            if (value == 4) return CONSTANTS._colors[5]; // 41-50 Orange
+            if (value == 5) return CONSTANTS._colors[6]; // 51-60 Red-Orange
+            if (value == 6) return CONSTANTS._colors[7]; // 61-70 Red
+            if (value == 7) return CONSTANTS._colors[8]; // 81-90 Dark Red
+            if (value == 8) return CONSTANTS._colors[9]; // 91-100 Pink
+            if (value == 9) return CONSTANTS._colors[10]; // 101-110 Dark Pink
+            if (value == 10) return CONSTANTS._colors[11]; // 111-120 Violet
+            if (value >= 11 && value <= 14) return CONSTANTS._colors[12]; // 121-150 Dark Blue
+            if (value > 14) return CONSTANTS._colors[13]; // 151+ Black
+        };
+
+        Object.entries(petAttributes).forEach(([attribute, value], index) => {
+            if (["name", "types", "level", "armor", "comboRate", "dodge", "accuracy"].includes(attribute)) return;
+
+            this.barContainer2 = this.add.container(this.centerX - 130, 360 + index * (barHeight + 5));
+
+            if (attribute !== "life") {
+                // Calculate the quotient and fractional part for the segments
+                const quotient = value / 10;
+                const integerPart = Math.floor(quotient);
+                const fractionalPart = Math.round((quotient - integerPart) * 10);
+                const remainingCount = 10 - fractionalPart;
+                const integerPartColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : getColor(integerPart);
+                var remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
+
+                if (value >= 151) {
+                    remainingColor = CONSTANTS._colors[13];
+                }
+
+                let setOfColor = [];
+
+                // Add filled segments with integer color
+                for (let i = 0; i < fractionalPart; i++) {
+                    setOfColor.push(integerPartColor);
+                }
+
+                // Add unfilled segments with remaining color
+                for (let i = 0; i < remainingCount; i++) {
+                    setOfColor.push(remainingColor);
+                }
+
+                // Create segments for the bar
+                for (let i = 0; i < maxSegments; i++) {
+                    const color = setOfColor[i]; // Use the pre-determined colors
+                    const borderThickness = 1; // Thickness of the border
+                    const borderColor = setOfColor[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
+                    // Create the outer rectangle (border)
+                    const outerSegment = this.add.rectangle(
+                        i * segmentWidth, // Position segments horizontally with spacing
+                        0, // Align vertically
+                        segmentWidth, // Outer rectangle includes the border
+                        barHeight, // Outer rectangle includes the border
+                        borderColor // Border color (black)
+                    );
+                    outerSegment.setOrigin(0); // Align to the top-left
+                    this.barContainer2.add(outerSegment);
+
+                    // Create the inner rectangle (fill)
+                    const innerSegment = this.add.rectangle(
+                        i * segmentWidth + borderThickness, // Adjust for border thickness
+                        borderThickness, // Adjust for border thickness
+                        segmentWidth - 2, // Adjust for border thickness
+                        barHeight - 2, // Adjust for border thickness
+                        Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
+                    );
+                    innerSegment.setOrigin(0); // Align to the top-left
+                    this.barContainer2.add(innerSegment);
+                }
+            }
+            var iconFrame = 0;
+            switch (attribute) {
+                case "life":
+                    iconFrame = 25;
+                    break;
+                case "damage":
+                    iconFrame = 26;
+                    break;
+                case "agile":
+                    iconFrame = 28;
+                    break;
+                case "speed":
+                    iconFrame = 27;
+                    break;
+                default:
+                    break;
+            }
+
+            const charShadow = this.add.sprite(-15, 8, "buttons").setFrame(iconFrame).setScale(0.4);
+            this.barContainer2.add(charShadow);
+
+            // Add a label for the attribute
+            // const attributeText = attribute.charAt(0).toUpperCase() + attribute.slice(1);
+            // const label = this.add.text(-51, 0, attributeText, {
+            //     fontSize: "14px",
+            //     color: "#ffffff"
+            // });
+            // this.barContainer2.add(label);
+
+            const txtLocation = attribute == "life" ? 0 : 85;
+            const valueLabel = this.add.text(txtLocation, 0, value, {
+                fontSize: "14px",
+                color: "#ffffff"
+            });
+            this.barContainer2.add(valueLabel);
+        });
+
+        const valueLabel = this.add.text(0, 20, "LVL.".concat(petAttributes.level), {
+            fontSize: "20px",
+            color: "#ffffff",
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000000', // Border color
+            strokeThickness: 3 // Border thickness
+        });
+        this.barContainer2.add(valueLabel);
     }
 
     createName() {
@@ -486,19 +622,19 @@ class PlayerHome extends Phaser.Scene {
                     this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
                     this.setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
-                        if(data){
+                        if (data) {
                             this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
                             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
                         } else {
                             throw { code: 500, message: "Saving data failed!" };
                         }
                     })
-                    .catch(error => {
-                        this.currentCharDetails.psd = null;
-                        this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
-                    }).finally(() => {
-                        this.setLoading(false); 
-                    });
+                        .catch(error => {
+                            this.currentCharDetails.psd = null;
+                            this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                        }).finally(() => {
+                            this.setLoading(false);
+                        });
 
                     this.renderCreateCharacter();
                 } else {
@@ -618,12 +754,12 @@ class PlayerHome extends Phaser.Scene {
         }
 
         // render pets shadows
-        for (let i = 1; i <= CONSTANTS._pets.length; i++) {
-            const charPet = "pet_".concat(i);
-            const charPetSprite = this.add.sprite(charDetails.x + 31.5, charDetails.y + 290, charPet).setFrame(0);
+        // for (let i = 1; i <= CONSTANTS._pets.length; i++) {
+        //     const charPet = "pet_".concat(i);
+        //     const charPetSprite = this.add.sprite(charDetails.x + 31.5, charDetails.y + 290, charPet).setFrame(0);
 
-            container.add(charPetSprite);
-        }
+        //     container.add(charPetSprite);
+        // }
 
         // render skills OPEN
         const columns = 11; // Number of sprites per row
@@ -703,77 +839,18 @@ class PlayerHome extends Phaser.Scene {
         });
 
         // render pets
-        const pets = CONSTANTS._pets;
         const charPets = this.currentCharDetails.utilities.pets;
-        const groupedPets = charPets.reduce((acc, pet) => {
-            if (!acc[pet.name]) {
-                acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
-            }
-            acc[pet.name].count++; // Increment count
-            return acc;
-        }, {});
+        if (charPets.length > 0) {
+            const petFrames = this.validatePetFrame(this.currentCharDetails.utilities.pets[0]);
+            const positionX = charPets[0].name == "Bear" ? 170 : 160;
+            const positionY = charPets[0].name == "Bear" ? 420 : 420;
+            const charPetSprite = this.add.sprite(positionX, positionY, "allPets")
+                .setFrame(petFrames[0])
+                .setScale(2);
+            container.add(charPetSprite);
 
-        // Convert object back to array if needed
-        const results = Object.values(groupedPets);
-
-        const filterPets = results.map(charPet =>
-            pets.find(pet => pet.name == charPet.name)
-        );
-
-        filterPets.forEach(pet => {
-            container.iterate((sprite) => {
-                if (sprite.texture.key == "pet_".concat(pet.number)) {
-                    sprite.destroy();
-                }
-            });
-        });
-
-        results.forEach(result => {
-            let isWithResult = true;
-            let multiplyPosition = {
-                x: 0,
-                y: 0
-            }
-            switch (result.name) {
-                case "Bear":
-                    multiplyPosition.x = 240;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Dog":
-                    multiplyPosition.x = 320;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Snake":
-                    multiplyPosition.x = 375;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Cat":
-                    multiplyPosition.x = 60;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Rat":
-                    multiplyPosition.x = 110;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Bird":
-                    multiplyPosition.x = 105;
-                    multiplyPosition.y = 420;
-                    break;
-                default:
-                    isWithResult = false;
-                    break;
-            }
-
-            if (isWithResult && result.count > 0) {
-                const multiplySprite = [9, 10, 11, 24]; // x1 x2 x3 x4
-                const multSprite =
-                    result.count == 1 ? multiplySprite[0] :
-                        result.count == 2 ? multiplySprite[1] :
-                            result.count == 3 ? multiplySprite[2] : multiplySprite[3];
-                const charShadow = this.add.sprite(multiplyPosition.x, multiplyPosition.y, "buttons").setFrame(multSprite).setScale(0.5);
-                this.characterContainer.add(charShadow);
-            }
-        });
+            this.createBarStatus2(this.currentCharDetails.utilities.pets[0]);
+        }
     }
 
     /**
@@ -826,7 +903,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                // randomUtils.name = "stats" // for manual testing overwrite
+                randomUtils.name = "pets" // for manual testing overwrite
 
                 switch (randomUtils.name) {
                     case "skills":
@@ -1149,6 +1226,11 @@ class PlayerHome extends Phaser.Scene {
                 const subtractedSpeed = currentSpeed_SKIN - Math.ceil(currentSpeed_SKIN * 0.1);
                 this.currentCharDetails.attributes.armor += 10;
                 this.currentCharDetails.attributes.speed = subtractedSpeed <= 0 ? 1 : subtractedSpeed;
+
+                const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
+                const charArmor = this.currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
+
+                this.currentCharDetails.armorName = charArmor;
                 break;
             case 46: // surge of armor
                 this.currentCharDetails.attributes.armor += 7;
@@ -1407,7 +1489,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     renderRandomCharacter(lvlPoints) {
-        
+
         const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
         const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
         const rand_hairNumber = this.randomizer(rand_hairGenderValue);
@@ -1444,6 +1526,60 @@ class PlayerHome extends Phaser.Scene {
         }
 
         return randomChar;
+    }
+
+    validatePetFrame(pet) {
+        let frames = [];
+
+        switch (pet.name) {
+            case "Dog":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i); // 0–19
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 20); // 20–39
+                }
+                break;
+            case "Cat":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 40); // 40–59
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 60); // 60–79
+                }
+                break;
+            case "Rat":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 80); // 80–99
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 100); // 100–119
+                }
+                break;
+            case "Bird":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 120); // 120–139
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 140); // 140–159
+                }
+                break;
+            case "Snake":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 160); // 160–179
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 180); // 180–199
+                }
+                break;
+            case "Bear":
+                if (pet.types === "A") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 200); // 200–219
+                } else if (pet.types === "B") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 220); // 220–239
+                } else if (pet.types === "C") {
+                    frames = Array.from({ length: 20 }, (_, i) => i + 240); // 240–259
+                }
+                break;
+            default:
+                console.log("Pet not found!");
+        }
+        return frames;
     }
 }
 
