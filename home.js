@@ -80,8 +80,10 @@ class PlayerHome extends Phaser.Scene {
     renderCreateCharacter() {
         // Clear the preview container
         this.characterContainer.removeAll(true);
-        this.createName();
+        this.maxExp = getMaxExpForLevel(this.currentCharDetails.level.current);
+        console.log(this.maxExp)
         this.calculateLevelUp();
+        this.createName();
         this.renderButtons();
         console.log(this.currentCharDetails);
 
@@ -276,7 +278,6 @@ class PlayerHome extends Phaser.Scene {
         };
 
         Object.entries(charAttributes).forEach(([attribute, value], index) => {
-            if (attribute == "armor") return;
             // Create a container for the health bar
             this.barContainer = this.add.container(this.centerX - 160, 135 + index * (barHeight + 5));
 
@@ -347,6 +348,9 @@ class PlayerHome extends Phaser.Scene {
                 case "speed":
                     iconFrame = 27;
                     break;
+                case "armor":
+                    iconFrame = 34;
+                    break;
                 default:
                     break;
             }
@@ -409,9 +413,9 @@ class PlayerHome extends Phaser.Scene {
         };
 
         Object.entries(petAttributes).forEach(([attribute, value], index) => {
-            if (["name", "types", "level", "armor", "comboRate", "dodge", "accuracy"].includes(attribute)) return;
+            if (["name", "types", "level", "comboRate", "dodge", "accuracy"].includes(attribute)) return;
 
-            this.barContainer2 = this.add.container(this.centerX - 130, 360 + index * (barHeight + 5));
+            this.barContainer2 = this.add.container(this.centerX - 130, 350 + index * (barHeight + 5));
 
             if (attribute !== "life") {
                 // Calculate the quotient and fractional part for the segments
@@ -480,6 +484,9 @@ class PlayerHome extends Phaser.Scene {
                 case "speed":
                     iconFrame = 27;
                     break;
+                case "armor":
+                    iconFrame = 34;
+                    break;
                 default:
                     break;
             }
@@ -527,6 +534,17 @@ class PlayerHome extends Phaser.Scene {
             strokeThickness: 3 // Border thickness
         });
         this.charNameContainer.add(nameText);
+
+        if (this.currentCharDetails.utilities.pets.length > 0) {
+            let nameTextPet = this.add.text(145, 400, this.currentCharDetails.utilities.pets[0].name || "N/A", {
+                fontSize: '20px',
+                fill: '#ffffff',
+                fontStyle: 'bold',
+                stroke: '#000000', // Border color
+                strokeThickness: 3 // Border thickness
+            });
+            this.charNameContainer.add(nameTextPet);
+        }
 
         const winRate = ((this.currentCharDetails.kdStats.win / (this.currentCharDetails.kdStats.win + this.currentCharDetails.kdStats.lose)) * 100) || 0;
         const kdDisplay = "Winrate: " + winRate + "%";
@@ -944,10 +962,20 @@ class PlayerHome extends Phaser.Scene {
                 this.validateAvailableUtils();
 
                 var addedStats = this.validateNewUtils(utilResults);
-                var newStats = `<br>Life: ${this.currentCharDetails.attributes.life}, Damage: ${this.currentCharDetails.attributes.damage}, Agile: ${this.currentCharDetails.attributes.agile}, Speed: ${this.currentCharDetails.attributes.speed}`
+                const charAttributes = this.currentCharDetails.attributes;
+                const charStatsPlus = !!addedStats[2].charStats ? addedStats[2].charStats : "";
+                var newStats = `<br><b>Character</b> -> ${charStatsPlus} Life: ${charAttributes.life}, Damage: ${charAttributes.damage}, Agile: ${charAttributes.agile}, Speed: ${charAttributes.speed}, Armor: ${charAttributes.armor}`;
                 var acquiredMessage = utilResults.value.name ? `Acquired <b>"${utilResults.value.name}"</b> and ` : "";
+                var petNewStatsTxt = "";
+                const userPet = this.currentCharDetails.utilities.pets;
+                var additionalStatsTxt = "";
 
-                gainedUtils.push(acquiredMessage.concat(addedStats, newStats));
+                if (utilResults.value.name && userPet.length > 0 && addedStats[1]) {
+                    additionalStatsTxt = `<br>Life: ${userPet[0].life}, Damage: ${userPet[0].damage}, Agile: ${userPet[0].agile}, Speed: ${userPet[0].speed}, Armor: ${userPet[0].armor}`;
+                    acquiredMessage = `<b>Pet</b> -> lvl up to <b>"${userPet[0].level}"</b>`;
+                }
+
+                gainedUtils.push(acquiredMessage.concat(addedStats[0], additionalStatsTxt, newStats));
 
             }
             const message = gainedUtils.map((util, index) => `<tr><td>${index + 1}</td><td>${util}</td></tr>`).join("");
@@ -1031,47 +1059,53 @@ class PlayerHome extends Phaser.Scene {
 
     getRandomPets(availPets) {
 
-        if (availPets.length == 0) return { name: null };
+        if (this.currentCharDetails.utilities.pets.length > 0) {
+            this.currentCharDetails.utilities.pets[0].level++;
+            return this.currentCharDetails.utilities.pets[0];
+        }
+        else {
+            if (availPets.length == 0) return { name: null };
 
-        const charOwnedPets = this.currentCharDetails.utilities.pets;
-        const availablePets = this.availableUtils.pets;
-        const newSetofPet = CONSTANTS._petsNew;
+            const charOwnedPets = this.currentCharDetails.utilities.pets;
+            const availablePets = this.availableUtils.pets;
+            const newSetofPet = CONSTANTS._petsNew;
 
-        // group owned pets and count 
-        const groupedPets = charOwnedPets.reduce((acc, pet) => {
-            if (!acc[pet.name]) {
-                acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
-            }
-            acc[pet.name].count++; // Increment count
-            return acc;
-        }, {});
+            // group owned pets and count 
+            const groupedPets = charOwnedPets.reduce((acc, pet) => {
+                if (!acc[pet.name]) {
+                    acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
+                }
+                acc[pet.name].count++; // Increment count
+                return acc;
+            }, {});
 
-        const results = Object.values(groupedPets);
-        const maxPets = results.filter(maxPet => maxPet.count >= 4);
+            const results = Object.values(groupedPets);
+            const maxPets = results.filter(maxPet => maxPet.count >= 4);
 
-        // remove the max pets in the possible options
-        maxPets.forEach(maxPet => {
-            const petIndex = newSetofPet.findIndex(pet => ((pet.name == maxPet.name) && (pet.types == maxPet.types)));
+            // remove the max pets in the possible options
+            maxPets.forEach(maxPet => {
+                const petIndex = newSetofPet.findIndex(pet => ((pet.name == maxPet.name) && (pet.types == maxPet.types)));
 
-            if (petIndex !== -1) {
-                newSetofPet.splice(petIndex, 1);
-            }
-        });
+                if (petIndex !== -1) {
+                    newSetofPet.splice(petIndex, 1);
+                }
+            });
 
-        let totalChance = newSetofPet.reduce((sum, pet) => sum + pet.chance, 0);
-        let randomNum = Math.random() * totalChance;
-        let cumulativeChance = 0;
+            let totalChance = newSetofPet.reduce((sum, pet) => sum + pet.chance, 0);
+            let randomNum = Math.random() * totalChance;
+            let cumulativeChance = 0;
 
-        for (let item of newSetofPet) {
-            if (item.skip) continue;
-            cumulativeChance += item.chance;
-            if (randomNum <= cumulativeChance) {
+            for (let item of newSetofPet) {
+                if (item.skip) continue;
+                cumulativeChance += item.chance;
+                if (randomNum <= cumulativeChance) {
 
-                const petToSave = availablePets.filter(pets => pets.name == item.name);
+                    const petToSave = availablePets.filter(pets => pets.name == item.name);
 
-                if (petToSave.length > 0) this.currentCharDetails.utilities.pets.push(petToSave[0]);
+                    if (petToSave.length > 0) this.currentCharDetails.utilities.pets.push(petToSave[0]);
 
-                return petToSave.length > 0 ? petToSave[0] : { name: null };
+                    return petToSave.length > 0 ? petToSave[0] : { name: null };
+                }
             }
         }
     }
@@ -1082,9 +1116,18 @@ class PlayerHome extends Phaser.Scene {
      * @returns {string} - The result of the new utilities message.
      */
     validateNewUtils(utils) {
-        var result = `Increase <b>"{stats}"</b>`;
-        var statsKey = "";
+        const petLength = this.currentCharDetails.utilities.pets.length;
         const randomStatsNumber = this.randomizer(3);
+        const utilitiesKey = utils.key;
+        let resultTxt = `Increase <b>"{stats}"</b>`;
+        let resultTxtChar = `Increase <b>"{stats}"</b>`;
+        let result = "";
+        let resultChar = "";
+        let statsKey = "";
+        let petLevel = false;
+        let randStatsPet = "";
+        let petAdditional = 0;
+        let charStatsKey = "";
 
         switch (randomStatsNumber) {
             case 0: // life
@@ -1094,7 +1137,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalLifeImmortality) this.currentCharDetails.attributes.life += 20;
                 if (additionalLife) this.currentCharDetails.attributes.life += 5;
                 if (utils.value.name == null) this.currentCharDetails.attributes.life += 5;
-                statsKey = "life";
+                charStatsKey = "life";
                 break;
             case 1: // damage
                 this.currentCharDetails.attributes.damage++;
@@ -1103,7 +1146,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalDamage_GOD) this.currentCharDetails.attributes.damage += 2;
                 if (additionalDamage) this.currentCharDetails.attributes.damage++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.damage++;
-                statsKey = "damage";
+                charStatsKey = "damage";
                 break;
             case 2: // agile
                 this.currentCharDetails.attributes.agile++;
@@ -1112,7 +1155,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalAgile_GOD) this.currentCharDetails.attributes.agile += 2;
                 if (additionalAgile) this.currentCharDetails.attributes.agile++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.agile++;
-                statsKey = "agile";
+                charStatsKey = "agile";
                 break;
             case 3: // speed
                 this.currentCharDetails.attributes.speed++;
@@ -1121,16 +1164,15 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalSpeed_GOD) this.currentCharDetails.attributes.speed += 2;
                 if (additionalSpeed) this.currentCharDetails.attributes.speed++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.speed++;
-                statsKey = "speed";
+                charStatsKey = "speed";
                 break;
             default:
                 console.log("No stats found.");
                 break;
         }
         const maxUtilsMessage = utils.value.name == null ? `x2 in ${utils.key}` : "";
-        result = result.replace("{stats}", statsKey).concat(" ", maxUtilsMessage);
+        resultChar = resultTxtChar.replace("{stats}", statsKey).concat(" ", maxUtilsMessage);
 
-        const utilitiesKey = utils.key;
         switch (utilitiesKey) {
             case "skills":
                 this.validatePlusStats_Skills(utils.value);
@@ -1139,13 +1181,23 @@ class PlayerHome extends Phaser.Scene {
                 // do nothing
                 break;
             case "pets":
-                if (!!utils.value.name) this.validatePlusStats_Pets(utils.value);
+                if (!!utils.value.name && petLength <= 1 && this.currentCharDetails.utilities.pets[0].level <= 1) {
+                    this.validatePlusStats_Pets(utils.value);
+                }
+                if (petLength > 0) {
+                    petLevel = true;
+                    randStatsPet = this.randomArrayIndex(["life", "agile", "damage", "speed", "armor"]);
+                    petAdditional = randStatsPet == "life" ? 5 : 1;
+                    this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
+                    result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                }
                 break;
             default:
                 // do nothing for stats
                 break;
         }
-        return result;
+        const charStatsTxt = !!charStatsKey ?  `Increase <b>"${charStatsKey}"</b><br>` : "";
+        return [result, { petLevel: petLevel, value: petAdditional }, { charStats: charStatsTxt}];
     }
 
     /**
