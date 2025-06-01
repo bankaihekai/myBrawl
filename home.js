@@ -79,7 +79,8 @@ class PlayerHome extends Phaser.Scene {
 
     renderCreateCharacter() {
         // Clear the preview container
-        this.characterContainer.removeAll(true);this.calculateLevelExp(this.currentCharDetails.level);
+        this.characterContainer.removeAll(true);
+        this.calculateLevelExp(this.currentCharDetails.level);
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
