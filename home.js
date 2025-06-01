@@ -79,9 +79,7 @@ class PlayerHome extends Phaser.Scene {
 
     renderCreateCharacter() {
         // Clear the preview container
-        this.characterContainer.removeAll(true);
-        this.maxExp = getMaxExpForLevel(this.currentCharDetails.level.current);
-        console.log(this.maxExp)
+        this.characterContainer.removeAll(true);this.calculateLevelExp(this.currentCharDetails.level);
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
@@ -374,6 +372,7 @@ class PlayerHome extends Phaser.Scene {
             this.barContainer.add(valueLabel);
         });
 
+        const charLevelDetails = this.currentCharDetails.level;
         const valueLabel = this.add.text(0, 20, "LVL.".concat(this.currentCharDetails.level.current), {
             fontSize: "20px",
             color: "#ffffff",
@@ -383,6 +382,26 @@ class PlayerHome extends Phaser.Scene {
             strokeThickness: 3 // Border thickness
         });
         this.barContainer.add(valueLabel);
+
+        const labelPart1 = this.add.text(0, 40, `EXP.${charLevelDetails.experience}/`, {
+            fontSize: "20px",
+            color: "#ffffff",
+            stroke: '#000000',
+            strokeThickness: 3,
+            fontStyle: 'bold',
+        });
+
+        const labelPart2 = this.add.text(labelPart1.width, 40, `${this.maxExp}`, {
+            fontSize: "20px",
+            color: "#00aaff", // Blue color
+            stroke: '#000000',
+            strokeThickness: 3,
+            fontStyle: 'bold',
+        });
+
+        this.barContainer.add(labelPart1);
+        this.barContainer.add(labelPart2);
+
     }
 
     createBarStatus2(petAttributes) {
@@ -522,6 +541,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     createName() {
+        this.calculateLevelExp(this.currentCharDetails.level);
         // Clear the container first
         this.charNameContainer.removeAll(true);
 
@@ -934,20 +954,34 @@ class PlayerHome extends Phaser.Scene {
                         utils = this.getRandomPets(this.availableUtils.pets);
                         break;
                     case "stats":
-                        const randomStatsNumber = this.randomizer(3);
+                        const armors = [51, 46, 44, 38, 17, 9];
+                        let witharmor = false;
+
+                        for (let armor of armors) {
+                            if (this.currentCharDetails.utilities.skills.includes(armor)) {
+                                witharmor = true;
+                                break;
+                            }
+                        }
+
+                        const randomStatsNumber = witharmor ? 4 : 3;
+                        const randomStatsNumberResult = this.randomizer(randomStatsNumber);
                         let keyName = "";
-                        if (randomStatsNumber == 0) {
+                        if (randomStatsNumberResult == 0) {
                             this.currentCharDetails.attributes.life += 8;
                             keyName = "Life stats";
-                        } else if (randomStatsNumber == 1) {
+                        } else if (randomStatsNumberResult == 1) {
                             this.currentCharDetails.attributes.damage += 2;
                             keyName = "Damage stats";
-                        } else if (randomStatsNumber == 2) {
+                        } else if (randomStatsNumberResult == 2) {
                             this.currentCharDetails.attributes.agile += 2;
                             keyName = "Agile stats";
-                        } else if (randomStatsNumber == 3) {
+                        } else if (randomStatsNumberResult == 3) {
                             this.currentCharDetails.attributes.speed += 2;
                             keyName = "Speed stats";
+                        } else if (randomStatsNumberResult == 4) { 
+                            this.currentCharDetails.attributes.armor += 1;
+                            keyName = "Armor stats";
                         }
                         utils = { key: "stats", name: keyName }
                         break;
@@ -971,7 +1005,7 @@ class PlayerHome extends Phaser.Scene {
 
                 if (utilResults.value.name && userPet.length > 0 && addedStats[1]) {
                     additionalStatsTxt = `<br>Life: ${userPet[0].life}, Damage: ${userPet[0].damage}, Agile: ${userPet[0].agile}, Speed: ${userPet[0].speed}, Armor: ${userPet[0].armor}`;
-                    acquiredMessage = `<b>Pet</b> -> lvl up to <b>"${userPet[0].level}"</b>`;
+                    acquiredMessage = `<b>Pet</b> -> lvl up to <b>"${userPet[0].level} "</b>`;
                 }
 
                 gainedUtils.push(acquiredMessage.concat(addedStats[0], additionalStatsTxt, newStats));
@@ -1116,8 +1150,8 @@ class PlayerHome extends Phaser.Scene {
      */
     validateNewUtils(utils) {
         const petLength = this.currentCharDetails.utilities.pets.length;
-        const randomStatsNumber = this.randomizer(3);
         const utilitiesKey = utils.key;
+        const armors = [51, 46, 44, 38, 17, 9];
         let resultTxt = `Increase <b>"{stats}"</b>`;
         let resultTxtChar = `Increase <b>"{stats}"</b>`;
         let result = "";
@@ -1127,7 +1161,16 @@ class PlayerHome extends Phaser.Scene {
         let randStatsPet = "";
         let petAdditional = 0;
         let charStatsKey = "";
+        let witharmor = false;
 
+        for (let armor of armors) {
+            if (this.currentCharDetails.utilities.skills.includes(armor)) {
+                witharmor = true;
+                break;
+            }
+        }
+        const randomStatsNumber = witharmor ? this.randomizer(4) : this.randomizer(3);
+        
         switch (randomStatsNumber) {
             case 0: // life
                 this.currentCharDetails.attributes.life += 5;
@@ -1164,6 +1207,11 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalSpeed) this.currentCharDetails.attributes.speed++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.speed++;
                 charStatsKey = "speed";
+                break;
+            case 4: // armor
+                this.currentCharDetails.attributes.armor += 1;
+                if (utils.value.name == null) this.currentCharDetails.attributes.armor += 1;
+                charStatsKey = "armor";
                 break;
             default:
                 console.log("No stats found.");
@@ -1631,6 +1679,14 @@ class PlayerHome extends Phaser.Scene {
                 console.log("Pet not found!");
         }
         return frames;
+    }
+
+    calculateLevelExp(level){
+        this.maxExp = getMaxExpForLevel(level.current);
+        if (level.experience >= this.maxExp) {
+            this.currentCharDetails.level.points += 1;
+            this.currentCharDetails.level.experience = 0;
+        }
     }
 }
 
