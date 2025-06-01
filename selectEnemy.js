@@ -20,6 +20,7 @@ class PlayerSelect extends Phaser.Scene {
 
     create() {
 
+        localStorage.removeItem("opponent");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -43,7 +44,7 @@ class PlayerSelect extends Phaser.Scene {
         }
         // this.validateAvailableUtils();
         const loadedOpponent = this.loadCharacter("opponent");
-        if(loadedOpponent){
+        if (loadedOpponent) {
             this.scene.start('playerFight');
         }
 
@@ -126,8 +127,8 @@ class PlayerSelect extends Phaser.Scene {
             };
 
             this.renderSprite(this.characterContainer, currentCharDetails, charDetails, randCharDetails);
-            
-            let selectTxtOpponent = this.add.text(charDetails.x - 50, charDetails.y + 100, "Select", {
+
+            let selectTxtOpponent = this.add.text(charDetails.x - 50, charDetails.y + 100, rand_chars[i].name, {
                 fontSize: '20px',
                 fill: '#000000',
                 fontStyle: 'bold',
@@ -136,7 +137,7 @@ class PlayerSelect extends Phaser.Scene {
             });
             selectTxtOpponent.setInteractive();
             this.characterContainer.add(selectTxtOpponent);
-    
+
             selectTxtOpponent.on("pointerdown", () => {
                 // this.scene.start('playerHome');
                 // to do create a fight scene simulation
@@ -878,7 +879,7 @@ class PlayerSelect extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                // randomUtils.name = "stats" // for manual testing overwrite
+                randomUtils.name = "pets" // for manual testing overwrite
 
                 switch (randomUtils.name) {
                     case "skills":
@@ -891,20 +892,33 @@ class PlayerSelect extends Phaser.Scene {
                         utils = this.getRandomPets(charData, availUtils.pets);
                         break;
                     case "stats":
-                        const randomStatsNumber = this.randomizer(3);
+                        const armors = [51, 46, 44, 38, 17, 9];
+                        let witharmor = false;
+
+                        for (let armor of armors) {
+                            if (charData.utilities.skills.includes(armor)) {
+                                witharmor = true;
+                                break;
+                            }
+                        }
+                        const randomStatsNumber = witharmor ? 4 : 3;
+                        const randomStatsNumberResult = this.randomizer(randomStatsNumber);
                         let keyName = "";
-                        if (randomStatsNumber == 0) {
+                        if (randomStatsNumberResult == 0) {
                             charData.attributes.life += 8;
                             keyName = "Life stats";
-                        } else if (randomStatsNumber == 1) {
+                        } else if (randomStatsNumberResult == 1) {
                             charData.attributes.damage += 2;
                             keyName = "Damage stats";
-                        } else if (randomStatsNumber == 2) {
+                        } else if (randomStatsNumberResult == 2) {
                             charData.attributes.agile += 2;
                             keyName = "Agile stats";
-                        } else if (randomStatsNumber == 3) {
+                        } else if (randomStatsNumberResult == 3) {
                             charData.attributes.speed += 2;
                             keyName = "Speed stats";
+                        } else if (randomStatsNumberResult == 3) {
+                            charData.attributes.armor += 2;
+                            keyName = "armor stats";
                         }
                         utils = { key: "stats", name: keyName }
                         break;
@@ -990,47 +1004,55 @@ class PlayerSelect extends Phaser.Scene {
 
     getRandomPets(charData, availPets) {
 
-        if (availPets.length == 0) return { name: null };
+        if (charData.utilities.pets.length > 0) {
+            charData.utilities.pets[0].level++;
+            return charData.utilities.pets[0];
+        }
+        else {
+            if (availPets.length == 0) return { name: null };
 
-        const charOwnedPets = charData.utilities.pets;
-        const availablePets = availPets;
-        const newSetofPet = CONSTANTS._petsNew;
+            const charOwnedPets = charData.utilities.pets;
+            const availablePets = availPets;
+            const newSetofPet = CONSTANTS._petsNew;
 
-        // group owned pets and count 
-        const groupedPets = charOwnedPets.reduce((acc, pet) => {
-            if (!acc[pet.name]) {
-                acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
-            }
-            acc[pet.name].count++; // Increment count
-            return acc;
-        }, {});
+            // group owned pets and count 
+            const groupedPets = charOwnedPets.reduce((acc, pet) => {
+                if (!acc[pet.name]) {
+                    acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
+                }
+                acc[pet.name].count++; // Increment count
+                return acc;
+            }, {});
 
-        const results = Object.values(groupedPets);
-        const maxPets = results.filter(maxPet => maxPet.count >= 4);
+            const results = Object.values(groupedPets);
+            const maxPets = results.filter(maxPet => maxPet.count >= 4);
 
-        // remove the max pets in the possible options
-        maxPets.forEach(maxPet => {
-            const petIndex = newSetofPet.findIndex(pet => ((pet.name == maxPet.name) && (pet.types == maxPet.types)));
+            // remove the max pets in the possible options
+            maxPets.forEach(maxPet => {
+                const petIndex = newSetofPet.findIndex(pet => ((pet.name == maxPet.name) && (pet.types == maxPet.types)));
 
-            if (petIndex !== -1) {
-                newSetofPet.splice(petIndex, 1);
-            }
-        });
+                if (petIndex !== -1) {
+                    newSetofPet.splice(petIndex, 1);
+                }
+            });
 
-        let totalChance = newSetofPet.reduce((sum, pet) => sum + pet.chance, 0);
-        let randomNum = Math.random() * totalChance;
-        let cumulativeChance = 0;
+            let totalChance = newSetofPet.reduce((sum, pet) => sum + pet.chance, 0);
+            let randomNum = Math.random() * totalChance;
+            let cumulativeChance = 0;
 
-        for (let item of newSetofPet) {
-            if (item.skip) continue;
-            cumulativeChance += item.chance;
-            if (randomNum <= cumulativeChance) {
+            for (let item of newSetofPet) {
+                if (item.skip) continue;
+                cumulativeChance += item.chance;
+                if (randomNum <= cumulativeChance) {
 
-                const petToSave = availablePets.filter(pets => pets.name == item.name);
+                    const petToSave = availablePets.filter(pets => pets.name == item.name);
 
-                if (petToSave.length > 0) charData.utilities.pets.push(petToSave[0]);
+                    if (petToSave.length > 0){
+                        charData.utilities.pets.push(petToSave[0])
+                    };
 
-                return petToSave.length > 0 ? petToSave[0] : { name: null };
+                    return petToSave.length > 0 ? petToSave[0] : { name: null };
+                }
             }
         }
     }
@@ -1453,7 +1475,7 @@ class PlayerSelect extends Phaser.Scene {
                     experience: 0,
                     points: lvlPoints || 1
                 },
-                name: "Dummy" + this.randomizer(9999),
+                name: "Bot" + this.randomizer(9999),
                 gender: rand_Gender,
                 bodyFrame: rand_bodyFrame,
                 hair: {
@@ -1469,7 +1491,6 @@ class PlayerSelect extends Phaser.Scene {
             }
 
             randomChar = this.calculateLevelUp(randomChar);
-
             randomChars.push(randomChar);
         }
 

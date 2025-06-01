@@ -20,7 +20,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-
+        this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -84,7 +84,6 @@ class PlayerHome extends Phaser.Scene {
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
-        console.log(this.currentCharDetails);
 
         // Define your desired numbers
         const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
@@ -942,7 +941,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                randomUtils.name = "pets" // for manual testing overwrite
+                // randomUtils.name = "pets" // for manual testing overwrite
 
                 switch (randomUtils.name) {
                     case "skills":
@@ -1684,7 +1683,7 @@ class PlayerHome extends Phaser.Scene {
 
     calculateLevelExp(level){
         this.maxExp = getMaxExpForLevel(level.current);
-        if (level.experience >= this.maxExp) {
+        if (level.experience >= this.maxExp && level.current != 0) {
             this.currentCharDetails.level.points += 1;
             this.currentCharDetails.level.experience = 0;
         }
