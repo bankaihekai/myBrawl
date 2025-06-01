@@ -288,7 +288,7 @@ class PlayerHome extends Phaser.Scene {
                 const fractionalPart = Math.round((quotient - integerPart) * 10);
                 const remainingCount = 10 - fractionalPart;
                 const integerPartColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : getColor(integerPart);
-                var remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
+                let remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
 
                 if (value >= 151) {
                     remainingColor = CONSTANTS._colors[13];
@@ -334,7 +334,7 @@ class PlayerHome extends Phaser.Scene {
                     this.barContainer.add(innerSegment);
                 }
             }
-            var iconFrame = 0;
+            let iconFrame = 0;
             switch (attribute) {
                 case "life":
                     iconFrame = 25;
@@ -424,7 +424,7 @@ class PlayerHome extends Phaser.Scene {
                 const fractionalPart = Math.round((quotient - integerPart) * 10);
                 const remainingCount = 10 - fractionalPart;
                 const integerPartColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : getColor(integerPart);
-                var remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
+                let remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
 
                 if (value >= 151) {
                     remainingColor = CONSTANTS._colors[13];
@@ -470,7 +470,7 @@ class PlayerHome extends Phaser.Scene {
                     this.barContainer2.add(innerSegment);
                 }
             }
-            var iconFrame = 0;
+            let iconFrame = 0;
             switch (attribute) {
                 case "life":
                     iconFrame = 25;
@@ -563,7 +563,7 @@ class PlayerHome extends Phaser.Scene {
         this.charNameContainer.add(logoutTxt);
 
         logoutTxt.on("pointerdown", () => {
-            var isLogout = this.currentCharDetails.psd ? true : false;
+            let isLogout = this.currentCharDetails.psd ? true : false;
             if (!this.currentCharDetails.psd) {
                 isLogout = confirm("Progress won't be save! Do you like to proceed?");
             }
@@ -673,7 +673,7 @@ class PlayerHome extends Phaser.Scene {
 
     createToolTip(toHover, content, utilKeys) {
 
-        var position = {
+        let position = {
             x: CONSTANTS._gameWidth,
             y: CONSTANTS._gameHeight
         };
@@ -846,7 +846,7 @@ class PlayerHome extends Phaser.Scene {
         const filterSkills = skills.filter(skill => charSkills.includes(skill.number));
 
         filterSkills.forEach(filteredSkill => {
-            var filterSame = skills.filter(skill => skill.number == filteredSkill.number);
+            let filterSame = skills.filter(skill => skill.number == filteredSkill.number);
             if (filterSame.length > 0) {
                 container.iterate((sprite) => {
                     if (sprite.name == "bgSkills_Close_".concat(filterSame[0].number)) {
@@ -888,7 +888,7 @@ class PlayerHome extends Phaser.Scene {
         }
 
         if (this.currentCharDetails.level.points > 0) {
-            var gainedUtils = [];
+            let gainedUtils = [];
             for (let i = 1; i <= this.currentCharDetails.level.points; i++) {
 
                 let utilResults = "";
@@ -961,14 +961,13 @@ class PlayerHome extends Phaser.Scene {
 
                 this.validateAvailableUtils();
 
-                var addedStats = this.validateNewUtils(utilResults);
+                let addedStats = this.validateNewUtils(utilResults);
                 const charAttributes = this.currentCharDetails.attributes;
                 const charStatsPlus = !!addedStats[2].charStats ? addedStats[2].charStats : "";
-                var newStats = `<br><b>Character</b> -> ${charStatsPlus} Life: ${charAttributes.life}, Damage: ${charAttributes.damage}, Agile: ${charAttributes.agile}, Speed: ${charAttributes.speed}, Armor: ${charAttributes.armor}`;
-                var acquiredMessage = utilResults.value.name ? `Acquired <b>"${utilResults.value.name}"</b> and ` : "";
-                var petNewStatsTxt = "";
+                let newStats = `<br><b>Character</b> -> ${charStatsPlus} Life: ${charAttributes.life}, Damage: ${charAttributes.damage}, Agile: ${charAttributes.agile}, Speed: ${charAttributes.speed}, Armor: ${charAttributes.armor}`;
+                let acquiredMessage = utilResults.value.name ? `Acquired <b>"${utilResults.value.name}"</b> and ` : "";
                 const userPet = this.currentCharDetails.utilities.pets;
-                var additionalStatsTxt = "";
+                let additionalStatsTxt = "";
 
                 if (utilResults.value.name && userPet.length > 0 && addedStats[1]) {
                     additionalStatsTxt = `<br>Life: ${userPet[0].life}, Damage: ${userPet[0].damage}, Agile: ${userPet[0].agile}, Speed: ${userPet[0].speed}, Armor: ${userPet[0].armor}`;
@@ -1037,7 +1036,7 @@ class PlayerHome extends Phaser.Scene {
         for (let item of items) {
             // Skip the items that need required utils to acquire
             if (item.require) {
-                var withRequiredItem = !!this.currentCharDetails.utilities.skills.find(skill => skill == item.require);
+                let withRequiredItem = !!this.currentCharDetails.utilities.skills.find(skill => skill == item.require);
                 if (!withRequiredItem) continue; // Skip this item instead of returning
             }
 
