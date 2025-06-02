@@ -998,16 +998,19 @@ class PlayerFight extends Phaser.Scene {
             current: 0
         } : null;
         let listOfAttackers = [playerSpeedDetails, opponentSpeedDetails];
+
         if (playerSpeedDetailsPet) {
             this.playerPetLife = this.playerUtils.pets.life;
             listOfAttackers.push(playerSpeedDetailsPet);
             this.opponentTarget.push("PlayerPet");
         }
+
         if (opponentSpeedDetailsPet) {
             this.opponentPetLife = this.opponentUtils.pets.life;
             listOfAttackers.push(opponentSpeedDetailsPet);
             this.playerTarget.push("OpponentPet");
         }
+
         const queueOfAttackers = this.sortAttackers(listOfAttackers);
 
         // Loop until one character's life reaches zero
@@ -1858,12 +1861,11 @@ class PlayerFight extends Phaser.Scene {
             const randomActionResult = randomAction == 0 ?
                 this.calculateEvasion(finalSkillDodge, theDefender) :
                 this.calculateBlock(finalSkillDodge, theDefender);
-
-            if (randomActionResult && !withPet) {
+            if (!!randomActionResult && !withPet) {
                 this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: theAttacker });
                 const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
-                const counterResult = this.calculateCounterAttack(defenderWeapon.counter, theDefender);
-                this.canCounter[theDefender] = !!counterResult && !!withCounter ? true : false;
+                const counterResult = this.calculateCounterAttack(defenderWeapon.counter || 0, theDefender);
+                this.canCounter[theDefender] = !!counterResult && !!withCounter;
                 isDodgeOrBlock = true;
             }
 
@@ -2007,7 +2009,6 @@ class PlayerFight extends Phaser.Scene {
                 const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
 
                 this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
-                this.canCounter[theDefender] = false;
             }
 
             // get chance to use your pet attacks
