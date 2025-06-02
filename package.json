@@ -1,0 +1,19 @@
+{
+  "name": "mybrawl",
+  "version": "1.0.0",
+  "description": "Test game",
+  "main": "createScene.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bankaihekai/myBrawl.git"
+  },
+  "author": "jovany opelina",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bankaihekai/myBrawl/issues"
+  },
+  "homepage": "https://github.com/bankaihekai/myBrawl#readme"
+}

@@ -197,18 +197,14 @@ class PlayerFight extends Phaser.Scene {
             this.scene.start('playGame');
         }
 
-        // // ----------------------------------------
-        // // // TEST CODE
-        // // // ---------------------------------------
-        // // player
-        // // this.currentCharDetails.utilities.skills.push(14);
-        // // this.currentCharDetails.utilities.weapons.push(11);
-        // // this.currentCharDetails.utilities.weapons.push(12);
-        // // this.currentCharDetails.utilities.weapons.push(13);
+        // ----------------------------------------
+        // TEST CODE
+        // ---------------------------------------
+        // player
+        // this.currentCharDetails.utilities.skills.push(12);
+        // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        this.currentCharDetails.attributes.damage = 10;
+        // this.currentCharDetails.attributes.damage = 10;
         // opponent
         // this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
@@ -270,10 +266,10 @@ class PlayerFight extends Phaser.Scene {
             activeSkill: null
         }
 
-        console.log({ loadedOpponent: this.loadedOpponent.utilities });
-        console.log({ loadedCharacter: this.currentCharDetails.utilities });
-        // console.log({ playerUtils: this.playerUtils.pets });
-        // console.log({ opponentUtils: this.opponentUtils.pets });
+        console.log({ loadedOpponent: this.loadedOpponent });
+        console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ playerUtils: this.playerUtils.pets });
+        console.log({ opponentUtils: this.opponentUtils.pets });
         // throw {code: 500,  message: "Test error to check error handling"};
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
@@ -1086,11 +1082,11 @@ class PlayerFight extends Phaser.Scene {
             }
 
             if (this.playerPetLife <= 0) {
-                this.playerTarget = ["Opponent"];
+                this.opponentTarget = ["Player"];
             }
 
             if (this.opponentPetLife <= 0) {
-                this.opponentTarget = ["Player"];
+                this.playerTarget = ["Opponent"];
             }
 
             const attacker = queueOfAttackers[i];
@@ -1138,26 +1134,28 @@ class PlayerFight extends Phaser.Scene {
                     }
                 } else {
                     let opponentPetDefender = this.opponentUtils.pets;
-                    let playerDamage = this.calculateDamage(playerStats.damage, opponentPetDefender.armor, player_weaponToUse, CONSTANTS._player);
-                    let opponentPetDamage = this.calculatePetDamage(opponentPetDefender.damage, playerStats.armor, opponentPetDefender.critical || 0);
-                    let petWeaponToUse = {
-                        number: -1,
-                        name: "wild",
-                        damage: opponentPetDefender.damage,
-                        combo: opponentPetDefender.comboRate,
-                        speed: opponentPetDefender.speed,
-                        counter: 0,
-                        accuracy: opponentPetDefender.accuracy,
-                        evasion: opponentPetDefender.dodge,
-                        block: opponentPetDefender.dodge,
-                        disarm: 0,
-                        critical: 0,
-                    };
+                    if (!!opponentPetDefender) {
+                        let playerDamage = this.calculateDamage(playerStats.damage, opponentPetDefender.armor, player_weaponToUse, CONSTANTS._player);
+                        let opponentPetDamage = this.calculatePetDamage(opponentPetDefender.damage, playerStats.armor, opponentPetDefender.critical || 0);
+                        let petWeaponToUse = {
+                            number: -1,
+                            name: "wild",
+                            damage: opponentPetDefender.damage,
+                            combo: opponentPetDefender.comboRate,
+                            speed: opponentPetDefender.speed,
+                            counter: 0,
+                            accuracy: opponentPetDefender.accuracy,
+                            evasion: opponentPetDefender.dodge,
+                            block: opponentPetDefender.dodge,
+                            disarm: 0,
+                            critical: 0,
+                        };
 
-                    this.processTurns(
-                        CONSTANTS._player, playerDamage, playerCombo,
-                        player_weaponToUse, petWeaponToUse, opponentPetDamage, opponentPetDefender
-                    );
+                        this.processTurns(
+                            CONSTANTS._player, playerDamage, playerCombo,
+                            player_weaponToUse, petWeaponToUse, opponentPetDamage, opponentPetDefender
+                        );
+                    }
                 }
             }
             if (isPlayerPet) {
@@ -1394,15 +1392,12 @@ class PlayerFight extends Phaser.Scene {
                 if (theDefenderActiveUtils.pets && theDefenderActiveUtils.pets.life > 0) {
                     const finalLifePet = Math.max(0, theDefenderActiveUtils.pets.life - finalBoltDamage);
                     theDefenderActiveUtils.pets.life = finalLifePet;
-
-                    if (finalLifePet <= 0) {
-                        this.generateLogs(
-                            this.init,
-                            { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
-                            { name: "Lightning Bolt", damage: finalBoltDamage },
-                            { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
-                        );
-                    }
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                        { name: "Lightning Bolt", damage: finalBoltDamage },
+                        { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
+                    );
                 } else {
                     this.generateLogs(
                         this.init,
@@ -1420,15 +1415,12 @@ class PlayerFight extends Phaser.Scene {
                 if (theDefenderActiveUtils.pets && theDefenderActiveUtils.pets.life > 0) {
                     const finalLifePet = Math.max(0, theDefenderActiveUtils.pets.life - finalBoltDamage);
                     theDefenderActiveUtils.pets.life = finalLifePet;
-
-                    if (finalLifePet <= 0) {
-                        this.generateLogs(
-                            this.init,
-                            { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
-                            { name: "Lightning Bolt", damage: finalBoltDamage },
-                            { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
-                        );
-                    }
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                        { name: "Lightning Bolt", damage: finalBoltDamage },
+                        { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
+                    );
                 } else {
                     this.generateLogs(
                         this.init,
@@ -1580,15 +1572,12 @@ class PlayerFight extends Phaser.Scene {
             if (this.opponentUtils.pets && this.opponentUtils.pets.life > 0) {
                 const finalLifePet = Math.max(0, this.opponentUtils.pets.life - 5);
                 this.opponentUtils.pets.life = finalLifePet;
-
-                if (finalLifePet <= 0) {
-                    this.generateLogs(
-                        this.init,
-                        { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
-                        { name: "Poison Potion", remaining: this.PoisonPotion.player.count, damage: 5 },
-                        { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
-                    );
-                }
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                    { name: "Poison Potion", remaining: this.PoisonPotion.player.count, damage: 5 },
+                    { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
+                );
             } else {
                 this.generateLogs(
                     this.init,
@@ -1608,14 +1597,12 @@ class PlayerFight extends Phaser.Scene {
             if (this.playerUtils && this.playerUtils.pets.life > 0) {
                 const finalLifePet = Math.max(0, this.playerUtils.pets.life - 5);
                 this.playerUtils.pets.life = finalLifePet;
-                if (finalLifePet <= 0) {
-                    this.generateLogs(
-                        this.init,
-                        { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
-                        { name: "Poison Potion", remaining: this.PoisonPotion.opponent.count, damage: 5 },
-                        { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
-                    );
-                }
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                    { name: "Poison Potion", remaining: this.PoisonPotion.opponent.count, damage: 5 },
+                    { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
+                );
             } else {
                 this.generateLogs(
                     this.init,
@@ -1642,14 +1629,12 @@ class PlayerFight extends Phaser.Scene {
                     if (this.opponentUtils && this.opponentUtils.pets.life > 0) {
                         const finalLifePet = Math.max(0, this.opponentUtils.pets.life - finalBombDamage);
                         this.opponentUtils.pets.life = finalLifePet;
-                        if (finalLifePet <= 0) {
-                            this.generateLogs(
-                                this.init,
-                                { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
-                                { name: "Bomb", damage: finalBombDamage },
-                                { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
-                            );
-                        }
+                        this.generateLogs(
+                            this.init,
+                            { type: CONSTANTS._actions.throw, by: CONSTANTS._player },
+                            { name: "Bomb", damage: finalBombDamage },
+                            { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
+                        );
                     } else {
                         this.generateLogs(
                             this.init,
@@ -1665,15 +1650,13 @@ class PlayerFight extends Phaser.Scene {
                     // damage pet
                     if (this.playerUtils && this.playerUtils.pets.life > 0) {
                         const finalLifePet = Math.max(0, this.playerUtils.pets.life - finalBombDamage);
-                        this.playerUtils.pets.life = finalLifePet
-                        if (finalLifePet <= 0) {
-                            this.generateLogs(
-                                this.init,
-                                { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
-                                { name: "Bomb", damage: finalBombDamage },
-                                { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
-                            );
-                        }
+                        this.playerUtils.pets.life = finalLifePet;
+                        this.generateLogs(
+                            this.init,
+                            { type: CONSTANTS._actions.throw, by: CONSTANTS._opponent },
+                            { name: "Bomb", damage: finalBombDamage },
+                            { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
+                        );
                     } else {
                         this.generateLogs(
                             this.init,
@@ -1751,47 +1734,56 @@ class PlayerFight extends Phaser.Scene {
                     );
                 }
 
-
                 this.discharge[theAttacker] = false;
                 skillFlag = 1;
             }
         }
 
         if (this.poisonTouch[theAttacker]) {
-
             if (theAttacker == CONSTANTS._player) {
-                const finalLifePoision = this.opponentLife - 1;
-                this.opponentLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+                const finalLifePoision = Math.max(0, this.opponentLife - 1);
+                this.opponentLife = finalLifePoision;
 
                 // damage pet
-                if (this.opponentUtils.pets.length > 0) {
-                    this.opponentUtils.pets.forEach(pet => {
-                        if (pet.hp > 0) {
-                            const finalLifePet = pet.hp - 1;
-                            pet.hp = finalLifePet < 0 ? 0 : finalLifePet;
-                        }
-                    });
+                if (!!this.opponentUtils.pets && this.opponentPetLife > 0) {
+                    const finalLifePet = Math.max(0, this.opponentPetLife - 1);
+                    this.opponentPetLife = finalLifePet;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
+                    );
+                } else {
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
                 }
             } else {
-                const finalLifePoision = this.playerLife - 1;
-                this.playerLife = finalLifePoision < 0 ? 0 : finalLifePoision;
+                const finalLifePoision = Math.max(0, this.playerLife - 1);
+                this.playerLife = finalLifePoision;
 
-                if (this.playerUtils.pets.length > 0) {
-                    this.playerUtils.pets.forEach(pet => {
-                        if (pet.hp > 0) {
-                            const finalLifePet = pet.hp - 1;
-                            pet.hp = finalLifePet < 0 ? 0 : finalLifePet;
-                        }
-                    });
+                if (!!this.playerUtils.pets && this.playerPetLife > 0) {
+                    const finalLifePet = Math.max(0, this.playerPetLife - 1);
+                    this.playerPetLife = finalLifePet;
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { player: this.playerLife, opponent: this.opponentLife, playerPetLife: finalLifePet }
+                    );
+                } else {
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
+                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { player: this.playerLife, opponent: this.opponentLife }
+                    );
                 }
             }
-
-            this.generateLogs(
-                this.init,
-                { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
-                { name: "Poison Touch", remaining: "unli", damage: 1 },
-                { player: this.playerLife, opponent: this.opponentLife }
-            );
         }
 
         if (!withPet) { // attack human
@@ -2163,7 +2155,7 @@ class PlayerFight extends Phaser.Scene {
             //                 }
             //             }
             //         });
-                // }
+            // }
             // }
         } else {
             const random_missed_Action = this.randomizer(1);
@@ -2181,7 +2173,7 @@ class PlayerFight extends Phaser.Scene {
     sortAttackers(listOfAttackers) {
         const attackersQueue = [];
         let queueIndex = 0;
-        const queueLimit = 300;
+        const queueLimit = 1000;
         const maxSpeed = 1000;
         const baseSpeedBonus = 300;
         const attackerCount = listOfAttackers.length;
