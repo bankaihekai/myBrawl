@@ -169,13 +169,13 @@ class PlayerFight extends Phaser.Scene {
 
     create() {
 
-        const loadIsLogin = this.loadCharacter("recentLogin");
+        const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
-            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
+            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
-        const loadedCharacter = this.loadCharacter(CONSTANTS._charDetailsKey);
+        const loadedCharacter = loadCharacter(CONSTANTS._charDetailsKey);
         if (!!loadedCharacter) {
             this.currentCharDetails = loadedCharacter;
             this.validateLoggedIn(this.currentCharDetails.name);
@@ -192,7 +192,7 @@ class PlayerFight extends Phaser.Scene {
         }
         // this.validateAvailableUtils();
 
-        this.loadedOpponent = this.loadCharacter(CONSTANTS._opponent);
+        this.loadedOpponent = loadCharacter(CONSTANTS._opponent);
         if (!this.loadedOpponent) {
             this.scene.start('playGame');
         }
@@ -204,13 +204,13 @@ class PlayerFight extends Phaser.Scene {
         // this.currentCharDetails.utilities.skills.push(12);
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        // this.currentCharDetails.attributes.damage = 10;
+        this.currentCharDetails.attributes.damage = 10;
         // opponent
         // this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
         // this.loadedOpponent.utilities.weapons.push(2);
         // this.loadedOpponent.utilities.weapons.push(3);
-        // this.loadedOpponent.attributes.damage = 10;
+        this.loadedOpponent.attributes.damage = 10;
 
         // ----------------------------------------
         // TEST CODE
@@ -222,7 +222,7 @@ class PlayerFight extends Phaser.Scene {
         this.mainContainer = this.add.container(0, 0);
         this.mainContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
 
-        const rand_bg = this.randomizer(14);
+        const rand_bg = randomizer(14);
         this.background = this.add.image(0, 0, "bg-".concat(rand_bg)).setOrigin(0);
         this.background.displayWidth = CONSTANTS._gameWidth;
         this.background.displayHeight = CONSTANTS._gameHeight;
@@ -368,7 +368,7 @@ class PlayerFight extends Phaser.Scene {
 
         const armorResult = charAllData.utilities.skills.find(skill => skill == 44);
         if (armorResult) {
-            const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
+            const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
             const charArmor = currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
             const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, charArmor)
                 .setFrame(0) // set to 1 because no other skill yet added
@@ -389,10 +389,6 @@ class PlayerFight extends Phaser.Scene {
         }
 
         // this.renderUtils(container, charDetails);
-    }
-
-    randomizer(max) {
-        return Phaser.Math.Between(0, max);
     }
 
     createName() {
@@ -433,38 +429,8 @@ class PlayerFight extends Phaser.Scene {
         this.charNameContainer.add(opponentName);
     }
 
-    saveToLocalStorage(key, data) {
-        const encryptedData = this.encryptedData(key, data);
-        localStorage.setItem(key, encryptedData);
-    };
-
-    encryptedData(key, data) {
-        return CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
-    }
-
-    decryptData(key) {
-        const encryptedData = localStorage.getItem(key);
-        const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    };
-
-    loadCharacter(key) {
-        const encryptedData = localStorage.getItem(key);
-
-        if (encryptedData) {
-            try {
-                return this.decryptData(key);
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
     validateLoggedIn(username) {
-        const userLoggedKey = this.decryptData(CONSTANTS._charUserKey);
+        const userLoggedKey = decryptData(CONSTANTS._charUserKey);
         const compareResult = userLoggedKey == username;
 
         if (!compareResult) {
@@ -541,28 +507,6 @@ class PlayerFight extends Phaser.Scene {
         }, 3000);
     }
 
-    generateRandomKeys() {
-        return Math.random().toString(36).substring(2, 7);
-    }
-
-    randomArrayIndex(data) {
-
-        // Generate a random index
-        const randomIndex = Math.floor(Math.random() * data.length);
-
-        // Select the random value from the array
-        return data[randomIndex];
-    }
-
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
-        }
-    }
-
     generateLogs(init, action, weapon, life) {
 
         var toPush = {};
@@ -577,14 +521,6 @@ class PlayerFight extends Phaser.Scene {
         this.script.push(toPush);
     }
 
-    calculateChance(chance) {
-        if (chance < 0) return false;
-        if (chance > 100) return true;
-
-        const randomValue = Math.random() * 100; // Generates a random number between 0 and 100
-        return randomValue <= chance; // Returns true if item is achieved, false otherwise
-    }
-
     calculateDamage(strength, opponentDefense, weapon, targetUser) {
 
         let additionalSkillDamage = 0;
@@ -596,7 +532,7 @@ class PlayerFight extends Phaser.Scene {
         const heavyWeaponsResult = this.heavyWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
         const sharpWeaponsResult = this.sharpWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
         const physicalWeaponsResult = this.physicalWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
-        const weaponCritical = this.calculateChance(weapon.critical);
+        const weaponCritical = calculateChance(weapon.critical);
 
         // javelinist skill
         const skill_javelinist = targetSkills.find(skill => skill == 5);
@@ -620,7 +556,7 @@ class PlayerFight extends Phaser.Scene {
 
         // true strike skill
         const trueStrike = targetSkills.find(skill => skill == 34);
-        const calculateTrueStrike = this.calculateChance(15);
+        const calculateTrueStrike = calculateChance(15);
         if (trueStrike && this.trueStrike[targetUser] && calculateTrueStrike) {
             additionalCritBoost += 0.2;
         };
@@ -643,7 +579,7 @@ class PlayerFight extends Phaser.Scene {
     }
 
     calculatePetDamage(strength, opponentDefense, critial) {
-        const criticalAdditional = this.calculateChance(critial) ? 2 : 1;
+        const criticalAdditional = calculateChance(critial) ? 2 : 1;
         const initialDamage = Math.round(Math.max(1, ((strength * 1.5) * criticalAdditional) - opponentDefense));
         return {
             finalDamage: initialDamage,
@@ -673,7 +609,7 @@ class PlayerFight extends Phaser.Scene {
 
         // Directly calculate the remaining chance (if below 100)
         if (comboPercentage > 0) {
-            const isSuccessful = this.calculateChance(comboPercentage); // Attempt the remaining chance
+            const isSuccessful = calculateChance(comboPercentage); // Attempt the remaining chance
             if (isSuccessful) result += 1; // Increment result for successful chance
         }
 
@@ -831,7 +767,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (accuracyPercentage > 0) {
-            const isSuccessful = this.calculateChance(accuracyPercentage); // Attempt the remaining chance
+            const isSuccessful = calculateChance(accuracyPercentage); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> hit by attack
         }
 
@@ -852,7 +788,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (finalCounter > 0) {
-            const isSuccessful = this.calculateChance(finalCounter); // Attempt the remaining chance
+            const isSuccessful = calculateChance(finalCounter); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> do counter attack
         }
 
@@ -883,7 +819,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (disarmPercentage > 0) {
-            const isSuccessful = this.calculateChance(disarmPercentage); // Attempt the remaining chance
+            const isSuccessful = calculateChance(disarmPercentage); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> do disarm
         }
 
@@ -943,7 +879,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (final > 0) {
-            const isSuccessful = this.calculateChance(final); // Attempt the remaining chance
+            const isSuccessful = calculateChance(final); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> evade attack
         }
 
@@ -965,7 +901,7 @@ class PlayerFight extends Phaser.Scene {
 
         // // Directly calculate the remaining chance (if below 100)
         if (final > 0) {
-            const isSuccessful = this.calculateChance(final); // Attempt the remaining chance
+            const isSuccessful = calculateChance(final); // Attempt the remaining chance
             if (isSuccessful) result = true; // true -> evade attack
         }
 
@@ -996,10 +932,10 @@ class PlayerFight extends Phaser.Scene {
             );
             return CONSTANTS.weaponStats.find(w => w.number === weaponToSteal);
         } else {
-            const randomChanceResult = this.calculateChance(randomChance);
+            const randomChanceResult = calculateChance(randomChance);
             if (utils.weapons.length > 0 && randomChanceResult) {
                 const oldWeapon = utils.activeWeapon;
-                const newWeapon = this.randomArrayIndex(utils.weapons);
+                const newWeapon = randomArrayIndex(utils.weapons);
                 utils.weapons = utils.weapons.filter(w => w !== oldWeapon && w !== newWeapon);
                 utils.activeWeapon = newWeapon;
 
@@ -1098,10 +1034,10 @@ class PlayerFight extends Phaser.Scene {
 
             // Determine the target based on the attacker
             if (isPlayer || isPlayerPet) {
-                target = this.randomArrayIndex(this.playerTarget);
+                target = randomArrayIndex(this.playerTarget);
             }
             if (isOpponent || isOpponentPet) {
-                target = this.randomArrayIndex(this.opponentTarget);
+                target = randomArrayIndex(this.opponentTarget);
             }
             if (target == "") {
                 throw new Error("Target is empty, cannot proceed with attack.");
@@ -1198,7 +1134,7 @@ class PlayerFight extends Phaser.Scene {
             //             // const playerTargets = this.opponentUtils.pets.filter(p => p.hp !== 0);
             //             // let playerTargetNumbers = playerTargets.map(o => { return o.index; });
             //             // playerTargetNumbers.push(this.opponentUtils.pets.length);
-            //             // const playerTarget = this.randomArrayIndex(playerTargetNumbers);
+            //             // const playerTarget = randomArrayIndex(playerTargetNumbers);
             //             // if (playerTarget == this.opponentUtils.pets.length) { // attack opponent character
             //                 this.processTurns(
             //                     CONSTANTS._player, playerDamage, playerCombo,
@@ -1221,7 +1157,7 @@ class PlayerFight extends Phaser.Scene {
             //             // const opponentTargets = this.playerUtils.pets.filter(p => p.hp !== 0);
             //             // let opponentTargetNumbers = opponentTargets.map(o => { return o.index; });
             //             // opponentTargetNumbers.push(this.playerUtils.pets.length);
-            //             // const opponentTarget = this.randomArrayIndex(opponentTargetNumbers);
+            //             // const opponentTarget = randomArrayIndex(opponentTargetNumbers);
             //             // if (opponentTarget == this.playerUtils.pets.length) { // attack player character
             //                 this.processTurns(
             //                     CONSTANTS._opponent, opponentDamage, opponentCombo,
@@ -1286,10 +1222,10 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderSkills = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
 
         const octopusV = theDefenderSkills.skills.find(skill => skill == 35); // octopus viscous skill 35 passive
-        const calculateIgnore = !!octopusV ? this.calculateChance(40) : false;
+        const calculateIgnore = !!octopusV ? calculateChance(40) : false;
 
         const stunValue = calculateIgnore ? 0 : 15;
-        const isStunned = this.calculateChance(stunValue); // 15% chance to stun default
+        const isStunned = calculateChance(stunValue); // 15% chance to stun default
 
         if (isStunned) {
             this.generateLogs(this.init, { type: CONSTANTS._actions.stunned, by: defender, attacker: target });
@@ -1342,7 +1278,7 @@ class PlayerFight extends Phaser.Scene {
         };
 
         if (this.steal[theAttacker] && skillFlag != 1 && !isChangeWeapon && !withPet) {
-            const calculateSteal = this.calculateChance(15);
+            const calculateSteal = calculateChance(15);
             if (calculateSteal && theDefenderActiveUtils.activeWeapon != null && theDefenderActiveUtils.activeWeapon != -1) {
 
                 var stealWeaponResult = this.changeWeapon(theAttacker, true, theDefenderActiveUtils.activeWeapon);
@@ -1353,7 +1289,7 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
-        const calculateHollow = this.hollowForm[theAttacker].available ? this.calculateChance(15) : false;
+        const calculateHollow = this.hollowForm[theAttacker].available ? calculateChance(15) : false;
         if (this.hollowForm[theAttacker].count <= 0 && this.hollowForm[theAttacker].active) {
             this.hollowForm[theAttacker].active = false;
             this.hollowForm[theAttacker].count = 0;
@@ -1377,10 +1313,10 @@ class PlayerFight extends Phaser.Scene {
 
         // lightningbolt skill 20 
         const withSpellBook = theAttackerActiveUtils.activeWeapon == 11; // with spell book
-        const executeBolt = this.calculateChance(15);
+        const executeBolt = calculateChance(15);
         if (this.lightningBolt[theAttacker] == 2 && withSpellBook && skillFlag != 1 && executeBolt) {
             const boltDamage = [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
-            const boltNumber = this.randomizer(10);
+            const boltNumber = randomizer(10);
             const withSpellMaster = this.spellMaster[theAttacker];
             const finalBoltDamage = withSpellMaster ? boltDamage[boltNumber] * 1.5 : boltDamage[boltNumber];
 
@@ -1437,7 +1373,7 @@ class PlayerFight extends Phaser.Scene {
         // scare skill 22 -> steal pets
         const defenderPets = !!theDefenderActiveUtils.pets;
         if (this.scare[theAttacker] && defenderPets > 0 && skillFlag != 1) {
-            const executeScarePet = this.calculateChance(15);
+            const executeScarePet = calculateChance(15);
             if (executeScarePet) {
                 const petToScare = theDefenderActiveUtils.pets.name;
 
@@ -1455,7 +1391,7 @@ class PlayerFight extends Phaser.Scene {
 
         // pet master skill 11 -> steal pets
         // if (this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1) {
-        //     const executeStealPet = this.calculateChance(15);
+        //     const executeStealPet = calculateChance(15);
         //     if (executeStealPet) {
         //         const petToSteal = theDefenderActiveUtils.pets;
         //         const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
@@ -1476,7 +1412,7 @@ class PlayerFight extends Phaser.Scene {
 
         // genjutsu debuff skill 2
         if (this.genjutsu[theAttacker] && skillFlag != 1) {
-            const executeGenjutsu = this.calculateChance(15);
+            const executeGenjutsu = calculateChance(15);
             if (executeGenjutsu) { // remove current opponent buff
                 this.buff[theDefender].aura = false;
                 this.buff[theDefender].susanoo = false;
@@ -1490,7 +1426,7 @@ class PlayerFight extends Phaser.Scene {
         // bandage 32 skill
         const halfLifeBandage = theAttackerLifeMax / 2;
         if (this.bandage[theAttacker].available && theAttackerLife <= halfLifeBandage && skillFlag != 1) {
-            if (this.calculateChance(15)) {
+            if (calculateChance(15)) {
                 this.bandage[theAttacker].active = true;
                 this.bandage[theAttacker].available = false;
                 this.bandage[theAttacker].count = 5;
@@ -1525,7 +1461,7 @@ class PlayerFight extends Phaser.Scene {
         // health potion 1 skill
         const healthPotionPercentage = theAttackerLife < (theAttackerLifeMax * 0.6);
         const healthPointsPlus = [25, 30, 35];
-        const hpRandom = this.randomizer(2);
+        const hpRandom = randomizer(2);
         const hpToUse = healthPotionPercentage && this.healthPotion[theAttacker] ? healthPointsPlus[hpRandom] : 0;
         let finalHp = 0;
         if (hpToUse != 0 && skillFlag != 1) {
@@ -1555,7 +1491,7 @@ class PlayerFight extends Phaser.Scene {
 
         // poision potion skill 19 (available, active, count)
         if (this.PoisonPotion[theAttacker].available && skillFlag != 1) {
-            if (this.calculateChance(15)) {
+            if (calculateChance(15)) {
                 this.PoisonPotion[theAttacker].active = true;
                 this.PoisonPotion[theAttacker].available = false;
                 this.PoisonPotion[theAttacker].count = 5;
@@ -1614,11 +1550,11 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.bomb[theAttacker] && skillFlag != 1) {
-            const executeBomb = this.calculateChance(15);
+            const executeBomb = calculateChance(15);
             if (executeBomb) {
 
                 const bombDamage = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25];
-                const bombNumber = this.randomizer(10);
+                const bombNumber = randomizer(10);
                 const finalBombDamage = bombDamage[bombNumber];
 
                 if (theAttacker == CONSTANTS._player) {
@@ -1674,7 +1610,7 @@ class PlayerFight extends Phaser.Scene {
 
         const theAttackerDischarge = theAttackerActiveUtils.weapons.length; // 4 weapons to be thrown
         if (this.discharge[theAttacker] && theAttackerDischarge >= 4 && skillFlag != 1) {
-            const executeDischarge = this.calculateChance(15);
+            const executeDischarge = calculateChance(15);
             if (executeDischarge) {
 
                 let dischargeDamage = 0;
@@ -1912,7 +1848,7 @@ class PlayerFight extends Phaser.Scene {
         if (isAccurate) {
 
             let additionalSkillDodge = 0;
-            const randomAction = this.randomizer(1);
+            const randomAction = randomizer(1);
             const randomActionCode = randomAction == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
             const randomActionUtils = randomAction == 0 ? defenderWeapon.evasion : defenderWeapon.block;
 
@@ -1933,8 +1869,8 @@ class PlayerFight extends Phaser.Scene {
 
             if (!isDodgeOrBlock) {
 
-                const withRage = this.rage[theAttacker] && this.calculateChance(15);
-                const withWeaponStriker = weaponStriker ? this.calculateChance(15) : false;
+                const withRage = this.rage[theAttacker] && calculateChance(15);
+                const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
                 const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
                 let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
                 if (withRage) {
@@ -2067,7 +2003,7 @@ class PlayerFight extends Phaser.Scene {
 
                 this.canCounter[theDefender] = false;
             } else {
-                const random_missed_Action = this.randomizer(1);
+                const random_missed_Action = randomizer(1);
                 const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
 
                 this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
@@ -2089,7 +2025,7 @@ class PlayerFight extends Phaser.Scene {
             //             if (petToDefend && petToDefend.length > 0 && petToDefend.pets) {
             //                 let TargetNumbers = petToDefend.map(o => { return o.index; });
             //                 TargetNumbers.push(this.playerUtils.pets.length);
-            //                 const mainTarget = this.randomArrayIndex(TargetNumbers);
+            //                 const mainTarget = randomArrayIndex(TargetNumbers);
 
             //                 if (mainTarget == theDefenderSkills.pets.length) {
             //                     isAttackCharacter = true;
@@ -2158,7 +2094,7 @@ class PlayerFight extends Phaser.Scene {
             // }
             // }
         } else {
-            const random_missed_Action = this.randomizer(1);
+            const random_missed_Action = randomizer(1);
             const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
 
             if (withPet) {
@@ -2181,7 +2117,7 @@ class PlayerFight extends Phaser.Scene {
 
         // First attack skill
         if (this.firstAttack.player && this.firstAttack.opponent) {
-            const randAttacker = this.randomizer(1);
+            const randAttacker = randomizer(1);
             attackersQueue[queueIndex++] = listOfAttackers[randAttacker].key;
         } else if (this.firstAttack.player) {
             attackersQueue[queueIndex++] = listOfAttackers[0].key;
