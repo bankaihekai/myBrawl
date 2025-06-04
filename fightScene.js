@@ -201,7 +201,7 @@ class PlayerFight extends Phaser.Scene {
         // TEST CODE
         // ---------------------------------------
         // player
-        this.currentCharDetails.utilities.skills.push(30);
+        // this.currentCharDetails.utilities.skills.push(30);
         // this.currentCharDetails.utilities.weapons.push(11);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 5;
@@ -764,15 +764,42 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    calculateAccuracy(accuracy) {
+    // accuracy , blockRate, defender
+    calculateAccuracy(accuracy, target) {
 
-        let accuracyPercentage = accuracy || 0;
         let result = false; // Initialize the result
+        let accuracyPercentage = accuracy || 0;
+        let deductionsByDodge = 0;
 
-        // // Directly calculate the remaining chance (if below 100)
+        const theAttacker = target == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+        const attackerAgileRate = target == CONSTANTS._player ? this.opponentEvasion : this.playerEvasion;
+
+        const theDefender = target == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const targetDefenderBlock = target == CONSTANTS._player ? this.playerBlock : this.opponentBlock;
+        const targetDefenderUtils = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
+        const targetDefenderAgile = target == CONSTANTS._player ? this.playerEvasion : this.opponentEvasion;
+
+        // passive skills
+        const phanthomSteps = targetDefenderUtils.skills.find(s => s == 40);
+        const shieldSkill = targetDefenderUtils.skills.find(s => s == 27);
+
+        if (phanthomSteps) deductionsByDodge += 25;
+        if (shieldSkill) deductionsByDodge += 15;
+        if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) deductionsByDodge += 20;
+
+        deductionsByDodge += (targetDefenderAgile + targetDefenderBlock);
+        deductionsByDodge = deductionsByDodge > 90 ? 90 : deductionsByDodge;
+
+        const finalAccuracy = (attackerAgileRate + accuracyPercentage) - deductionsByDodge;
+        accuracyPercentage = Math.max(0, finalAccuracy);
+
         if (accuracyPercentage > 0) {
-            const isSuccessful = calculateChance(accuracyPercentage); // Attempt the remaining chance
-            if (isSuccessful) result = true; // true -> hit by attack
+            result = calculateChance(accuracyPercentage);
+        }
+
+        if (this.trueStrike[theAttacker]) {
+            result = true;
+            this.trueStrike[theAttacker] = false;
         }
 
         return result;
@@ -868,50 +895,6 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    calculateEvasion(evasion, target) {
-
-        let additionSkillEvasion = 0;
-        const targetDefender = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
-        const phanthomSteps = targetDefender.skills.find(s => s == 40); // passive skill
-
-        if (phanthomSteps) additionSkillEvasion += 25;
-
-        let evasionPercentage = evasion || 0;
-        const additional = target == CONSTANTS._player ? this.playerEvasion : this.opponentEvasion;
-        const final = evasionPercentage + additional + additionSkillEvasion;
-        let result = false; // Initialize the result
-
-        // // Directly calculate the remaining chance (if below 100)
-        if (final > 0) {
-            const isSuccessful = calculateChance(final); // Attempt the remaining chance
-            if (isSuccessful) result = true; // true -> evade attack
-        }
-
-        return result;
-    }
-
-    calculateBlock(block, target) {
-
-        let blockPercentage = block || 0;
-        let result = false; // Initialize the result
-        let skillAdditionalBlock = 0;
-
-        const targetDefender = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
-        const shieldSkill = targetDefender.skills.find(s => s == 27);
-        if (shieldSkill) skillAdditionalBlock += 15;
-
-        const additional = target == CONSTANTS._player ? this.playerBlock : this.opponentBlock;
-        const final = blockPercentage + additional + skillAdditionalBlock;
-
-        // // Directly calculate the remaining chance (if below 100)
-        if (final > 0) {
-            const isSuccessful = calculateChance(final); // Attempt the remaining chance
-            if (isSuccessful) result = true; // true -> evade attack
-        }
-
-        return result;
-    }
-
     changeWeapon(target, isSteal, weaponToSteal) {
 
         const isPlayer = target == CONSTANTS._player;
@@ -967,8 +950,8 @@ class PlayerFight extends Phaser.Scene {
         this.opponentSpeed = opponentStats.speed;
 
         // initialize agility / evasion additional
-        this.playerEvasion = Math.round(playerStats.agile * 0.5);
-        this.opponentEvasion = Math.round(opponentStats.agile * 0.5);
+        this.playerEvasion = Math.max(0, Math.round(playerStats.agile * 0.5));
+        this.opponentEvasion = Math.max(0, Math.round(opponentStats.agile * 0.5));
 
         // initialize block rate
         this.playerBlock = 0;
@@ -1069,7 +1052,7 @@ class PlayerFight extends Phaser.Scene {
                     if (this.isStun.player == false) {
                         this.processTurns(
                             CONSTANTS._player, playerDamage, playerCombo,
-                            player_weaponToUse, opponent_weaponToUse, opponentDamage
+                            player_weaponToUse, opponent_weaponToUse, opponentDamage, null, false
                         );
                     } else {
                         this.generateLogs(this.init, { type: CONSTANTS._actions.cantMove, by: CONSTANTS._player });
@@ -1085,13 +1068,13 @@ class PlayerFight extends Phaser.Scene {
 
                         this.processTurns(
                             CONSTANTS._player, playerDamage, playerCombo,
-                            player_weaponToUse, petWeaponToUse, opponentPetDamage, opponentPetDefender
+                            player_weaponToUse, petWeaponToUse, opponentPetDamage, opponentPetDefender, false
                         );
                     }
                 }
             }
 
-            if (isPlayerPet && !!this.playerUtils.pets  && this.playerUtils.pets.life > 0) {
+            if (isPlayerPet && !!this.playerUtils.pets && this.playerUtils.pets.life > 0) {
                 if (this.petMaster.player) target = "Opponent";
                 if (target == "Opponent") {
                     let playerPetAttacker = this.playerUtils.pets;
@@ -1146,7 +1129,7 @@ class PlayerFight extends Phaser.Scene {
                     if (this.isStun.opponent == false) {
                         this.processTurns(
                             CONSTANTS._opponent, opponentDamage, opponentCombo,
-                            opponent_weaponToUse, player_weaponToUse, playerDamage
+                            opponent_weaponToUse, player_weaponToUse, playerDamage, null, false
                         );
                     } else {
                         this.generateLogs(this.init, { type: CONSTANTS._actions.cantMove, by: CONSTANTS._opponent });
@@ -1162,13 +1145,13 @@ class PlayerFight extends Phaser.Scene {
 
                         this.processTurns(
                             CONSTANTS._opponent, opponentDamage, opponentCombo,
-                            opponent_weaponToUse, petWeaponToUse, playerPetDamage, playerPetDefender
+                            opponent_weaponToUse, petWeaponToUse, playerPetDamage, playerPetDefender, false
                         );
                     }
                 }
             }
 
-            if (isOpponentPet && !!this.opponentUtils.pets  && this.opponentUtils.pets.life > 0) {
+            if (isOpponentPet && !!this.opponentUtils.pets && this.opponentUtils.pets.life > 0) {
                 if (this.petMaster.opponent) target = "Player";
                 if (target == "Player") {
                 } else {
@@ -1262,9 +1245,10 @@ class PlayerFight extends Phaser.Scene {
         this.charNameContainer.add(winnerDisplay);
     }
 
-    processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, petDetails) {
+    processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, petDetails, isCounter) {
 
         const withPet = !!petDetails && petDetails.life > 0; // attacl defender pet
+        const withCounter = !!isCounter;
         let noAttackToPet = false;
 
         let skillFlag = 0; // flag for skill that should not be execute at the same time
@@ -1280,7 +1264,9 @@ class PlayerFight extends Phaser.Scene {
         const theDefenderActiveUtils = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
         const theDefenderCounter = attacker == CONSTANTS._player ? this.canCounter.opponent : this.canCounter.player;
 
-        this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+        if (!withCounter) {
+            this.generateLogs(this.init, { type: CONSTANTS._actions.move, by: theAttacker });
+        }
 
         let isChangeWeapon = false;
         var changeWeaponResult = this.changeWeapon(theAttacker);
@@ -1785,14 +1771,14 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.playerLife > 0 && this.opponentLife > 0) {
-
-            const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
-            if (attackerWithThrownWeapon) {
-                this.generateLogs(this.init, { type: CONSTANTS._actions.stopThrow, by: theAttacker });
-            } else {
-                this.generateLogs(this.init, { type: CONSTANTS._actions.return, by: theAttacker });
+            if (!withCounter) {
+                const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
+                if (attackerWithThrownWeapon) {
+                    this.generateLogs(this.init, { type: CONSTANTS._actions.stopThrow, by: theAttacker });
+                } else {
+                    this.generateLogs(this.init, { type: CONSTANTS._actions.return, by: theAttacker });
+                }
             }
-
         } else {
             const theDead = this.playerLife <= 0 ? CONSTANTS._player : CONSTANTS._opponent;
             this.generateLogs(this.init, { type: CONSTANTS._actions.died, by: theDead });
@@ -1831,7 +1817,6 @@ class PlayerFight extends Phaser.Scene {
 
         if (this.buff[theDefender].aura) {
             defenderWeapon.counter += 3;
-            defenderWeapon.evasion += 3;
             defenderWeapon.block += 3;
         }
 
@@ -1846,185 +1831,151 @@ class PlayerFight extends Phaser.Scene {
 
         if (this.debuff[theAttacker].genjutsu) {
             attackerWeapon.counter -= 5;
-            attackerWeapon.evasion -= 5;
             attackerWeapon.block -= 5;
         }
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
         if (futureEye && !isWithThrownWeapon) additionalAccuracy += 25;
-        if (this.trueStrike[theAttacker]) {
-            additionalAccuracy += 100;
-            this.trueStrike[theAttacker] = false;
-        }
 
         const finalAccuracy = attackerWeapon.accuracy + additionalAccuracy;
-        let isAccurate = this.calculateAccuracy(finalAccuracy);
-        let isDodgeOrBlock = false;
+        let isAccurate = this.calculateAccuracy(finalAccuracy, theDefender);
         let healPoints = 0; // default heal per hit
 
         if (isAccurate) {
-
-            let additionalSkillDodge = 0;
-            const randomAction = randomizer(1);
-            const randomActionCode = randomAction == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
-            const randomActionUtils = randomAction == 0 ? defenderWeapon.evasion : defenderWeapon.block;
-
-            if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) additionalSkillDodge += 20;
-
-            const finalSkillDodge = additionalSkillDodge + randomActionUtils;
-            const randomActionResult = randomAction == 0 ?
-                this.calculateEvasion(finalSkillDodge, theDefender) :
-                this.calculateBlock(finalSkillDodge, theDefender);
-            if (!!randomActionResult && !withPet) {
-                this.generateLogs(this.init, { type: randomActionCode, by: theDefender, attacker: theAttacker });
-                const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
-                const counterResult = this.calculateCounterAttack(defenderWeapon.counter || 0, theDefender);
-                this.canCounter[theDefender] = !!counterResult && !!withCounter;
-                isDodgeOrBlock = true;
+            const withRage = this.rage[theAttacker] && calculateChance(15);
+            const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
+            const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
+            let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
+            if (withRage) {
+                finalDamageUse = Math.floor(finalDamageUse * 1.6);
+                this.rage[theAttacker] = false;
+                this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender });
             }
 
-            if (!isDodgeOrBlock) {
+            if (!withPet) {
+                var remaining_defenderLife = Math.max(0, theDefenderLife - finalDamageUse); // Ensure life doesn't go below zero
 
-                const withRage = this.rage[theAttacker] && calculateChance(15);
-                const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
-                const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
-                let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
-                if (withRage) {
-                    finalDamageUse = Math.floor(finalDamageUse * 1.6);
-                    this.rage[theAttacker] = false;
-                    this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Rage", target: theDefender });
+                let survivable = false;
+                if (attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0) {
+                    this.canSurvive.opponent = false;
+                    survivable = true;
+                } else if (attacker == CONSTANTS._opponent && this.canSurvive.player && remaining_defenderLife <= 0) {
+                    this.canSurvive.player = false;
+                    survivable = true;
                 }
 
-                if (!withPet) {
-                    var remaining_defenderLife = Math.max(0, theDefenderLife - finalDamageUse); // Ensure life doesn't go below zero
-
-                    let survivable = false;
-                    if (attacker == CONSTANTS._player && this.canSurvive.opponent && remaining_defenderLife <= 0) {
-                        this.canSurvive.opponent = false;
-                        survivable = true;
-                    } else if (attacker == CONSTANTS._opponent && this.canSurvive.player && remaining_defenderLife <= 0) {
-                        this.canSurvive.player = false;
-                        survivable = true;
-                    }
-
-                    if (survivable) {
-                        remaining_defenderLife = 1;
-                    }
-                } else {
-                    if (theAttacker == CONSTANTS._player) {
-                        this.opponentUtils.pets.life = Math.max(0, this.opponentUtils.pets.life - finalDamageUse);
-                    } else {
-                        this.playerUtils.pets.life = Math.max(0, this.playerUtils.pets.life - finalDamageUse);
-                    }
+                if (survivable) {
+                    remaining_defenderLife = 1;
                 }
-
-                // Passive Vampire Skill 
-                const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
-
-                if (withVampire && !isWithThrownWeapon && !withWeaponStriker) healPoints += 5;
-
-                if (!withPet) {
-                    const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
-                    const logP2 = isPlayerAttacker ? remaining_defenderLife : this.opponentLife;
-
-                    if (allowWeaponStriker || isWithThrownWeapon) { // throw weapon
-                        this.generateLogs(
-                            this.init,
-                            { type: CONSTANTS._actions.throw, by: theAttacker, target: "human" },
-                            { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
-                            { player: logP1, opponent: logP2 }
-                        );
-
-                        if (withWeaponStriker) { // remove active weapon 
-                            if (theAttacker == CONSTANTS._player) {
-                                this.playerUtils.activeWeapon = null;
-                            } else {
-                                this.opponentUtils.activeWeapon = null;
-                            }
-                        }
-
-                        if (isPlayerAttacker) {
-                            this.opponentLife = remaining_defenderLife;
-                        } else {
-                            this.playerLife = remaining_defenderLife;
-                        }
-                    } else {
-                        this.generateLogs(
-                            this.init,
-                            { type: CONSTANTS._actions.attack, by: theAttacker, target: "human" },
-                            { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
-                            { player: logP1, opponent: logP2 }
-                        );
-
-                        if (isPlayerAttacker) {
-                            this.opponentLife = remaining_defenderLife;
-                        } else {
-                            this.playerLife = remaining_defenderLife;
-                        }
-
-                        if (this.thorns[theDefender]) {
-                            let remaingLifeThorns = 0;
-                            const thornsDamage = Math.floor(finalDamageUse - (finalDamageUse * 0.50));
-                            
-                            if (isPlayerAttacker) {
-                                remaingLifeThorns = Math.max(0, this.playerLife - thornsDamage);
-                            } else {
-                                remaingLifeThorns = Math.max(0, this.opponentLife - thornsDamage);
-                            }
-                            const tlogP1 = isPlayerAttacker ? remaingLifeThorns : this.playerLife;
-                            const tlogP2 = !isPlayerAttacker ? remaingLifeThorns : this.opponentLife;
-
-                            this.generateLogs(
-                                this.init,
-                                { type: CONSTANTS._actions.thorns, by: theDefender },
-                                { skill: "Thorns", damage: thornsDamage },
-                                { player: tlogP1, opponent: tlogP2 }
-                            );
-
-                            if (isPlayerAttacker) {
-                                this.playerLife = remaingLifeThorns;
-                            } else {
-                                this.opponentLife = remaingLifeThorns;
-                            }
-                        }
-
-                        if (weaponBreaker) {
-                            this.calculateSureDisarm(theDefender);
-                        } else {
-                            this.calculateDisarm(attackerWeapon, theDefender);
-                        }
-
-                        // Passive Basher Skill 
-                        const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
-                        if (withBash) {
-                            const withBasher = theAttackerSkills.skills.find(skill => skill == 6);
-                            const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
-                            if (withBasher && isWithHeavyWeapon) {
-                                this.calculateStun(theAttacker);
-                            };
-                        }
-                    }
+            } else {
+                if (theAttacker == CONSTANTS._player) {
+                    this.opponentUtils.pets.life = Math.max(0, this.opponentUtils.pets.life - finalDamageUse);
                 } else {
-                    // hit enemy pet
-                    const petRemainingLife = theAttacker == CONSTANTS._player ? this.opponentUtils.pets.life : this.playerUtils.pets.life;
+                    this.playerUtils.pets.life = Math.max(0, this.playerUtils.pets.life - finalDamageUse);
+                }
+            }
+
+            // Passive Vampire Skill 
+            const withVampire = theAttackerSkills.skills.find(skill => skill == 16);
+
+            if (withVampire && !isWithThrownWeapon && !withWeaponStriker) healPoints += 5;
+
+            if (!withPet) {
+                const logP1 = isPlayerAttacker ? this.playerLife : remaining_defenderLife;
+                const logP2 = isPlayerAttacker ? remaining_defenderLife : this.opponentLife;
+
+                if (allowWeaponStriker || isWithThrownWeapon) { // throw weapon
                     this.generateLogs(
                         this.init,
-                        { type: CONSTANTS._actions.attack, by: theAttacker, target: theDefender.concat("Pet"), remainingLife: petRemainingLife, alive: petRemainingLife > 0 },
+                        { type: CONSTANTS._actions.throw, by: theAttacker, target: "human" },
                         { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
-                        { player: this.playerLife, opponent: this.opponentLife }
+                        { player: logP1, opponent: logP2 }
                     );
-                    if (petRemainingLife <= 0) {
-                        this.generateLogs(this.init, { type: CONSTANTS._actions.died, by: theDefender.concat("Pet") });
+
+                    if (withWeaponStriker) { // remove active weapon 
+                        if (theAttacker == CONSTANTS._player) {
+                            this.playerUtils.activeWeapon = null;
+                        } else {
+                            this.opponentUtils.activeWeapon = null;
+                        }
+                    }
+
+                    if (isPlayerAttacker) {
+                        this.opponentLife = remaining_defenderLife;
+                    } else {
+                        this.playerLife = remaining_defenderLife;
+                    }
+                } else {
+                    this.generateLogs(
+                        this.init,
+                        { type: CONSTANTS._actions.attack, by: theAttacker, target: "human" },
+                        { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
+                        { player: logP1, opponent: logP2 }
+                    );
+
+                    if (isPlayerAttacker) {
+                        this.opponentLife = remaining_defenderLife;
+                    } else {
+                        this.playerLife = remaining_defenderLife;
+                    }
+
+                    if (this.thorns[theDefender]) {
+                        let remaingLifeThorns = 0;
+                        const thornsDamage = Math.floor(finalDamageUse - (finalDamageUse * 0.50));
+
+                        if (isPlayerAttacker) {
+                            remaingLifeThorns = Math.max(0, this.playerLife - thornsDamage);
+                        } else {
+                            remaingLifeThorns = Math.max(0, this.opponentLife - thornsDamage);
+                        }
+                        const tlogP1 = isPlayerAttacker ? remaingLifeThorns : this.playerLife;
+                        const tlogP2 = !isPlayerAttacker ? remaingLifeThorns : this.opponentLife;
+
+                        this.generateLogs(
+                            this.init,
+                            { type: CONSTANTS._actions.thorns, by: theDefender },
+                            { skill: "Thorns", damage: thornsDamage },
+                            { player: tlogP1, opponent: tlogP2 }
+                        );
+
+                        if (isPlayerAttacker) {
+                            this.playerLife = remaingLifeThorns;
+                        } else {
+                            this.opponentLife = remaingLifeThorns;
+                        }
+                    }
+
+                    if (weaponBreaker) {
+                        this.calculateSureDisarm(theDefender);
+                    } else {
+                        this.calculateDisarm(attackerWeapon, theDefender);
+                    }
+
+                    // Passive Basher Skill 
+                    const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
+                    if (withBash) {
+                        const withBasher = theAttackerSkills.skills.find(skill => skill == 6);
+                        const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
+                        if (withBasher && isWithHeavyWeapon) {
+                            this.calculateStun(theAttacker);
+                        };
                     }
                 }
-
-                this.canCounter[theDefender] = false;
             } else {
-                const random_missed_Action = randomizer(1);
-                const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
-
-                this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
+                // hit enemy pet
+                const petRemainingLife = theAttacker == CONSTANTS._player ? this.opponentUtils.pets.life : this.playerUtils.pets.life;
+                this.generateLogs(
+                    this.init,
+                    { type: CONSTANTS._actions.attack, by: theAttacker, target: theDefender.concat("Pet"), remainingLife: petRemainingLife, alive: petRemainingLife > 0 },
+                    { name: attackerWeapon.name, damage: finalDamageUse, crit: attackerDamage.withCrit, heal: healPoints },
+                    { player: this.playerLife, opponent: this.opponentLife }
+                );
+                if (petRemainingLife <= 0) {
+                    this.generateLogs(this.init, { type: CONSTANTS._actions.died, by: theDefender.concat("Pet") });
+                }
             }
+
+            this.canCounter[theDefender] = false;
         } else {
             const random_missed_Action = randomizer(1);
             const random_missed_ActionCode = random_missed_Action == 0 ? CONSTANTS._actions.dodge : CONSTANTS._actions.block;
@@ -2035,6 +1986,10 @@ class PlayerFight extends Phaser.Scene {
                 this.generateLogs(this.init, { type: random_missed_ActionCode, by: theDefender, attacker: theAttacker });
                 this.canCounter[theDefender] = false;
             }
+
+            const withCounter = isWithThrownWeapon ? false : true; // false to not counter attack with thrown weapon
+            const counterResult = this.calculateCounterAttack(defenderWeapon.counter || 0, theDefender);
+            this.canCounter[theDefender] = !!counterResult && !!withCounter;
         }
     }
 
@@ -2284,7 +2239,7 @@ class PlayerFight extends Phaser.Scene {
             for (let i = 1; i <= attackerCombo; i++) {
                 const defenderPetAliveAgain = attacker == CONSTANTS._player ? this.opponentUtils.pets.life > 0 : this.playerUtils.pets.life > 0;
                 if (defenderPetAliveAgain) {
-                    const defenderPetDodge = theDefenderActiveUtils.dodge + (Math.round(theDefenderActiveUtils.agile * 0.5));
+                    const defenderPetDodge = theDefenderActiveUtils.dodge + (Math.max(0, Math.round(theDefenderActiveUtils.agile * 0.5)));
                     const isccurate = calculateChance(Math.max(0, attacker_weaponToUse.accuracy - defenderPetDodge));
                     if (!isccurate) {
                         this.generateLogs(this.init, { type: CONSTANTS._actions.dodge, by: theDefenderPetName, attacker: theAttackerPetName });
@@ -2310,7 +2265,6 @@ class PlayerFight extends Phaser.Scene {
 
             if (this.buff[theDefender].aura) {
                 defender_weaponToUse.counter += 3;
-                defender_weaponToUse.evasion += 3;
                 defender_weaponToUse.block += 3;
             }
 
@@ -2318,7 +2272,7 @@ class PlayerFight extends Phaser.Scene {
                 defender_weaponToUse.block += 10;
             }
 
-            const defendeDodge = defender_weaponToUse.dodge + defender_weaponToUse.evasion + (Math.round(theDefenderUtils.attributes.agile * 1.5));
+            const defendeDodge = defender_weaponToUse.dodge + (Math.max(0, Math.round(theDefenderUtils.attributes.agile * 0.5)));
             const isAccurate = calculateChance(Math.max(0, attacker_weaponToUse.accuracy - defendeDodge));
 
             if (isAccurate) {
@@ -2383,7 +2337,7 @@ class PlayerFight extends Phaser.Scene {
                     this.generateLogs(this.init, { type: CONSTANTS._actions.counter, by: target.toLowerCase(), attacker: theAttackerPetName });
                     this.processTurns(
                         target.toLowerCase(), defenderDamage, defenderCombo,
-                        defender_weaponToUse, attacker_weaponToUse, attackerDamage.finalDamage, theAttackerActiveUtils
+                        defender_weaponToUse, attacker_weaponToUse, attackerDamage.finalDamage, theAttackerActiveUtils, true
                     );
                 }
             }
@@ -2412,8 +2366,8 @@ class PlayerFight extends Phaser.Scene {
             }
         }
         if (this.playerLife > 0 && this.opponentLife > 0) {
-            if (theAttackerActiveUtils.life > 0){
-                this.generateLogs(this.init, { type: CONSTANTS._actions.return, by: theAttackerPetName }); 
+            if (theAttackerActiveUtils.life > 0) {
+                this.generateLogs(this.init, { type: CONSTANTS._actions.return, by: theAttackerPetName });
             }
         } else {
             const theDead = this.playerLife <= 0 ? CONSTANTS._player : CONSTANTS._opponent;
@@ -2430,7 +2384,6 @@ class PlayerFight extends Phaser.Scene {
             speed: petDetails.speed,
             counter: 0,
             accuracy: petDetails.accuracy,
-            evasion: petDetails.dodge,
             block: petDetails.dodge,
             disarm: 0,
             critical: 0,
