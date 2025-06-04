@@ -893,7 +893,8 @@ const CONSTANTS = {
         bandage: "Bandage",
         poison: "Poison",
         skill: "Skill",
-        thorns: "Thorns"
+        thorns: "Thorns",
+        died: "died"
     }
 };
 
