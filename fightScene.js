@@ -168,7 +168,7 @@ class PlayerFight extends Phaser.Scene {
     }
 
     create() {
-
+        console.log("fight scene")
         const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -1387,27 +1387,6 @@ class PlayerFight extends Phaser.Scene {
                 noAttackToPet = true;
             }
         }
-
-        // pet master skill 11 -> steal pets
-        // if (this.petMaster[theAttacker] && defenderPets > 0 && skillFlag != 1) {
-        //     const executeStealPet = calculateChance(15);
-        //     if (executeStealPet) {
-        //         const petToSteal = theDefenderActiveUtils.pets;
-        //         const newPets = theAttackerActiveUtils.pets.concat(theDefenderActiveUtils.pets);
-
-        //         if (theAttacker == CONSTANTS._player) {
-        //             this.playerUtils.pets = newPets;
-        //             this.opponentUtils.pets = [];
-        //         } else {
-        //             this.playerUtils.pets = [];
-        //             this.opponentUtils.pets = newPets;
-        //         }
-        //         this.generateLogs(this.init, { type: CONSTANTS._actions.skill, by: theAttacker }, { skill: "Pet Master", target: theDefender, pets: petToSteal });
-        //         this.petMaster[theAttacker] = false;
-        //         skillFlag = 1;
-        //         noAttackToPet = true;
-        //     }
-        // }
 
         // genjutsu debuff skill 2
         if (this.genjutsu[theAttacker] && skillFlag != 1) {

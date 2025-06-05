@@ -23,7 +23,7 @@ class PlayerSelect extends Phaser.Scene {
         localStorage.removeItem("opponent");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
-            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
+            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
@@ -69,8 +69,6 @@ class PlayerSelect extends Phaser.Scene {
         this.charNameContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
 
         this.renderCreateCharacter();
-        // this.createBarStatus(this.currentCharDetails.attributes);
-        // this.renderButtons();
     }
 
     createBorder(width, height) {
@@ -88,7 +86,6 @@ class PlayerSelect extends Phaser.Scene {
         // console.log({ rand_chars: rand_chars });
 
         // this.calculateLevelUp();
-        // this.renderButtons();
         let startX = 110;
         let gap = 100;
         let rowLimit = 7;
@@ -141,7 +138,7 @@ class PlayerSelect extends Phaser.Scene {
             selectTxtOpponent.on("pointerdown", () => {
                 // this.scene.start('playerHome');
                 // to do create a fight scene simulation
-                this.saveToLocalStorage("opponent", rand_chars[i]);
+                saveToLocalStorage("opponent", rand_chars[i]);
                 this.scene.start('playerFight');
             });
 
@@ -171,7 +168,7 @@ class PlayerSelect extends Phaser.Scene {
 
         const armorResult = charAllData.utilities.skills.find(skill => skill == 44);
         if (armorResult) {
-            const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
+            const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
             const charArmor = currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
             const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, charArmor)
                 .setFrame(0) // set to 1 because no other skill yet added
@@ -194,238 +191,33 @@ class PlayerSelect extends Phaser.Scene {
         // this.renderUtils(container, charDetails);
     }
 
-    randomizer(max) {
-        return Phaser.Math.Between(0, max);
-    }
-
-    renderButtons() {
-        this.buttonContainer.removeAll(true);
-
-        const setting_icon = this.add.sprite(this.centerX / 2 - 100, this.centerY + 30, "buttons").setFrame(17); // setting icon
-        setting_icon.setInteractive();
-        this.buttonContainer.add(setting_icon);
-        this.createToolTip(setting_icon, "Settings", "buttons", "settings");
-
-        setting_icon.on("pointerdown", () => {
-            this.createModalTable2('Settings', "<h1 class='text-danger'>Settings not yet available</h1>");
-        });
-
-        const fightHistory_icon = this.add.sprite(this.centerX / 2 - 40, this.centerY + 30, "buttons").setFrame(31);
-        fightHistory_icon.setInteractive();
-        this.buttonContainer.add(fightHistory_icon);
-        this.createToolTip(fightHistory_icon, "Fight History", "buttons", "fhistory");
-
-        fightHistory_icon.on("pointerdown", () => {
-            this.createModalTable2('Fight History', "<h1 class='text-danger'>Fight History not yet available</h1>");
-        });
-
-        // center
-        const fightIcon = this.add.sprite(this.centerX / 2 + 20, this.centerY + 30, "buttons").setFrame(30);
-        fightIcon.setInteractive();
-        this.buttonContainer.add(fightIcon);
-        this.createToolTip(fightIcon, "Fight!", "buttons");
-
-        fightIcon.on("pointerdown", () => {
-            this.createModalTable2('Select Opponent', "<h1 class='text-danger'>Fight not yet available</h1>", "fight");
-        });
-
-        const learnBook_icon = this.add.sprite(this.centerX / 2 + 80, this.centerY + 30, "buttons").setFrame(32); // book icon
-        learnBook_icon.setInteractive();
-        this.buttonContainer.add(learnBook_icon);
-        this.createToolTip(learnBook_icon, "Library", "buttons");
-
-        learnBook_icon.on("pointerdown", () => {
-            this.createModalTable2('Library', "<h1 class='text-danger'>Library not yet available</h1>", "library");
-        });
-
-        const lvlUpHistory_icon = this.add.sprite(this.centerX / 2 + 140, this.centerY + 30, "buttons").setFrame(29);
-        lvlUpHistory_icon.setInteractive();
-        this.buttonContainer.add(lvlUpHistory_icon);
-        this.createToolTip(lvlUpHistory_icon, "Utility Logs", "buttons");
-
-        lvlUpHistory_icon.on("pointerdown", () => {
-            this.createModalTable2('Utility Logs', this.currentCharDetails.logs.utility, "utilLogs");
-        });
-
-    }
-
     changeGender() {
         this.currentCharDetails.gender = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._genders[0] : CONSTANTS._genders[1];
         this.renderCreateCharacter();
     }
 
     changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
         this.renderCreateCharacter();
     }
 
     changeRandom() {
 
-        this.currentCharDetails.gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+        this.currentCharDetails.gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
 
         const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = this.randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.number = randomizer(hairGenderValue);
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         this.renderCreateCharacter();
-    }
-
-    createBarStatus(charAttributes) {
-
-        const barWidth = 80; // Total width of the bar
-        const barHeight = 15; // Height of each segment
-        const maxSegments = 10; // Always 10 segments per bar
-        const segmentWidth = barWidth / maxSegments; // Width of each segment
-
-        // CREATE COLORED BARs
-        // this.creteBars(this.characterContainer);
-
-        const getColor = (value) => {
-            // Return colors based on value ranges
-            if (value == 0) return CONSTANTS._colors[1]; // 01-10 slight Yellow-Green
-            if (value == 1) return CONSTANTS._colors[2]; // 11-20 Yellow-Green
-            if (value == 2) return CONSTANTS._colors[3]; // 21-30 Yellow
-            if (value == 3) return CONSTANTS._colors[4]; // 31-40 Yellow-Orange
-            if (value == 4) return CONSTANTS._colors[5]; // 41-50 Orange
-            if (value == 5) return CONSTANTS._colors[6]; // 51-60 Red-Orange
-            if (value == 6) return CONSTANTS._colors[7]; // 61-70 Red
-            if (value == 7) return CONSTANTS._colors[8]; // 81-90 Dark Red
-            if (value == 8) return CONSTANTS._colors[9]; // 91-100 Pink
-            if (value == 9) return CONSTANTS._colors[10]; // 101-110 Dark Pink
-            if (value == 10) return CONSTANTS._colors[11]; // 111-120 Violet
-            if (value >= 11 && value <= 14) return CONSTANTS._colors[12]; // 121-150 Dark Blue
-            if (value > 14) return CONSTANTS._colors[13]; // 151+ Black
-        };
-
-        Object.entries(charAttributes).forEach(([attribute, value], index) => {
-            if (attribute == "armor") return;
-            // Create a container for the health bar
-            this.barContainer = this.add.container(this.centerX - 160, 135 + index * (barHeight + 5));
-
-            if (attribute !== "life") {
-                // Calculate the quotient and fractional part for the segments
-                const quotient = value / 10;
-                const integerPart = Math.floor(quotient);
-                const fractionalPart = Math.round((quotient - integerPart) * 10);
-                const remainingCount = 10 - fractionalPart;
-                const integerPartColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : getColor(integerPart);
-                const remainingColor = integerPart == 0 && remainingCount == 0 ? CONSTANTS._colors[0] : CONSTANTS._colors[CONSTANTS._colors.indexOf(integerPartColor) - 1];
-
-                let setOfColor = [];
-
-                // Add filled segments with integer color
-                for (let i = 0; i < fractionalPart; i++) {
-                    setOfColor.push(integerPartColor);
-                }
-
-                // Add unfilled segments with remaining color
-                for (let i = 0; i < remainingCount; i++) {
-                    setOfColor.push(remainingColor);
-                }
-
-                // Create segments for the bar
-                for (let i = 0; i < maxSegments; i++) {
-                    const color = setOfColor[i]; // Use the pre-determined colors
-                    const borderThickness = 1; // Thickness of the border
-                    const borderColor = setOfColor[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
-                    // Create the outer rectangle (border)
-                    const outerSegment = this.add.rectangle(
-                        i * segmentWidth, // Position segments horizontally with spacing
-                        0, // Align vertically
-                        segmentWidth, // Outer rectangle includes the border
-                        barHeight, // Outer rectangle includes the border
-                        borderColor // Border color (black)
-                    );
-                    outerSegment.setOrigin(0); // Align to the top-left
-                    this.barContainer.add(outerSegment);
-
-                    // Create the inner rectangle (fill)
-                    const innerSegment = this.add.rectangle(
-                        i * segmentWidth + borderThickness, // Adjust for border thickness
-                        borderThickness, // Adjust for border thickness
-                        segmentWidth - 2, // Adjust for border thickness
-                        barHeight - 2, // Adjust for border thickness
-                        Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
-                    );
-                    innerSegment.setOrigin(0); // Align to the top-left
-                    this.barContainer.add(innerSegment);
-                }
-            }
-            var iconFrame = 0;
-            switch (attribute) {
-                case "life":
-                    iconFrame = 25;
-                    break;
-                case "damage":
-                    iconFrame = 26;
-                    break;
-                case "agile":
-                    iconFrame = 28;
-                    break;
-                case "speed":
-                    iconFrame = 27;
-                    break;
-                default:
-                    break;
-            }
-
-            const charShadow = this.add.sprite(-15, 8, "buttons").setFrame(iconFrame).setScale(0.4);
-            this.barContainer.add(charShadow);
-
-            // Add a label for the attribute
-            // const attributeText = attribute.charAt(0).toUpperCase() + attribute.slice(1);
-            // const label = this.add.text(-51, 0, attributeText, {
-            //     fontSize: "14px",
-            //     color: "#ffffff"
-            // });
-            // this.barContainer.add(label);
-
-            const txtLocation = attribute == "life" ? 0 : 85;
-            const valueLabel = this.add.text(txtLocation, 0, value, {
-                fontSize: "14px",
-                color: "#ffffff"
-            });
-            this.barContainer.add(valueLabel);
-        });
-
-        const valueLabel = this.add.text(0, 20, "LVL.".concat(this.currentCharDetails.level.current), {
-            fontSize: "20px",
-            color: "#ffffff",
-            fill: '#ffffff',
-            fontStyle: 'bold',
-            stroke: '#000000', // Border color
-            strokeThickness: 3 // Border thickness
-        });
-        this.barContainer.add(valueLabel);
     }
 
     createName() {
         // Clear the container first
         this.charNameContainer.removeAll(true);
-
-        // Add the "Enter Name" text below the "Create Character" title
-        // let nameText = this.add.text(215, 100, this.currentCharDetails.name || "N/A", {
-        //     fontSize: '20px',
-        //     fill: '#ffffff',
-        //     fontStyle: 'bold',
-        //     stroke: '#000000', // Border color
-        //     strokeThickness: 3 // Border thickness
-        // });
-        // this.charNameContainer.add(nameText);
-
-        // const winRate = ((this.currentCharDetails.kdStats.win / (this.currentCharDetails.kdStats.win + this.currentCharDetails.kdStats.lose)) * 100) || 0;
-        // const kdDisplay = "Winrate: " + winRate + "%";
-        // let kdrStat = this.add.text(130, 60, this.currentCharDetails.kdStats.win + "W/" + this.currentCharDetails.kdStats.lose + "L  " + kdDisplay, {
-        //     fontSize: '16px',
-        //     fill: '#ccada1',
-        //     fontStyle: 'bold',
-        //     stroke: '#000000', // Border color
-        //     strokeThickness: 3 // Border thickness
-        // });
-        // this.charNameContainer.add(kdrStat);
 
         // to do - change to logout sprite
         const logoutTxt = this.add.sprite(this.scale.width - 110, 0, "logoutTxt").setFrame(1).setOrigin(0, 0);
@@ -507,19 +299,19 @@ class PlayerSelect extends Phaser.Scene {
                     buttonContainer.style.display = 'none';
                     // Clear the input value
                     passwordInput.value = '';
-                    this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
+                    this.currentCharDetails.psd = encryptedData(userInput, userInput);
                     this.setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if (data) {
-                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
+                            saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
                         } else {
                             throw { code: 500, message: "Saving data failed!" };
                         }
                     })
                         .catch(error => {
                             this.currentCharDetails.psd = null;
-                            this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                            this.createToast(generateRandomKeys(), error.message || JSON.stringify(error), false);
                         }).finally(() => {
                             this.setLoading(false);
                         });
@@ -564,72 +356,12 @@ class PlayerSelect extends Phaser.Scene {
         });
     }
 
-    createToolTip(toHover, content, utilKeys) {
-
-        var position = {
-            x: CONSTANTS._gameWidth,
-            y: CONSTANTS._gameHeight
-        };
-
-        switch (utilKeys) {
-            case "skills":
-                position.x += 180, // left
-                    position.y -= 170 // top
-                break;
-            case "weapons":
-                break;
-            case "pets":
-                break;
-            default:
-                position.x -= 80, // left
-                    position.y -= 220 // top
-                break;
-        }
-
-        toHover.setInteractive();
-
-        toHover.on("pointerover", () => {
-            document.getElementById("phaser-tooltip")?.remove();
-
-            const modal = document.createElement("div");
-            modal.id = "phaser-tooltip";
-            modal.innerHTML = `
-            <div class="position-absolute bg-dark text-white border rounded p-3" 
-                 style="left: ${position.x}px; top: ${position.y}px; z-index: 1000; 
-                        max-width: 350px; padding: 15px; border-radius: 8px; 
-                        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
-                        font-size: 18px; font-weight: bold; border: 2px solid #ffffff;">
-                ${content}
-            </div>
-        `;
-
-            document.body.appendChild(modal);
-        });
-
-        toHover.on("pointerout", () => document.getElementById("phaser-tooltip")?.remove());
-    }
-
-    saveToLocalStorage(key, data) {
-        const encryptedData = this.encryptedData(key, data);
-        localStorage.setItem(key, encryptedData);
-    };
-
-    encryptedData(key, data) {
-        return CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
-    }
-
-    decryptData(key) {
-        const encryptedData = localStorage.getItem(key);
-        const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    };
-
     loadCharacter(key) {
         const encryptedData = localStorage.getItem(key);
 
         if (encryptedData) {
             try {
-                return this.decryptData(key);
+                return decryptData(key);
             } catch (error) {
                 console.error(CONSTANTS._errorMessages.failedDecrypt, error);
                 return null;
@@ -640,7 +372,7 @@ class PlayerSelect extends Phaser.Scene {
     }
 
     validateLoggedIn(username) {
-        const userLoggedKey = this.decryptData(CONSTANTS._charUserKey);
+        const userLoggedKey = decryptData(CONSTANTS._charUserKey);
         const compareResult = userLoggedKey == username;
 
         if (!compareResult) {
@@ -651,176 +383,6 @@ class PlayerSelect extends Phaser.Scene {
         }
 
         return true;
-    }
-
-    renderUtils(container, charDetails) {
-
-        // render weapon shadows
-        const weaponPosition = CONSTANTS._weaponPosition;
-        for (let i = 1; i <= CONSTANTS._weapons.length; i++) {
-            const charWeapon = "weapon_".concat(i);
-            const charWeaponSprite = this.add.sprite(charDetails.x + weaponPosition.x, charDetails.y + weaponPosition.y, charWeapon).setFrame(0);
-
-            container.add(charWeaponSprite);
-        }
-
-        // render pets shadows
-        for (let i = 1; i <= CONSTANTS._pets.length; i++) {
-            const charPet = "pet_".concat(i);
-            const charPetSprite = this.add.sprite(charDetails.x + 31.5, charDetails.y + 290, charPet).setFrame(0);
-
-            container.add(charPetSprite);
-        }
-
-        // render skills OPEN
-        const columns = 11; // Number of sprites per row
-        const spriteSize = 32; // Size of each sprite
-        let maxSpritesOpen = 55;
-        let maxSprites = 55;
-
-        for (let i = 0; i < 55; i++) {
-            let position = {
-                x: 432 + (i % columns) * spriteSize,
-                y: 401 + Math.floor(i / columns) * spriteSize
-            };
-
-            // Assign unique key using bgSkills_Open_i
-            const uniqueKey = `bgSkills_Open_${maxSpritesOpen}`;
-            const openSkill_sprite = this.add.image(position.x, position.y, 'bgSkills_Open', i);
-            openSkill_sprite.setName(uniqueKey); // Set unique name for reference
-
-            const skillDescription = CONSTANTS._skills.find(skill => skill.number == maxSpritesOpen);
-            if (skillDescription) {
-                const skillContent = `<span class="text-warning">${skillDescription.name}</span>: ${skillDescription.description}`;
-                this.createToolTip(openSkill_sprite, skillContent, "skills");
-            }
-
-            this.characterContainer.add(openSkill_sprite);
-            maxSpritesOpen--;
-        }
-
-        // render skills shadows
-        for (let i = 0; i < 55; i++) {
-            let position = {
-                x: 432 + (i % columns) * spriteSize,
-                y: 401 + Math.floor(i / columns) * spriteSize
-            };
-
-            // Assign unique key using bgSkills_Close_i
-            const uniqueKey = `bgSkills_Close_${maxSprites}`;
-            const closeSkill_sprite = this.add.image(position.x, position.y, 'bgSkills_Close', i);
-            closeSkill_sprite.setName(uniqueKey); // Set unique name for reference
-
-            const skillDescription = CONSTANTS._skills.find(skill => skill.number == maxSprites);
-            if (skillDescription) {
-                const skillContent = `<span class="text-warning">${skillDescription.name}</span>: ${skillDescription.description}`;
-                this.createToolTip(closeSkill_sprite, skillContent, "skills");
-            }
-
-            this.characterContainer.add(closeSkill_sprite);
-            maxSprites--;
-        }
-
-        // render weapons
-        const weapons = CONSTANTS._weapons;
-        const charWeapons = this.currentCharDetails.utilities.weapons;
-        const filterWeapons = weapons.filter(weapon => charWeapons.includes(weapon.number));
-        filterWeapons.forEach(weapon => {
-            container.iterate((sprite) => {
-                if (sprite.texture.key == "weapon_".concat(weapon.number)) {
-                    sprite.destroy();
-                }
-            });
-        });
-
-        // render skills
-        const skills = CONSTANTS._skills;
-        const charSkills = this.currentCharDetails.utilities.skills;
-        const filterSkills = skills.filter(skill => charSkills.includes(skill.number));
-
-        filterSkills.forEach(filteredSkill => {
-            var filterSame = skills.filter(skill => skill.number == filteredSkill.number);
-            if (filterSame.length > 0) {
-                container.iterate((sprite) => {
-                    if (sprite.name == "bgSkills_Close_".concat(filterSame[0].number)) {
-                        sprite.destroy();
-                    }
-                });
-            }
-        });
-
-        // render pets
-        const pets = CONSTANTS._pets;
-        const charPets = this.currentCharDetails.utilities.pets;
-        const groupedPets = charPets.reduce((acc, pet) => {
-            if (!acc[pet.name]) {
-                acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
-            }
-            acc[pet.name].count++; // Increment count
-            return acc;
-        }, {});
-
-        // Convert object back to array if needed
-        const results = Object.values(groupedPets);
-
-        const filterPets = results.map(charPet =>
-            pets.find(pet => pet.name == charPet.name)
-        );
-
-        filterPets.forEach(pet => {
-            container.iterate((sprite) => {
-                if (sprite.texture.key == "pet_".concat(pet.number)) {
-                    sprite.destroy();
-                }
-            });
-        });
-
-        results.forEach(result => {
-            let isWithResult = true;
-            let multiplyPosition = {
-                x: 0,
-                y: 0
-            }
-            switch (result.name) {
-                case "Bear":
-                    multiplyPosition.x = 240;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Dog":
-                    multiplyPosition.x = 320;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Snake":
-                    multiplyPosition.x = 375;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Cat":
-                    multiplyPosition.x = 60;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Rat":
-                    multiplyPosition.x = 110;
-                    multiplyPosition.y = 520;
-                    break;
-                case "Bird":
-                    multiplyPosition.x = 105;
-                    multiplyPosition.y = 420;
-                    break;
-                default:
-                    isWithResult = false;
-                    break;
-            }
-
-            if (isWithResult && result.count > 0) {
-                const multiplySprite = [9, 10, 11, 24]; // x1 x2 x3 x4
-                const multSprite =
-                    result.count == 1 ? multiplySprite[0] :
-                        result.count == 2 ? multiplySprite[1] :
-                            result.count == 3 ? multiplySprite[2] : multiplySprite[3];
-                const charShadow = this.add.sprite(multiplyPosition.x, multiplyPosition.y, "buttons").setFrame(multSprite).setScale(0.5);
-                this.characterContainer.add(charShadow);
-            }
-        });
     }
 
     /**
@@ -902,7 +464,7 @@ class PlayerSelect extends Phaser.Scene {
                             }
                         }
                         const randomStatsNumber = witharmor ? 4 : 3;
-                        const randomStatsNumberResult = this.randomizer(randomStatsNumber);
+                        const randomStatsNumberResult = randomizer(randomStatsNumber);
                         let keyName = "";
                         if (randomStatsNumberResult == 0) {
                             charData.attributes.life += 8;
@@ -1065,7 +627,7 @@ class PlayerSelect extends Phaser.Scene {
     validateNewUtils(charData, utils) {
         var result = `Increase <b>"{stats}"</b>`;
         var statsKey = "";
-        const randomStatsNumber = this.randomizer(3);
+        const randomStatsNumber = randomizer(3);
 
         switch (randomStatsNumber) {
             case 0: // life
@@ -1317,10 +879,6 @@ class PlayerSelect extends Phaser.Scene {
         }, 3000);
     }
 
-    generateRandomKeys() {
-        return Math.random().toString(36).substring(2, 7);
-    }
-
     createCursorTooltip() {
         // Create tooltip element
         const tooltip = document.createElement("div");
@@ -1406,15 +964,6 @@ class PlayerSelect extends Phaser.Scene {
         }
     }
 
-    randomArrayIndex(data) {
-
-        // Generate a random index
-        const randomIndex = Math.floor(Math.random() * data.length);
-
-        // Select the random value from the array
-        return data[randomIndex];
-    }
-
     createModalTable2(title, message, key) {
         const modal = document.createElement("div");
         modal.innerHTML = `
@@ -1462,12 +1011,12 @@ class PlayerSelect extends Phaser.Scene {
         let randomChars = [];
 
         for (let i = 1; i <= maxRandomChar; i++) {
-            const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+            const rand_Gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
             const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-            const rand_hairNumber = this.randomizer(rand_hairGenderValue);
-            const rand_hairFrame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-            const rand_basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-            const rand_bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+            const rand_hairNumber = randomizer(rand_hairGenderValue);
+            const rand_hairFrame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+            const rand_basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+            const rand_bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
             let randomChar = {
                 level: {
@@ -1475,7 +1024,7 @@ class PlayerSelect extends Phaser.Scene {
                     experience: 0,
                     points: lvlPoints || 1
                 },
-                name: "Bot" + this.randomizer(9999),
+                name: "Bot" + randomizer(9999),
                 gender: rand_Gender,
                 bodyFrame: rand_bodyFrame,
                 hair: {
