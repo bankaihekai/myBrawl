@@ -441,7 +441,7 @@ class PlayerSelect extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                randomUtils.name = "pets" // for manual testing overwrite
+                // randomUtils.name = "pets" // for manual testing overwrite
 
                 switch (randomUtils.name) {
                     case "skills":

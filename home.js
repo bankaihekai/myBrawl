@@ -592,7 +592,7 @@ class PlayerHome extends Phaser.Scene {
                 localStorage.removeItem(CONSTANTS._charUserKey);
                 localStorage.removeItem(CONSTANTS._charDetailsKey);
                 localStorage.setItem(CONSTANTS._logout, 'true');
-                this.scene.start('playGame');
+                location.reload();
             }
         });
 

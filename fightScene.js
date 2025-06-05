@@ -202,7 +202,7 @@ class PlayerFight extends Phaser.Scene {
         // ---------------------------------------
         // player
         // this.currentCharDetails.utilities.skills.push(30);
-        // this.currentCharDetails.utilities.weapons.push(11);
+        // this.currentCharDetails.utilities.weapons.push(20);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         this.currentCharDetails.attributes.damage = 5;
         // opponent
@@ -1272,6 +1272,7 @@ class PlayerFight extends Phaser.Scene {
         var changeWeaponResult = this.changeWeapon(theAttacker);
         if (changeWeaponResult) {
             attacker_weaponToUse = changeWeaponResult;
+            attackerCombo = this.calculateCombo(changeWeaponResult.combo, theAttacker);
             attackerDamage = this.calculateDamage(theAttackerUtils.attributes.damage, theDefenderUtils.attributes.armor, attacker_weaponToUse, theAttacker);
             isChangeWeapon = true;
         };
@@ -2201,7 +2202,12 @@ class PlayerFight extends Phaser.Scene {
 
     // pet attack pet or character
     processTurnsPet(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, target) {
-        const defenderPetAlive = attacker == CONSTANTS._player ? this.opponentUtils.pets.life > 0 : this.playerUtils.pets.life > 0;
+        let isTargetPet = target == "pet";
+        let defenderPetAlive = false;
+
+        if (isTargetPet) {
+            defenderPetAlive = attacker == CONSTANTS._player ? this.opponentUtils.pets.life > 0 : this.playerUtils.pets.life > 0;
+        }
 
         const playerPet = CONSTANTS._player.concat("Pet");
         const opponentPet = CONSTANTS._opponent.concat("Pet");
