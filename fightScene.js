@@ -407,7 +407,7 @@ class PlayerFight extends Phaser.Scene {
 
         backTxt.on("pointerdown", () => {
             localStorage.removeItem(CONSTANTS._opponent);
-            this.scene.start('playerHome');
+            location.reload();
         });
 
         let playerName = this.add.text(40, 60, this.currentCharDetails.name, {

@@ -13,14 +13,14 @@ function decryptData(key) {
 };
 
 function saveToLocalStorage(key, data) {
-    const encryptedData = encryptedData(key, data);
+    const encryptedData = this.encryptedData(key, data);
     localStorage.setItem(key, encryptedData);
 };
 
 function loadCharacter(key) {
-    const encryptedData = localStorage.getItem(key);
+    const userData = localStorage.getItem(key);
 
-    if (encryptedData) {
+    if (userData) {
         try {
             return decryptData(key);
         } catch (error) {
