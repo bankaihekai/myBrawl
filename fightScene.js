@@ -764,39 +764,40 @@ class PlayerFight extends Phaser.Scene {
         }
     }
 
-    // accuracy , blockRate, defender
+    // accuracy, defender
     calculateAccuracy(accuracy, target) {
 
         let result = false; // Initialize the result
-        let accuracyPercentage = accuracy || 0;
-        let deductionsByDodge = 0;
-
+        let enemySkillDodgeRate = 0;
+        
+        const accuracyPercentage = Number(accuracy) || 0;
         const theAttacker = target == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const attackerAgileRate = target == CONSTANTS._player ? this.opponentEvasion : this.playerEvasion;
 
         const theDefender = target == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
-        const targetDefenderBlock = target == CONSTANTS._player ? this.playerBlock : this.opponentBlock;
-        const targetDefenderUtils = target == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
-        const targetDefenderAgile = target == CONSTANTS._player ? this.playerEvasion : this.opponentEvasion;
+        const targetDefenderBlock = target == CONSTANTS._player ? Number(this.playerBlock) : Number(this.opponentBlock);
+        const targetDefenderUtils = target == CONSTANTS._player ?structuredClone(this.playerUtils) :structuredClone(this.opponentUtils);
+        const targetDefenderAgile = target == CONSTANTS._player ? Number(this.playerEvasion) : Number(this.opponentEvasion);
 
         // passive skills
-        const phanthomSteps = targetDefenderUtils.skills.find(s => s == 40);
-        const shieldSkill = targetDefenderUtils.skills.find(s => s == 27);
+        const phanthomSteps = targetDefenderUtils.skills.includes(40);
+        const shieldSkill = targetDefenderUtils.skills.includes(27);
 
-        if (phanthomSteps) deductionsByDodge += 25;
-        if (shieldSkill) deductionsByDodge += 15;
-        if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) deductionsByDodge += 20;
+        if (phanthomSteps) enemySkillDodgeRate += 25;
+        if (shieldSkill) enemySkillDodgeRate += 15;
+        if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) enemySkillDodgeRate += 20;
 
-        deductionsByDodge += (targetDefenderAgile + targetDefenderBlock);
-        deductionsByDodge = deductionsByDodge > 90 ? 90 : deductionsByDodge;
+        enemySkillDodgeRate = Math.min(enemySkillDodgeRate, 70);
+        const finalAgile = Math.log2(targetDefenderAgile + 1) * 20;
+        const finalEnemyDodge = Math.max(0, (finalAgile + targetDefenderBlock + enemySkillDodgeRate));
+        const finalAttackerAccuracy =  Math.min(100, accuracyPercentage + attackerAgileRate * 1.5);
+        const hitChance = (finalAttackerAccuracy / (finalAttackerAccuracy + finalEnemyDodge)) * 100;
 
-        const finalAccuracy = (attackerAgileRate + accuracyPercentage) - deductionsByDodge;
-        accuracyPercentage = Math.max(0, finalAccuracy);
-
-        if (accuracyPercentage > 0) {
-            result = calculateChance(accuracyPercentage);
+        if (hitChance > 0) {
+            result = calculateChance(hitChance);
         }
 
+        // skill 100% accuracy one time only
         if (this.trueStrike[theAttacker]) {
             result = true;
             this.trueStrike[theAttacker] = false;
