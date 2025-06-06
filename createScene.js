@@ -29,10 +29,10 @@ class CreateScene extends Phaser.Scene {
             },
             attributes: {
                 life: 60,
-                damage: 1,
-                agile: 1,
-                speed: 1,
-                armor: 1
+                damage: 2,
+                agile: 2,
+                speed: 2,
+                armor: 0
             },
             armorName: '',
             psd: '',

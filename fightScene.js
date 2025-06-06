@@ -265,8 +265,8 @@ class PlayerFight extends Phaser.Scene {
             activeSkill: null
         }
 
-        // console.log({ loadedOpponent: this.loadedOpponent });
-        // console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ loadedOpponent: this.loadedOpponent });
+        console.log({ loadedCharacter: this.currentCharDetails });
 
         // throw {code: 500,  message: "Test error to check error handling"};
         this.createName();
@@ -523,7 +523,7 @@ class PlayerFight extends Phaser.Scene {
 
         let additionalSkillDamage = 0;
         let additionalCritBoost = 1;
-        const weaponDamage = weapon ? weapon.damage : 0;
+        const weaponDamage = weapon ? Number(weapon.damage) : 0;
         const target = targetUser == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const targetSkills = target.skills;
         const thrownWeaponsResult = this.thrownWeapons.find(w => w == weapon.number); // current used weapon type is thrown
@@ -569,9 +569,10 @@ class PlayerFight extends Phaser.Scene {
         }
 
         const finalDamage = Math.round(Math.max(1, (totalDamage) - (opponentDefense * 1.5)));
+        const plusDamage = calculateChance(50) ? 1 : 0;
 
         return {
-            finalDamage: finalDamage,
+            finalDamage: finalDamage + plusDamage,
             withCrit: additionalCritical > 1,
         };
     }
@@ -580,15 +581,17 @@ class PlayerFight extends Phaser.Scene {
         const withPetMaster = this.petMaster[attacker] ? 1.5 : 1;
         const criticalAdditional = calculateChance(critial) ? 2 : 1;
         const initialDamage = Math.round(Math.max(1, ((strength * 1.5) * criticalAdditional) - opponentDefense));
+        const plusDamage = calculateChance(50) ? 1 : 0;
+        const finalDamage = initialDamage + plusDamage;
         return {
-            finalDamage: Math.round(initialDamage * withPetMaster),
+            finalDamage: Math.round(finalDamage * withPetMaster),
             withCrit: criticalAdditional > 1,
         };
     };
 
     calculateCombo(comboRate, attacker) {
 
-        let finalCombo = comboRate;
+        let finalCombo = Number(comboRate);
         if (attacker == CONSTANTS._player || attacker == CONSTANTS._opponent) {
             let additionalSkillCombo = 0;
             const targetAttacker = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
@@ -769,14 +772,14 @@ class PlayerFight extends Phaser.Scene {
 
         let result = false; // Initialize the result
         let enemySkillDodgeRate = 0;
-        
+
         const accuracyPercentage = Number(accuracy) || 0;
         const theAttacker = target == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
         const attackerAgileRate = target == CONSTANTS._player ? this.opponentEvasion : this.playerEvasion;
 
         const theDefender = target == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const targetDefenderBlock = target == CONSTANTS._player ? Number(this.playerBlock) : Number(this.opponentBlock);
-        const targetDefenderUtils = target == CONSTANTS._player ?structuredClone(this.playerUtils) :structuredClone(this.opponentUtils);
+        const targetDefenderUtils = target == CONSTANTS._player ? structuredClone(this.playerUtils) : structuredClone(this.opponentUtils);
         const targetDefenderAgile = target == CONSTANTS._player ? Number(this.playerEvasion) : Number(this.opponentEvasion);
 
         // passive skills
@@ -790,7 +793,7 @@ class PlayerFight extends Phaser.Scene {
         enemySkillDodgeRate = Math.min(enemySkillDodgeRate, 70);
         const finalAgile = Math.log2(targetDefenderAgile + 1) * 20;
         const finalEnemyDodge = Math.max(0, (finalAgile + targetDefenderBlock + enemySkillDodgeRate));
-        const finalAttackerAccuracy =  Math.min(100, accuracyPercentage + attackerAgileRate * 1.5);
+        const finalAttackerAccuracy = Math.min(100, accuracyPercentage + attackerAgileRate * 1.5);
         const hitChance = (finalAttackerAccuracy / (finalAttackerAccuracy + finalEnemyDodge)) * 100;
 
         if (hitChance > 0) {
@@ -806,10 +809,49 @@ class PlayerFight extends Phaser.Scene {
         return result;
     }
 
+    calculateAccuracyPet(attackerAgile, attackerAccuracy, defenderDodge, defenderAgile, target) {
+        let result = false;
+        if (target.toLowerCase() == "pet") {
+            const finalAgile = Math.log2(defenderAgile + 1) * 20;
+            const finalEnemyDodge = Math.max(0, (finalAgile + defenderDodge));
+
+            const finalAttackerAccuracy = Math.min(100, attackerAccuracy + (attackerAgile * 1.5));
+            const hitChance = Math.max(5, (finalAttackerAccuracy / (finalAttackerAccuracy + finalEnemyDodge)) * 100);
+            if (hitChance > 0) {
+                result = calculateChance(hitChance);
+            }
+        } else {
+            let enemySkillDodgeRate = 0;
+            const theDefender = target == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+            const targetDefenderBlock = target == CONSTANTS._player ? Number(this.playerBlock) : Number(this.opponentBlock);
+            const targetDefenderUtils = target == CONSTANTS._player ? structuredClone(this.playerUtils) : structuredClone(this.opponentUtils);
+            const targetDefenderAgile = target == CONSTANTS._player ? Number(this.playerEvasion) : Number(this.opponentEvasion);
+
+            // passive skills
+            const phanthomSteps = targetDefenderUtils.skills.includes(40);
+            const shieldSkill = targetDefenderUtils.skills.includes(27);
+
+            if (phanthomSteps) enemySkillDodgeRate += 25;
+            if (shieldSkill) enemySkillDodgeRate += 15;
+            if (this.hollowForm[theDefender].count > 0 && this.hollowForm[theDefender].active) enemySkillDodgeRate += 20;
+
+            enemySkillDodgeRate = Math.min(enemySkillDodgeRate, 70);
+            const finalAgile = Math.log2(targetDefenderAgile + 1) * 20;
+            const finalEnemyDodge = Math.max(0, (finalAgile + targetDefenderBlock + enemySkillDodgeRate));
+
+            const finalAttackerAccuracy = Math.min(100, attackerAccuracy + (attackerAgile * 1.5));
+            const hitChance = Math.max(5, (finalAttackerAccuracy / (finalAttackerAccuracy + finalEnemyDodge)) * 100);
+            if (hitChance > 0) {
+                result = calculateChance(hitChance);
+            }
+        }
+        return result;
+    }
+
     calculateCounterAttack(counter, defender) {
 
         let additionalSkillCounter = 0;
-        let counterPercentage = counter || 0;
+        let counterPercentage = Number(counter) || 0;
         let result = false; // Initialize the result
         const targetDefender = defender == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const counterStrike = targetDefender.skills.find(s => s == 45); // passive skill
@@ -845,7 +887,7 @@ class PlayerFight extends Phaser.Scene {
 
         if (attacker_shockWave) additionalPercentage += 100;
 
-        const total = attackerWeapon.disarm + additionalPercentage;
+        const total = Number(attackerWeapon.disarm + additionalPercentage);
         let disarmPercentage = total || 0;
         let result = false; // Initialize the result
 
@@ -1768,6 +1810,7 @@ class PlayerFight extends Phaser.Scene {
     // character attack character or pet
     processAttack(attacker, attackerWeapon, attackerDamage, defenderWeapon, comboInitMax, petDetails) {
 
+        let attackerInitialDamage = Number(attackerDamage.finalDamage);
         const withPet = !!petDetails && petDetails.life > 0; // target pets
         const theAttacker = attacker == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const theAttackerSkills = attacker == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
@@ -1791,8 +1834,8 @@ class PlayerFight extends Phaser.Scene {
         const hardHeaded = theDefenderSkills.skills.find(skill => skill == 36); // hard headed skill 36 passive
 
         if (hardHeaded) {
-            const adjustedDamage = attackerDamage.finalDamage * 0.1;
-            attackerDamage.finalDamage -= adjustedDamage;
+            const adjustedDamage = attackerInitialDamage * 0.1;
+            attackerInitialDamage -= adjustedDamage;
         }
 
         if (this.buff[theDefender].aura) {
@@ -1801,8 +1844,9 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.buff[theAttacker].susanoo) {
-            attackerWeapon.finalDamage += 10;
-            additionalAccuracy += 10;
+            const susanoDamage = Math.floor(Number(attackerInitialDamage) * 0.2);
+            attackerInitialDamage += susanoDamage;
+            additionalAccuracy += 20;
         }
 
         if (this.buff[theDefender].susanoo) {
@@ -1810,8 +1854,8 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.debuff[theAttacker].genjutsu) {
-            attackerWeapon.counter -= 5;
-            attackerWeapon.block -= 5;
+            attackerWeapon.counter -= 20;
+            attackerWeapon.block -= 20;
         }
 
         if (bullsEye && isWithThrownWeapon) additionalAccuracy += 20;
@@ -1825,7 +1869,7 @@ class PlayerFight extends Phaser.Scene {
             const withRage = this.rage[theAttacker] && calculateChance(15);
             const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
             const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
-            let finalDamageUse = withWeaponStriker ? attackerDamage.finalDamage * 2 : attackerDamage.finalDamage;
+            let finalDamageUse = withWeaponStriker ? attackerInitialDamage * 2 : attackerInitialDamage;
             if (withRage) {
                 finalDamageUse = Math.floor(finalDamageUse * 1.6);
                 this.rage[theAttacker] = false;
@@ -2224,8 +2268,7 @@ class PlayerFight extends Phaser.Scene {
             for (let i = 1; i <= attackerCombo; i++) {
                 const defenderPetAliveAgain = attacker == CONSTANTS._player ? this.opponentUtils.pets.life > 0 : this.playerUtils.pets.life > 0;
                 if (defenderPetAliveAgain) {
-                    const defenderPetDodge = theDefenderActiveUtils.dodge + (Math.max(0, Math.round(theDefenderActiveUtils.agile * 0.5)));
-                    const isccurate = calculateChance(Math.max(0, attacker_weaponToUse.accuracy - defenderPetDodge));
+                    const isccurate = this.calculateAccuracyPet(theAttackerActiveUtils.agile, attacker_weaponToUse.accuracy, theDefenderActiveUtils.dodge, theDefenderActiveUtils.agile, target);
                     if (!isccurate) {
                         this.generateLogs(this.init, { type: CONSTANTS._actions.dodge, by: theDefenderPetName, attacker: theAttackerPetName });
                     } else {
@@ -2257,8 +2300,7 @@ class PlayerFight extends Phaser.Scene {
                 defender_weaponToUse.block += 10;
             }
 
-            const defendeDodge = defender_weaponToUse.dodge + (Math.max(0, Math.round(theDefenderUtils.attributes.agile * 0.5)));
-            const isAccurate = calculateChance(Math.max(0, attacker_weaponToUse.accuracy - defendeDodge));
+            const isAccurate = this.calculateAccuracyPet(theAttackerActiveUtils.agile, attacker_weaponToUse.accuracy, defender_weaponToUse.block, theDefenderUtils.attributes.agile, target);
 
             if (isAccurate) {
 
