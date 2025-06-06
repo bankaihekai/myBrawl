@@ -817,24 +817,24 @@ const CONSTANTS = {
         }
     ],
     _petsAll: [
-        { "name": "Bear", types: 'A', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 60 },
-        { "name": "Bear", types: 'B', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 60 },
-        { "name": "Bear", types: 'C', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 60 },
+        { "name": "Bear", types: 'A', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 90 },
+        { "name": "Bear", types: 'B', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 90 },
+        { "name": "Bear", types: 'C', level: 1, life: 120, damage: 12, agile: 1, speed: 1, armor: 0, comboRate: 0, dodge: 5, accuracy: 90 },
 
-        { "name": "Dog", types: 'A', level: 1, life: 25, damage: 8, agile: 6, speed: 4, armor: 0, comboRate: 110, dodge: 15, accuracy: 80 },
-        { "name": "Dog", types: 'B', level: 1, life: 25, damage: 8, agile: 6, speed: 4, armor: 0, comboRate: 110, dodge: 15, accuracy: 80 },
+        { "name": "Dog", types: 'A', level: 1, life: 25, damage: 8, agile: 6, speed: 4, armor: 0, comboRate: 110, dodge: 15, accuracy: 100 },
+        { "name": "Dog", types: 'B', level: 1, life: 25, damage: 8, agile: 6, speed: 4, armor: 0, comboRate: 110, dodge: 15, accuracy: 100 },
 
-        { "name": "Snake", types: 'A', level: 1, life: 15, damage: 10, agile: 6, speed: 6, armor: 0, comboRate: 120, dodge: 15, accuracy: 80 },
-        { "name": "Snake", types: 'B', level: 1, life: 15, damage: 10, agile: 6, speed: 6, armor: 0, comboRate: 120, dodge: 15, accuracy: 80 },
+        { "name": "Snake", types: 'A', level: 1, life: 15, damage: 10, agile: 6, speed: 6, armor: 0, comboRate: 120, dodge: 15, accuracy: 100 },
+        { "name": "Snake", types: 'B', level: 1, life: 15, damage: 10, agile: 6, speed: 6, armor: 0, comboRate: 120, dodge: 15, accuracy: 100 },
 
-        { "name": "Rat", types: 'A', level: 1, life: 5, damage: 7, agile: 8, speed: 7, armor: 0, comboRate: 110, dodge: 5, accuracy: 80 },
-        { "name": "Rat", types: 'B', level: 1, life: 5, damage: 7, agile: 8, speed: 7, armor: 0, comboRate: 110, dodge: 5, accuracy: 80 },
+        { "name": "Rat", types: 'A', level: 1, life: 5, damage: 7, agile: 8, speed: 7, armor: 0, comboRate: 110, dodge: 5, accuracy: 100 },
+        { "name": "Rat", types: 'B', level: 1, life: 5, damage: 7, agile: 8, speed: 7, armor: 0, comboRate: 110, dodge: 5, accuracy: 100 },
 
-        { "name": "Cat", types: 'A', level: 1, life: 20, damage: 6, agile: 6, speed: 5, armor: 0, comboRate: 120, dodge: 17, accuracy: 80 },
-        { "name": "Cat", types: 'B', level: 1, life: 20, damage: 6, agile: 6, speed: 5, armor: 0, comboRate: 120, dodge: 17, accuracy: 80 },
+        { "name": "Cat", types: 'A', level: 1, life: 20, damage: 6, agile: 6, speed: 5, armor: 0, comboRate: 120, dodge: 17, accuracy: 100 },
+        { "name": "Cat", types: 'B', level: 1, life: 20, damage: 6, agile: 6, speed: 5, armor: 0, comboRate: 120, dodge: 17, accuracy: 100 },
 
-        { "name": "Bird", types: 'A', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 80 },
-        { "name": "Bird", types: 'B', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 80 }
+        { "name": "Bird", types: 'A', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 100 },
+        { "name": "Bird", types: 'B', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 100 }
     ],
     weaponStats: [
         { number: -1, name: "Hands", damage: 0, combo: 20, speed: 0, counter: 3, accuracy: 80, block: 10, disarm: 5, critical: 0 },

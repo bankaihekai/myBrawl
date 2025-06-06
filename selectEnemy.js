@@ -769,7 +769,26 @@ class PlayerSelect extends Phaser.Scene {
                 const currentSpeed_SKIN = charData.attributes.speed;
                 const subtractedSpeed = currentSpeed_SKIN - Math.ceil(currentSpeed_SKIN * 0.1);
                 charData.attributes.speed = subtractedSpeed <= 0 ? 1 : subtractedSpeed;
+                charData.attributes.armor += 10;
+
+                const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
+                const charArmor = charData.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
+
+                charData.armorName = charArmor;
                 break;
+            case 46: // surge of armor
+                charData.attributes.armor += 7;
+                break;
+            case 9: // body armor
+                charData.attributes.armor += 2;
+                break;
+            case 9: // leviathan armor
+                charData.attributes.armor += 5;
+                break;
+            case 17: // aura 
+                charData.attributes.armor += 1;
+                break;
+            
             default:
                 break;
         }

@@ -85,6 +85,8 @@ class PlayerHome extends Phaser.Scene {
         this.createName();
         this.renderButtons();
 
+        console.log({ loadedCharacter: this.currentCharDetails });
+
         // Define your desired numbers
         const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
         const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
@@ -566,7 +568,7 @@ class PlayerHome extends Phaser.Scene {
             this.charNameContainer.add(nameTextPet);
         }
 
-        const winRate = ((this.currentCharDetails.kdStats.win / (this.currentCharDetails.kdStats.win + this.currentCharDetails.kdStats.lose)) * 100) || 0;
+        const winRate = Math.floor(((this.currentCharDetails.kdStats.win / (this.currentCharDetails.kdStats.win + this.currentCharDetails.kdStats.lose)) * 100) || 0);
         const kdDisplay = "Winrate: " + winRate + "%";
         let kdrStat = this.add.text(130, 60, this.currentCharDetails.kdStats.win + "W/" + this.currentCharDetails.kdStats.lose + "L  " + kdDisplay, {
             fontSize: '16px',
@@ -979,7 +981,7 @@ class PlayerHome extends Phaser.Scene {
                         } else if (randomStatsNumberResult == 3) {
                             this.currentCharDetails.attributes.speed += 2;
                             keyName = "Speed stats";
-                        } else if (randomStatsNumberResult == 4) { 
+                        } else if (randomStatsNumberResult == 4) {
                             this.currentCharDetails.attributes.armor += 1;
                             keyName = "Armor stats";
                         }
@@ -1243,8 +1245,8 @@ class PlayerHome extends Phaser.Scene {
                 // do nothing for stats
                 break;
         }
-        const charStatsTxt = !!charStatsKey ?  `Increase <b>"${charStatsKey}"</b><br>` : "";
-        return [result, { petLevel: petLevel, value: petAdditional }, { charStats: charStatsTxt}];
+        const charStatsTxt = !!charStatsKey ? `Increase <b>"${charStatsKey}"</b><br>` : "";
+        return [result, { petLevel: petLevel, value: petAdditional }, { charStats: charStatsTxt }];
     }
 
     /**
@@ -1681,7 +1683,7 @@ class PlayerHome extends Phaser.Scene {
         return frames;
     }
 
-    calculateLevelExp(level){
+    calculateLevelExp(level) {
         this.maxExp = getMaxExpForLevel(level.current);
         if (level.experience >= this.maxExp && level.current != 0) {
             this.currentCharDetails.level.points += 1;

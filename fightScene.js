@@ -168,7 +168,6 @@ class PlayerFight extends Phaser.Scene {
     }
 
     create() {
-        console.log("fight scene")
         const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -204,13 +203,13 @@ class PlayerFight extends Phaser.Scene {
         // this.currentCharDetails.utilities.skills.push(30);
         // this.currentCharDetails.utilities.weapons.push(20);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
-        this.currentCharDetails.attributes.damage = 5;
+        // this.currentCharDetails.attributes.damage = 5;
         // opponent
         // this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
         // this.loadedOpponent.utilities.weapons.push(2);
         // this.loadedOpponent.utilities.weapons.push(3);
-        this.loadedOpponent.attributes.damage = 5;
+        // this.loadedOpponent.attributes.damage = 5;
 
         // ----------------------------------------
         // TEST CODE
@@ -239,37 +238,36 @@ class PlayerFight extends Phaser.Scene {
 
         this.life = {
             max: {
-                player: this.currentCharDetails.attributes.life,
-                opponent: this.loadedOpponent.attributes.life
+                player: Number(this.currentCharDetails.attributes.life),
+                opponent: Number(this.loadedOpponent.attributes.life)
             },
             current: {
-                player: this.currentCharDetails.attributes.life,
-                opponent: this.loadedOpponent.attributes.life,
+                player: Number(this.currentCharDetails.attributes.life),
+                opponent: Number(this.loadedOpponent.attributes.life),
                 playerWidth: 350,
                 opponentWidth: 350,
             }
         }
 
         this.playerUtils = {
-            skills: this.currentCharDetails.utilities.skills || [],
-            weapons: this.currentCharDetails.utilities.weapons || [],
-            pets: this.currentCharDetails.utilities.pets.length > 0 ? this.currentCharDetails.utilities.pets[0] : null,
+            skills: structuredClone(this.currentCharDetails.utilities.skills) || [],
+            weapons: structuredClone(this.currentCharDetails.utilities.weapons) || [],
+            pets: this.currentCharDetails.utilities.pets.length > 0 ? structuredClone(this.currentCharDetails.utilities.pets[0]) : null,
             activeWeapon: null,
             activeSkill: null
         }
 
         this.opponentUtils = {
-            skills: this.loadedOpponent.utilities.skills || [],
-            weapons: this.loadedOpponent.utilities.weapons || [],
-            pets: this.loadedOpponent.utilities.pets.length > 0 ? this.loadedOpponent.utilities.pets[0] : null,
+            skills: structuredClone(this.loadedOpponent.utilities.skills) || [],
+            weapons: structuredClone(this.loadedOpponent.utilities.weapons) || [],
+            pets: this.loadedOpponent.utilities.pets.length > 0 ? structuredClone(this.loadedOpponent.utilities.pets[0]) : null,
             activeWeapon: null,
             activeSkill: null
         }
 
-        console.log({ loadedOpponent: this.loadedOpponent });
-        console.log({ loadedCharacter: this.currentCharDetails });
-        console.log({ playerUtils: this.playerUtils.pets });
-        console.log({ opponentUtils: this.opponentUtils.pets });
+        // console.log({ loadedOpponent: this.loadedOpponent });
+        // console.log({ loadedCharacter: this.currentCharDetails });
+
         // throw {code: 500,  message: "Test error to check error handling"};
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
@@ -687,6 +685,8 @@ class PlayerFight extends Phaser.Scene {
 
         const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
 
+        this.calculateWinner(winner);
+
         if (withInterval) {
             // Use setInterval to print each script element every 1 second
             let index = 0;
@@ -941,8 +941,8 @@ class PlayerFight extends Phaser.Scene {
     attackAndUpdate() {
 
         this.renderLife();
-        const playerStats = this.currentCharDetails.attributes;
-        const opponentStats = this.loadedOpponent.attributes;
+        const playerStats = structuredClone(this.currentCharDetails.attributes);
+        const opponentStats = structuredClone(this.loadedOpponent.attributes);
         this.playerLife = playerStats.life;
         this.opponentLife = opponentStats.life;
 
@@ -976,24 +976,24 @@ class PlayerFight extends Phaser.Scene {
         }
         const playerSpeedDetailsPet = !!this.playerUtils.pets ? {
             key: "PlayerPet",
-            speed: this.playerUtils.pets.speed,
+            speed: structuredClone(this.playerUtils.pets.speed),
             current: 0
         } : null;
         const opponentSpeedDetailsPet = !!this.opponentUtils.pets ? {
             key: "OpponentPet",
-            speed: this.opponentUtils.pets.speed,
+            speed: structuredClone(this.opponentUtils.pets.speed),
             current: 0
         } : null;
         let listOfAttackers = [playerSpeedDetails, opponentSpeedDetails];
 
         if (playerSpeedDetailsPet) {
-            this.playerPetLife = this.playerUtils.pets.life;
+            this.playerPetLife = Number(this.playerUtils.pets.life);
             listOfAttackers.push(playerSpeedDetailsPet);
             this.opponentTarget.push("PlayerPet");
         }
 
         if (opponentSpeedDetailsPet) {
-            this.opponentPetLife = this.opponentUtils.pets.life;
+            this.opponentPetLife = Number(this.opponentUtils.pets.life);
             listOfAttackers.push(opponentSpeedDetailsPet);
             this.playerTarget.push("OpponentPet");
         }
@@ -1175,7 +1175,6 @@ class PlayerFight extends Phaser.Scene {
 
             this.init = i;
         }
-
         this.displayLogs(true); // true for setinterval 1sec
     }
 
@@ -2373,5 +2372,21 @@ class PlayerFight extends Phaser.Scene {
             disarm: 0,
             critical: 0,
         };
+    }
+
+    calculateWinner(winner) {
+        const isPlayerWin = winner == CONSTANTS._player;
+        const userExperience = isPlayerWin ? 2 : 1;
+
+        this.currentCharDetails.level.experience += userExperience;
+
+        if (isPlayerWin) {
+            this.currentCharDetails.kdStats.win += 1;
+        }
+        else {
+            this.currentCharDetails.kdStats.lose += 1;
+        }
+        saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
+        saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
     }
 }
