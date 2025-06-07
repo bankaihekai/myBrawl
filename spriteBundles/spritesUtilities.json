@@ -4,194 +4,200 @@
         "files": [
             {
                 "type": "spritesheet",
+                "key": "weaponIcons",
+                "url": "weapons/icons.png",
+                "frameConfig": { "frameWidth": 64, "frameHeight": 64 }
+            },
+            {
+                "type": "spritesheet",
                 "key": "weapon_1",
-                "url": "weapons/heaterShield.png",
+                "url": "weapons/shadow/heaterShield.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_2",
-                "url": "weapons/trophy.png",
+                "url": "weapons/shadow/trophy.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_3",
-                "url": "weapons/coffeeCup.png",
+                "url": "weapons/shadow/coffeeCup.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_4",
-                "url": "weapons/goldKey.png",
+                "url": "weapons/shadow/goldKey.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_5",
-                "url": "weapons/rock.png",
+                "url": "weapons/shadow/rock.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_6",
-                "url": "weapons/cacti.png",
+                "url": "weapons/shadow/cacti.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_7",
-                "url": "weapons/guitar.png",
+                "url": "weapons/shadow/guitar.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_8",
-                "url": "weapons/katana.png",
+                "url": "weapons/shadow/katana.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_9",
-                "url": "weapons/wizzardStaff.png",
+                "url": "weapons/shadow/wizzardStaff.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_10",
-                "url": "weapons/obsidianBlade.png",
+                "url": "weapons/shadow/obsidianBlade.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_11",
-                "url": "weapons/spellBook.png",
+                "url": "weapons/shadow/spellBook.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_12",
-                "url": "weapons/wrench.png",
+                "url": "weapons/shadow/wrench.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_13",
-                "url": "weapons/slipper.png",
+                "url": "weapons/shadow/slipper.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_14",
-                "url": "weapons/woodenClub.png",
+                "url": "weapons/shadow/woodenClub.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_15",
-                "url": "weapons/kanabo.png",
+                "url": "weapons/shadow/kanabo.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_16",
-                "url": "weapons/saber.png",
+                "url": "weapons/shadow/saber.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_17",
-                "url": "weapons/shortSword.png",
+                "url": "weapons/shadow/shortSword.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_18",
-                "url": "weapons/scythe.png",
+                "url": "weapons/shadow/scythe.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_19",
-                "url": "weapons/hammer.png",
+                "url": "weapons/shadow/hammer.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_20",
-                "url": "weapons/rubberDuck.png",
+                "url": "weapons/shadow/rubberDuck.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_21",
-                "url": "weapons/mace.png",
+                "url": "weapons/shadow/mace.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_22",
-                "url": "weapons/behemothBone.png",
+                "url": "weapons/shadow/behemothBone.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_23",
-                "url": "weapons/sai.png",
+                "url": "weapons/shadow/sai.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_24",
-                "url": "weapons/woodenSword.png",
+                "url": "weapons/shadow/woodenSword.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_25",
-                "url": "weapons/hatchet.png",
+                "url": "weapons/shadow/hatchet.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_26",
-                "url": "weapons/longSword.png",
+                "url": "weapons/shadow/longSword.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_27",
-                "url": "weapons/spadoneSword.png",
+                "url": "weapons/shadow/spadoneSword.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_28",
-                "url": "weapons/shuriken.png",
+                "url": "weapons/shadow/shuriken.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_29",
-                "url": "weapons/stick.png",
+                "url": "weapons/shadow/stick.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_30",
-                "url": "weapons/spear.png",
+                "url": "weapons/shadow/spear.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_31",
-                "url": "weapons/leek.png",
+                "url": "weapons/shadow/leek.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {
                 "type": "spritesheet",
                 "key": "weapon_32",
-                "url": "weapons/knife.png",
+                "url": "weapons/shadow/knife.png",
                 "frameConfig": { "frameWidth": 343, "frameHeight": 310 }
             },
             {

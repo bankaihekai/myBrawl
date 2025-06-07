@@ -20,7 +20,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-        // this.scene.start("playerSelect");
+        this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);

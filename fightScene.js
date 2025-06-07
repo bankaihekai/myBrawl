@@ -201,10 +201,71 @@ class PlayerFight extends Phaser.Scene {
         // ---------------------------------------
         // player
         // this.currentCharDetails.utilities.skills.push(30);
-        // this.currentCharDetails.utilities.weapons.push(20);
+        this.currentCharDetails.utilities.weapons.push(1);
+        this.currentCharDetails.utilities.weapons.push(2);
+        this.currentCharDetails.utilities.weapons.push(3);
+        this.currentCharDetails.utilities.weapons.push(4);
+        this.currentCharDetails.utilities.weapons.push(5);
+        this.currentCharDetails.utilities.weapons.push(6);
+        this.currentCharDetails.utilities.weapons.push(7);
+        this.currentCharDetails.utilities.weapons.push(8);
+        this.currentCharDetails.utilities.weapons.push(9);
+        this.currentCharDetails.utilities.weapons.push(11);
+        this.currentCharDetails.utilities.weapons.push(12);
+        this.currentCharDetails.utilities.weapons.push(13);
+        this.currentCharDetails.utilities.weapons.push(14);
+        this.currentCharDetails.utilities.weapons.push(15);
+        this.currentCharDetails.utilities.weapons.push(16);
+        this.currentCharDetails.utilities.weapons.push(17);
+        this.currentCharDetails.utilities.weapons.push(18);
+        this.currentCharDetails.utilities.weapons.push(19);
+        this.currentCharDetails.utilities.weapons.push(20);
+        this.currentCharDetails.utilities.weapons.push(21);
+        this.currentCharDetails.utilities.weapons.push(22);
+        this.currentCharDetails.utilities.weapons.push(23);
+        this.currentCharDetails.utilities.weapons.push(24);
+        this.currentCharDetails.utilities.weapons.push(25);
+        this.currentCharDetails.utilities.weapons.push(26);
+        this.currentCharDetails.utilities.weapons.push(27);
+        this.currentCharDetails.utilities.weapons.push(28);
+        this.currentCharDetails.utilities.weapons.push(29);
+        this.currentCharDetails.utilities.weapons.push(30);
+        this.currentCharDetails.utilities.weapons.push(31);
+        this.currentCharDetails.utilities.weapons.push(32);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         // this.currentCharDetails.attributes.damage = 5;
         // opponent
+        this.loadedOpponent.utilities.weapons.push(1);
+        this.loadedOpponent.utilities.weapons.push(2);
+        this.loadedOpponent.utilities.weapons.push(3);
+        this.loadedOpponent.utilities.weapons.push(4);
+        this.loadedOpponent.utilities.weapons.push(5);
+        this.loadedOpponent.utilities.weapons.push(6);
+        this.loadedOpponent.utilities.weapons.push(7);
+        this.loadedOpponent.utilities.weapons.push(8);
+        this.loadedOpponent.utilities.weapons.push(9);
+        this.loadedOpponent.utilities.weapons.push(11);
+        this.loadedOpponent.utilities.weapons.push(12);
+        this.loadedOpponent.utilities.weapons.push(13);
+        this.loadedOpponent.utilities.weapons.push(14);
+        this.loadedOpponent.utilities.weapons.push(15);
+        this.loadedOpponent.utilities.weapons.push(16);
+        this.loadedOpponent.utilities.weapons.push(17);
+        this.loadedOpponent.utilities.weapons.push(18);
+        this.loadedOpponent.utilities.weapons.push(19);
+        this.loadedOpponent.utilities.weapons.push(20);
+        this.loadedOpponent.utilities.weapons.push(21);
+        this.loadedOpponent.utilities.weapons.push(22);
+        this.loadedOpponent.utilities.weapons.push(23);
+        this.loadedOpponent.utilities.weapons.push(24);
+        this.loadedOpponent.utilities.weapons.push(25);
+        this.loadedOpponent.utilities.weapons.push(26);
+        this.loadedOpponent.utilities.weapons.push(27);
+        this.loadedOpponent.utilities.weapons.push(28);
+        this.loadedOpponent.utilities.weapons.push(29);
+        this.loadedOpponent.utilities.weapons.push(30);
+        this.loadedOpponent.utilities.weapons.push(31);
+        this.loadedOpponent.utilities.weapons.push(10);
         // this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
         // this.loadedOpponent.utilities.weapons.push(2);
@@ -268,6 +329,9 @@ class PlayerFight extends Phaser.Scene {
         console.log({ loadedOpponent: this.loadedOpponent });
         console.log({ loadedCharacter: this.currentCharDetails });
 
+        this.fightPlayerWeapons = structuredClone(this.playerUtils.weapons);
+        this.fightOpponentWeapons = structuredClone(this.opponentUtils.weapons);
+
         // throw {code: 500,  message: "Test error to check error handling"};
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
@@ -275,14 +339,89 @@ class PlayerFight extends Phaser.Scene {
         // this.renderButtons();
     }
 
-    renderCreateCharacter() {
+    renderCreateCharacter(script) {
         // Clear the preview container
+        this.characterContainer.iterate(child => child.destroy());
         this.characterContainer.removeAll(true);
 
-        // let rand_chars = this.renderRandomCharacter(10);
-        // console.log({ rand_chars: rand_chars });
+        console.log({ playerWeapons: this.fightPlayerWeapons })
+        const fPlayerWeapons = structuredClone(this.fightPlayerWeapons);
+        const fOpponentWeapons = structuredClone(this.fightOpponentWeapons);
 
-        // this.calculateLevelUp();
+        const isWithAction = !!script && script.action;
+        const isChangeWeapon = isWithAction && script.action.type == "Change weapon";
+        const isWithNewWeapon = isWithAction ? script.action.new : false;
+
+        const isChangeWeapon_player = isWithAction && script.action.by == "player";
+        const isPlayerWeaponUpdate = isWithAction && !!isChangeWeapon && !!isChangeWeapon_player && !!isWithNewWeapon;
+
+        const isChangeWeapon_Opponent = isWithAction && script.action.by == "opponent";
+        const isOpponentWeaponUpdate = isWithAction && !!isChangeWeapon && !!isChangeWeapon_Opponent && !!isWithNewWeapon;
+
+        if (isPlayerWeaponUpdate) {
+            this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== isWithNewWeapon);
+        }
+
+        if (fPlayerWeapons.length > 0) {
+            const initialPosition = {
+                x: 60,
+                y: 130,
+                rowHeight: 20,
+                perRow: 12
+            };
+
+            let currentX = initialPosition.x;
+            let currentY = initialPosition.y;
+
+            for (const [index, playerWeapon] of this.fightPlayerWeapons.entries()) {
+                // New row every 9 icons
+                if (index > 0 && index % initialPosition.perRow === 0) {
+                    currentY += initialPosition.rowHeight;
+                    currentX = initialPosition.x; // Reset x position
+                }
+
+                const charSprite = this.add.sprite(currentX, currentY, "weaponIcons")
+                    .setFrame(playerWeapon - 1)
+                    .setScale(0.3);
+
+                this.characterContainer.add(charSprite);
+
+                currentX += 30;
+            }
+        }
+
+        if (isOpponentWeaponUpdate) {
+            this.fightOpponentWeapons = fOpponentWeapons.filter(weapon => weapon !== isWithNewWeapon);
+        }
+
+        if (fOpponentWeapons.length > 0) {
+            const initialPosition2 = {
+                x: 420,
+                y: 130,
+                rowHeight: 20,
+                perRow: 12
+            };
+
+            let currentX2 = initialPosition2.x;
+            let currentY2 = initialPosition2.y;
+
+            for (const [index, opponentWeapon] of this.fightOpponentWeapons.entries()) {
+                // New row every 9 icons
+                if (index > 0 && index % initialPosition2.perRow === 0) {
+                    currentY2 += initialPosition2.rowHeight;
+                    currentX2 = initialPosition2.x; // Reset x position
+                }
+
+                const charSprite = this.add.sprite(currentX2, currentY2, "weaponIcons")
+                    .setFrame(opponentWeapon - 1)
+                    .setScale(0.3);
+
+                this.characterContainer.add(charSprite);
+
+                currentX2 += 30;
+            }
+        }
+        
         // this.renderButtons();
         // let startX = 110;
         // let gap = 100;
@@ -404,7 +543,7 @@ class PlayerFight extends Phaser.Scene {
         this.charNameContainer.add(backTxt);
 
         backTxt.on("pointerdown", () => {
-            localStorage.removeItem(CONSTANTS._opponent);
+            // localStorage.removeItem(CONSTANTS._opponent);
             location.reload();
         });
 
@@ -684,16 +823,24 @@ class PlayerFight extends Phaser.Scene {
         this.charLifeBarContainer.add(this.opponentLifeBar);
     }
 
+    // run through all added logs
+    // identify winer
+    // all animation is render
     displayLogs(withInterval) {
 
         const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
 
-        this.calculateWinner(winner);
+        // this.calculateWinner(winner);
 
         if (withInterval) {
             // Use setInterval to print each script element every 1 second
             let index = 0;
+            this.renderCreateCharacter();
             const intervalId = setInterval(() => {
+                if (!!this.script[index] && this.script[index].action && this.script[index].action.type == "Change weapon") {
+                    console.log(this.script[index].action.type)
+                    this.renderCreateCharacter(this.script[index]);
+                }
                 if (index < this.script.length) {
                     console.log(JSON.stringify(this.script[index])); // Print the current script element
 
