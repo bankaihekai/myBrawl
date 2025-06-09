@@ -165,6 +165,11 @@ class PlayerFight extends Phaser.Scene {
             player: false,
             opponent: false
         }
+
+        this.strongBite = {
+            player: false,
+            opponent: false
+        }
     }
 
     create() {
@@ -201,71 +206,9 @@ class PlayerFight extends Phaser.Scene {
         // ---------------------------------------
         // player
         // this.currentCharDetails.utilities.skills.push(30);
-        this.currentCharDetails.utilities.weapons.push(1);
-        this.currentCharDetails.utilities.weapons.push(2);
-        this.currentCharDetails.utilities.weapons.push(3);
-        this.currentCharDetails.utilities.weapons.push(4);
-        this.currentCharDetails.utilities.weapons.push(5);
-        this.currentCharDetails.utilities.weapons.push(6);
-        this.currentCharDetails.utilities.weapons.push(7);
-        this.currentCharDetails.utilities.weapons.push(8);
-        this.currentCharDetails.utilities.weapons.push(9);
-        this.currentCharDetails.utilities.weapons.push(11);
-        this.currentCharDetails.utilities.weapons.push(12);
-        this.currentCharDetails.utilities.weapons.push(13);
-        this.currentCharDetails.utilities.weapons.push(14);
-        this.currentCharDetails.utilities.weapons.push(15);
-        this.currentCharDetails.utilities.weapons.push(16);
-        this.currentCharDetails.utilities.weapons.push(17);
-        this.currentCharDetails.utilities.weapons.push(18);
-        this.currentCharDetails.utilities.weapons.push(19);
-        this.currentCharDetails.utilities.weapons.push(20);
-        this.currentCharDetails.utilities.weapons.push(21);
-        this.currentCharDetails.utilities.weapons.push(22);
-        this.currentCharDetails.utilities.weapons.push(23);
-        this.currentCharDetails.utilities.weapons.push(24);
-        this.currentCharDetails.utilities.weapons.push(25);
-        this.currentCharDetails.utilities.weapons.push(26);
-        this.currentCharDetails.utilities.weapons.push(27);
-        this.currentCharDetails.utilities.weapons.push(28);
-        this.currentCharDetails.utilities.weapons.push(29);
-        this.currentCharDetails.utilities.weapons.push(30);
-        this.currentCharDetails.utilities.weapons.push(31);
-        this.currentCharDetails.utilities.weapons.push(32);
         // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
         // this.currentCharDetails.attributes.damage = 5;
         // opponent
-        this.loadedOpponent.utilities.weapons.push(1);
-        this.loadedOpponent.utilities.weapons.push(2);
-        this.loadedOpponent.utilities.weapons.push(3);
-        this.loadedOpponent.utilities.weapons.push(4);
-        this.loadedOpponent.utilities.weapons.push(5);
-        this.loadedOpponent.utilities.weapons.push(6);
-        this.loadedOpponent.utilities.weapons.push(7);
-        this.loadedOpponent.utilities.weapons.push(8);
-        this.loadedOpponent.utilities.weapons.push(9);
-        this.loadedOpponent.utilities.weapons.push(11);
-        this.loadedOpponent.utilities.weapons.push(12);
-        this.loadedOpponent.utilities.weapons.push(13);
-        this.loadedOpponent.utilities.weapons.push(14);
-        this.loadedOpponent.utilities.weapons.push(15);
-        this.loadedOpponent.utilities.weapons.push(16);
-        this.loadedOpponent.utilities.weapons.push(17);
-        this.loadedOpponent.utilities.weapons.push(18);
-        this.loadedOpponent.utilities.weapons.push(19);
-        this.loadedOpponent.utilities.weapons.push(20);
-        this.loadedOpponent.utilities.weapons.push(21);
-        this.loadedOpponent.utilities.weapons.push(22);
-        this.loadedOpponent.utilities.weapons.push(23);
-        this.loadedOpponent.utilities.weapons.push(24);
-        this.loadedOpponent.utilities.weapons.push(25);
-        this.loadedOpponent.utilities.weapons.push(26);
-        this.loadedOpponent.utilities.weapons.push(27);
-        this.loadedOpponent.utilities.weapons.push(28);
-        this.loadedOpponent.utilities.weapons.push(29);
-        this.loadedOpponent.utilities.weapons.push(30);
-        this.loadedOpponent.utilities.weapons.push(31);
-        this.loadedOpponent.utilities.weapons.push(10);
         // this.loadedOpponent.utilities.skills.push(14);
         // this.loadedOpponent.utilities.weapons.push(1);
         // this.loadedOpponent.utilities.weapons.push(2);
@@ -344,19 +287,24 @@ class PlayerFight extends Phaser.Scene {
         this.characterContainer.iterate(child => child.destroy());
         this.characterContainer.removeAll(true);
 
-        console.log({ playerWeapons: this.fightPlayerWeapons })
         const fPlayerWeapons = structuredClone(this.fightPlayerWeapons);
         const fOpponentWeapons = structuredClone(this.fightOpponentWeapons);
 
         const isWithAction = !!script && script.action;
+        const target = isWithAction && script.action.target;
+
         const isChangeWeapon = isWithAction && script.action.type == "Change weapon";
+        const isAttack = isWithAction && script.action.type == "Attack";
+        const isDrink = isWithAction && script.action.type == "Drink";
+
+        const isDamage = isAttack && script.weapon && script.weapon.damage;
         const isWithNewWeapon = isWithAction ? script.action.new : false;
 
-        const isChangeWeapon_player = isWithAction && script.action.by == "player";
-        const isPlayerWeaponUpdate = isWithAction && !!isChangeWeapon && !!isChangeWeapon_player && !!isWithNewWeapon;
+        const isPlayer = isWithAction && script.action.by == "player";
+        const isPlayerWeaponUpdate = isWithAction && !!isChangeWeapon && !!isPlayer && !!isWithNewWeapon;
 
-        const isChangeWeapon_Opponent = isWithAction && script.action.by == "opponent";
-        const isOpponentWeaponUpdate = isWithAction && !!isChangeWeapon && !!isChangeWeapon_Opponent && !!isWithNewWeapon;
+        const isOpponent = isWithAction && script.action.by == "opponent";
+        const isOpponentWeaponUpdate = isWithAction && !!isChangeWeapon && !!isOpponent && !!isWithNewWeapon;
 
         if (isPlayerWeaponUpdate) {
             this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== isWithNewWeapon);
@@ -421,7 +369,46 @@ class PlayerFight extends Phaser.Scene {
                 currentX2 += 30;
             }
         }
-        
+
+        // display damage in opponent area
+        const isPlayerXY = isPlayer ? { x: 600, y: 250 } : { x: 200, y: 250 };
+        const isHealPlayerXY = isPlayer ? { x: 200, y: 250 } : { x: 600, y: 250 };
+        const isPlayerTarget = isPlayer ? "opponentPet" : "playerPet";
+        const colorTarget = target != isPlayerTarget ? "#ff0000" : "#f400ff";
+
+        if ((isPlayer || isOpponent) && isAttack && isDamage && target) {
+            let damageDisplay = this.add.text(isPlayerXY.x, isPlayerXY.y, `-${script.weapon.damage}`, {
+                fontSize: '45px',
+                fill: colorTarget,
+                fontStyle: 'bolder',
+                stroke: '#ffffff', // Border color
+                strokeThickness: 5 // Border thickness
+            });
+
+            this.characterContainer.add(damageDisplay);
+
+            // Remove the damage display after 1 second (1000ms)
+            this.time.delayedCall(400, () => {
+                damageDisplay.destroy();
+            });
+        }
+
+        if (isDrink) {
+            let drinkDisplay = this.add.text(isHealPlayerXY.x, isHealPlayerXY.y, `+${script.weapon.heal}`, {
+                fontSize: '45px',
+                fill: "#118712",
+                fontStyle: 'bolder',
+                stroke: '#ffffff', // Border color
+                strokeThickness: 5 // Border thickness
+            });
+
+            this.characterContainer.add(drinkDisplay);
+
+            // Remove the damage display after 1 second (1000ms)
+            this.time.delayedCall(400, () => {
+                drinkDisplay.destroy();
+            });
+        }
         // this.renderButtons();
         // let startX = 110;
         // let gap = 100;
@@ -685,7 +672,7 @@ class PlayerFight extends Phaser.Scene {
 
         // dragon punch skill
         const skill_dragonPunch = targetSkills.find(skill => skill == 49);
-        if (skill_dragonPunch && physicalWeaponsResult) additionalSkillDamage += weaponDamage * 2;
+        const withDragonPunch = skill_dragonPunch && physicalWeaponsResult ? 2 : 1;
 
         // instant killer skill
         const skill_instantKiller = targetSkills.find(skill => skill == 18);
@@ -707,11 +694,11 @@ class PlayerFight extends Phaser.Scene {
             totalDamage = totalDamage * additionalCritical;
         }
 
-        const finalDamage = Math.round(Math.max(1, (totalDamage) - (opponentDefense * 1.5)));
+        const calculatedDamage = Math.round(Math.max(1, (totalDamage) - (opponentDefense * 1.5)));
         const plusDamage = calculateChance(50) ? 1 : 0;
-
+        const finalDamage = Math.floor((calculatedDamage + plusDamage) * withDragonPunch);
         return {
-            finalDamage: finalDamage + plusDamage,
+            finalDamage: finalDamage,
             withCrit: additionalCritical > 1,
         };
     }
@@ -827,18 +814,20 @@ class PlayerFight extends Phaser.Scene {
     // identify winer
     // all animation is render
     displayLogs(withInterval) {
-
+        console.log({ script: this.script })
         const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
 
-        // this.calculateWinner(winner);
+        this.calculateWinner(winner);
 
         if (withInterval) {
             // Use setInterval to print each script element every 1 second
             let index = 0;
             this.renderCreateCharacter();
             const intervalId = setInterval(() => {
-                if (!!this.script[index] && this.script[index].action && this.script[index].action.type == "Change weapon") {
-                    console.log(this.script[index].action.type)
+                const allowedType = ["Change weapon", "Attack", "Drink"]
+                const withAction = !!this.script[index] && this.script[index].action;
+                const isAllowed = withAction ? allowedType.includes(this.script[index].action.type) : false;
+                if (isAllowed) {
                     this.renderCreateCharacter(this.script[index]);
                 }
                 if (index < this.script.length) {
@@ -908,7 +897,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 100);
+            }, 400);
         } else {
             this.showWinner(winner);
         }
@@ -1267,8 +1256,10 @@ class PlayerFight extends Phaser.Scene {
             if (isPlayerPet && !!this.playerUtils.pets && this.playerUtils.pets.life > 0) {
                 if (this.petMaster.player) target = "Opponent";
                 if (target == "Opponent") {
+                    const defenderArmor = this.strongBite.player ? Math.floor(opponentStats.armor * 0.2) : 0;
+                    const finalDefenderArmor = Math.max(0, opponentStats.armor - defenderArmor);
                     let playerPetAttacker = this.playerUtils.pets;
-                    let playerPetDamage = this.calculatePetDamage(playerPetAttacker.damage, opponentStats.armor, playerPetAttacker.critical || 0, CONSTANTS._player);
+                    let playerPetDamage = this.calculatePetDamage(playerPetAttacker.damage, finalDefenderArmor, playerPetAttacker.critical || 0, CONSTANTS._player);
                     let playerPetCombo = this.calculateCombo(playerPetAttacker, CONSTANTS._player.concat("Pet"));
                     let playerPetWeaponToUse = this.petWeaponToUse(playerPetAttacker);
 
@@ -1287,7 +1278,9 @@ class PlayerFight extends Phaser.Scene {
                     let playerPetAttacker = this.playerUtils.pets;
                     let opponentPetDefender = this.opponentUtils.pets;
                     if (!!opponentPetDefender && opponentPetDefender.life > 0 && !!playerPetAttacker && playerPetAttacker.life > 0) {
-                        let playerPetDamage = this.calculatePetDamage(playerPetAttacker.damage, opponentPetDefender.armor, playerPetAttacker.critical || 0, CONSTANTS._player);
+                        const defenderArmor = this.strongBite.player ? Math.floor(opponentPetDefender.armor * 0.2) : 0;
+                        const finalDefenderArmor = Math.max(0, opponentPetDefender.armor - defenderArmor);
+                        let playerPetDamage = this.calculatePetDamage(playerPetAttacker.damage, finalDefenderArmor, playerPetAttacker.critical || 0, CONSTANTS._player);
                         let playerPetCombo = this.calculateCombo(playerPetAttacker, CONSTANTS._player.concat("Pet"));
                         let opponentPetDamage = this.calculatePetDamage(opponentPetDefender.damage, playerPetAttacker.armor, opponentPetDefender.critical || 0, CONSTANTS._opponent);
                         let opponentPetWeaponToUse = this.petWeaponToUse(opponentPetDefender);
@@ -1349,7 +1342,9 @@ class PlayerFight extends Phaser.Scene {
                     let playerPetDefender = this.playerUtils.pets;
                     let opponentPetAttacker = this.opponentUtils.pets;
                     if (!!opponentPetAttacker && opponentPetAttacker.life > 0 && !!playerPetDefender && playerPetDefender.life > 0) {
-                        let opponentPetDamage = this.calculatePetDamage(opponentPetAttacker.damage, playerPetDefender.armor, opponentPetAttacker.critical || 0, CONSTANTS._opponent);
+                        const defenderArmor = this.strongBite.opponent ? Math.floor(playerPetDefender.armor * 0.2) : 0;
+                        const finalDefenderArmor = Math.max(0, playerPetDefender.armor - defenderArmor);
+                        let opponentPetDamage = this.calculatePetDamage(opponentPetAttacker.damage, finalDefenderArmor, opponentPetAttacker.critical || 0, CONSTANTS._opponent);
                         let opponentPetCombo = this.calculateCombo(opponentPetAttacker, CONSTANTS._opponent.concat("Pet"));
                         let playerPetDamage = this.calculatePetDamage(playerPetDefender.damage, opponentPetAttacker.armor, playerPetDefender.critical || 0, CONSTANTS._player);
                         let playerPetWeaponToUse = this.petWeaponToUse(playerPetDefender);
@@ -1404,7 +1399,7 @@ class PlayerFight extends Phaser.Scene {
     calculateStun(targetuser) { // target user == attacker
         const target = targetuser == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
         const defender = targetuser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
-        const theDefenderSkills = attacker == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
+        const theDefenderSkills = targetuser == CONSTANTS._player ? this.opponentUtils : this.playerUtils;
 
         const octopusV = theDefenderSkills.skills.find(skill => skill == 35); // octopus viscous skill 35 passive
         const calculateIgnore = !!octopusV ? calculateChance(40) : false;
@@ -1655,7 +1650,7 @@ class PlayerFight extends Phaser.Scene {
             this.generateLogs(
                 this.init,
                 { type: CONSTANTS._actions.drink, by: theAttacker },
-                { heal: `+${finalHp}` },
+                { heal: finalHp },
                 { player: this.playerLife, opponent: this.opponentLife }
             );
         }
@@ -1701,7 +1696,7 @@ class PlayerFight extends Phaser.Scene {
             this.playerLife -= 5;
 
             //damage pet
-            if (this.playerUtils && this.playerUtils.pets.life > 0) {
+            if (this.playerUtils.pets && this.playerUtils.pets.life > 0) {
                 const finalLifePet = Math.max(0, this.playerUtils.pets.life - 5);
                 this.playerUtils.pets.life = finalLifePet;
                 this.generateLogs(
@@ -2016,7 +2011,7 @@ class PlayerFight extends Phaser.Scene {
             const withRage = this.rage[theAttacker] && calculateChance(15);
             const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
             const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
-            let finalDamageUse = withWeaponStriker ? attackerInitialDamage * 2 : attackerInitialDamage;
+            let finalDamageUse = withWeaponStriker ? Math.floor(attackerInitialDamage * 2) : Math.floor(attackerInitialDamage);
             if (withRage) {
                 finalDamageUse = Math.floor(finalDamageUse * 1.6);
                 this.rage[theAttacker] = false;
@@ -2243,6 +2238,13 @@ class PlayerFight extends Phaser.Scene {
     }
 
     validateSkills() {
+        // survival skill 21
+        const playerStrongBite = this.playerUtils.skills.find(s => s == 21);
+        const opponentStrongBite = this.opponentUtils.skills.find(s => s == 21);
+
+        if (playerStrongBite) this.strongBite.player = true;
+        if (opponentStrongBite) this.strongBite.opponent = true;
+
         // survival skill 41
         const playerSurvival = this.playerUtils.skills.find(s => s == 41);
         const opponentSurvival = this.opponentUtils.skills.find(s => s == 41);
@@ -2565,10 +2567,12 @@ class PlayerFight extends Phaser.Scene {
     }
 
     calculateWinner(winner) {
+        const isAdventurer = this.currentCharDetails.utilities.skills.includes(7) ? 1 : 0;
         const isPlayerWin = winner == CONSTANTS._player;
         const userExperience = isPlayerWin ? 2 : 1;
+        const finalXp = userExperience + isAdventurer;
 
-        this.currentCharDetails.level.experience += userExperience;
+        this.currentCharDetails.level.experience += finalXp;
 
         if (isPlayerWin) {
             this.currentCharDetails.kdStats.win += 1;

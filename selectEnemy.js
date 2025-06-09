@@ -417,9 +417,9 @@ class PlayerSelect extends Phaser.Scene {
 
                 // checker for empty utilities
                 const zero_avail_Skills = availUtils.skills.length == 0 ? {} : { "name": "skills", "chance": 30 };
-                const zero_avail_Weapons = availUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 45 };
+                const zero_avail_Weapons = availUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 35 };
                 const zero_avail_Pets = availUtils.pets.length == 0 ? {} : { "name": "pets", "chance": 20 };
-                const avail_stats = { "name": "stats", "chance": 5 };
+                const avail_stats = { "name": "stats", "chance": 15 };
                 const toRender = [];
 
                 // checker for animal lover skill that can support multiple pets
@@ -478,9 +478,9 @@ class PlayerSelect extends Phaser.Scene {
                         } else if (randomStatsNumberResult == 3) {
                             charData.attributes.speed += 2;
                             keyName = "Speed stats";
-                        } else if (randomStatsNumberResult == 3) {
-                            charData.attributes.armor += 2;
-                            keyName = "armor stats";
+                        } else if (randomStatsNumberResult == 4) {
+                            charData.attributes.armor += 1;
+                            keyName = "Armor stats";
                         }
                         utils = { key: "stats", name: keyName }
                         break;
@@ -609,7 +609,7 @@ class PlayerSelect extends Phaser.Scene {
 
                     const petToSave = availablePets.filter(pets => pets.name == item.name);
 
-                    if (petToSave.length > 0){
+                    if (petToSave.length > 0) {
                         charData.utilities.pets.push(petToSave[0])
                     };
 
@@ -625,9 +625,24 @@ class PlayerSelect extends Phaser.Scene {
      * @returns {string} - The result of the new utilities message.
      */
     validateNewUtils(charData, utils) {
-        var result = `Increase <b>"{stats}"</b>`;
-        var statsKey = "";
-        const randomStatsNumber = randomizer(3);
+        let result = `Increase <b>"{stats}"</b>`;
+        let resultTxt = `Increase <b>"{stats}"</b>`;
+        let resultTxtChar = `Increase <b>"{stats}"</b>`;
+        let statsKey = "";
+        let witharmor = false;
+        let petLevel = false;
+        let randStatsPet = "";
+        let petAdditional = 0;
+        const petLength = charData.utilities.pets.length;
+        const armors = [51, 46, 44, 38, 17, 9];
+
+        for (let armor of armors) {
+            if (charData.utilities.skills.includes(armor)) {
+                witharmor = true;
+                break;
+            }
+        }
+        const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
 
         switch (randomStatsNumber) {
             case 0: // life
@@ -666,12 +681,15 @@ class PlayerSelect extends Phaser.Scene {
                 if (utils.value.name == null) charData.attributes.speed++;
                 statsKey = "speed";
                 break;
+            case 4: // armor
+                charData.attributes.armor += 1;
+                if (utils.value.name == null) charData.attributes.armor += 1;
+                statsKey = "armor";
+                break;
             default:
                 console.log("No stats found.");
                 break;
         }
-        // const maxUtilsMessage = utils.value.name == null ? `x2 in ${utils.key}` : "";
-        // result = result.replace("{stats}", statsKey).concat(" ", maxUtilsMessage);
 
         const utilitiesKey = utils.key;
         switch (utilitiesKey) {
@@ -682,7 +700,16 @@ class PlayerSelect extends Phaser.Scene {
                 // do nothing
                 break;
             case "pets":
-                if (!!utils.value.name) charData = this.validatePlusStats_Pets(charData, utils.value);
+                if (!!utils.value.name && petLength <= 1 && charData.utilities.pets[0].level <= 1) {
+                    charData = this.validatePlusStats_Pets(charData, utils.value);
+                }
+                if (petLength > 0) {
+                    petLevel = true;
+                    randStatsPet = randomArrayIndex(["life", "agile", "damage", "speed", "armor"]);
+                    petAdditional = randStatsPet == "life" ? 5 : 1;
+                    charData.utilities.pets[0][randStatsPet] += petAdditional;
+                    result = charData.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                }
                 break;
             default:
                 // do nothing for stats

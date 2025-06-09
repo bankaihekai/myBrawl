@@ -20,7 +20,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-        this.scene.start("playerFight");
+        // this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -902,9 +902,9 @@ class PlayerHome extends Phaser.Scene {
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
                 life: 60,
-                damage: 1,
-                agile: 1,
-                speed: 1,
+                damage: 2,
+                agile: 2,
+                speed: 2,
                 armor: 0
             };
         }
@@ -919,9 +919,9 @@ class PlayerHome extends Phaser.Scene {
 
                 // checker for empty utilities
                 const zero_avail_Skills = this.availableUtils.skills.length == 0 ? {} : { "name": "skills", "chance": 30 };
-                const zero_avail_Weapons = this.availableUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 45 };
+                const zero_avail_Weapons = this.availableUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 35 };
                 const zero_avail_Pets = this.availableUtils.pets.length == 0 ? {} : { "name": "pets", "chance": 20 };
-                const avail_stats = { "name": "stats", "chance": 5 };
+                const avail_stats = { "name": "stats", "chance": 15 };
                 const toRender = [];
 
                 // checker for animal lover skill that can support multiple pets
