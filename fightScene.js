@@ -530,7 +530,7 @@ class PlayerFight extends Phaser.Scene {
         this.charNameContainer.add(backTxt);
 
         backTxt.on("pointerdown", () => {
-            // localStorage.removeItem(CONSTANTS._opponent);
+            localStorage.removeItem(CONSTANTS._opponent);
             location.reload();
         });
 
@@ -1337,6 +1337,23 @@ class PlayerFight extends Phaser.Scene {
             if (isOpponentPet && !!this.opponentUtils.pets && this.opponentUtils.pets.life > 0) {
                 if (this.petMaster.opponent) target = "Player";
                 if (target == "Player") {
+                    const defenderArmor = this.strongBite.opponent ? Math.floor(playerStats.armor * 0.2) : 0;
+                    const finalDefenderArmor = Math.max(0, playerStats.armor - defenderArmor);
+                    let opponentPetAttacker = this.opponentUtils.pets;
+                    let opponentPetDamage = this.calculatePetDamage(opponentPetAttacker.damage, finalDefenderArmor, opponentPetAttacker.critical || 0, CONSTANTS._opponent);
+                    let opponentPetCombo = this.calculateCombo(opponentPetAttacker, CONSTANTS._opponent.concat("Pet"));
+                    let opponentPetWeaponToUse = this.petWeaponToUse(opponentPetAttacker);
+
+                    let player_weaponNumber = this.playerUtils.activeWeapon || -1;
+                    let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
+                    let playerDamage = this.calculateDamage(playerStats.damage, opponentStats.armor, player_weaponToUse, CONSTANTS._player);
+                    
+                    this.playerBlock = player_weaponToUse.block || 0;
+
+                    this.processTurnsPet(
+                        CONSTANTS._opponent, opponentPetDamage, opponentPetCombo, opponentPetWeaponToUse,
+                            player_weaponToUse, playerDamage, "Opponent"
+                    );
                 } else {
                     // opponent pet attacks players's pet
                     let playerPetDefender = this.playerUtils.pets;
@@ -1431,7 +1448,7 @@ class PlayerFight extends Phaser.Scene {
 
     processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, petDetails, isCounter) {
 
-        const withPet = !!petDetails && petDetails.life > 0; // attacl defender pet
+        const withPet = !!petDetails && petDetails.life > 0; // attack defender pet
         const withCounter = !!isCounter;
         let noAttackToPet = false;
 
@@ -2034,11 +2051,7 @@ class PlayerFight extends Phaser.Scene {
                     remaining_defenderLife = 1;
                 }
             } else {
-                if (theAttacker == CONSTANTS._player) {
-                    this.opponentUtils.pets.life = Math.max(0, this.opponentUtils.pets.life - finalDamageUse);
-                } else {
-                    this.playerUtils.pets.life = Math.max(0, this.playerUtils.pets.life - finalDamageUse);
-                }
+                theDefenderSkills.pets.life = Math.max(0, theDefenderSkills.pets.life - finalDamageUse);
             }
 
             // Passive Vampire Skill 
@@ -2512,7 +2525,7 @@ class PlayerFight extends Phaser.Scene {
                     let defenderCombo = this.calculateCombo(defenderFinalCombo, target.toLowerCase());
                     this.generateLogs(this.init, { type: CONSTANTS._actions.counter, by: target.toLowerCase(), attacker: theAttackerPetName });
                     this.processTurns(
-                        target.toLowerCase(), defenderDamage, defenderCombo,
+                        theDefender, defenderDamage, defenderCombo,
                         defender_weaponToUse, attacker_weaponToUse, attackerDamage.finalDamage, theAttackerActiveUtils, true
                     );
                 }
