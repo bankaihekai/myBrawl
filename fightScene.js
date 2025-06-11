@@ -296,7 +296,7 @@ class PlayerFight extends Phaser.Scene {
         const isChangeWeapon = isWithAction && script.action.type == "Change weapon";
         const isAttack = isWithAction && script.action.type == "Attack";
         const isDrink = isWithAction && script.action.type == "Drink";
-        const isSabotage = isWithAction && script.action.type == "Sabotage";
+        const isSabotage = isWithAction && script.action.type == "Sabotage" && script.action.weaponRemoved;
 
         const isDamage = isAttack && script.weapon && script.weapon.damage;
         const isWithNewWeapon = isWithAction ? script.action.new : false;
@@ -312,7 +312,7 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (isSabotage && isPlayer) {
-            
+            this.fightOpponentWeapons = fOpponentWeapons.filter(weapon => weapon !== script.action.weaponRemoved);
         }
 
         if (fPlayerWeapons.length > 0) {
@@ -345,6 +345,10 @@ class PlayerFight extends Phaser.Scene {
 
         if (isOpponentWeaponUpdate) {
             this.fightOpponentWeapons = fOpponentWeapons.filter(weapon => weapon !== isWithNewWeapon);
+        }
+        
+        if (isSabotage && isOpponent) {
+            this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== script.action.weaponRemoved);
         }
 
         if (fOpponentWeapons.length > 0) {
@@ -1061,16 +1065,16 @@ class PlayerFight extends Phaser.Scene {
         let weaponLength = 0;
 
         if (target == CONSTANTS._player) {
-            weaponLength = this.fightPlayerWeapons.length;
+            weaponLength = this.playerUtils.weapons.length;
             if (weaponLength >= 1) {
-                weaponToRemove = this.fightPlayerWeapons[weaponLength - 1];
-                this.fightPlayerWeapons.pop();
+                weaponToRemove = this.playerUtils.weapons[weaponLength - 1];
+                this.playerUtils.weapons.pop();
             }
         } else {
-            weaponLength = this.fightOpponentWeapons.length;
+            weaponLength = this.opponentUtils.weapons.length;
             if (weaponLength >= 1) {
-                weaponToRemove = this.fightOpponentWeapons[weaponLength - 1];
-                this.fightOpponentWeapons.pop();
+                weaponToRemove = this.opponentUtils.weapons[weaponLength - 1];
+                this.opponentUtils.weapons.pop();
             }
         }
 
