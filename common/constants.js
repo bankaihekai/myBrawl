@@ -866,7 +866,7 @@ const CONSTANTS = {
         { number: 26, name: "Long Sword", damage: 25, combo: 90, speed: 100, counter: 15, accuracy: 85, block: 10, disarm: 15, critical: 10 },
         { number: 27, name: "Spadone Sword", damage: 28, combo: 60, speed: 100, counter: 15, accuracy: 85, block: 10, disarm: 15, critical: 5 },
         { number: 28, name: "Shuriken", damage: 3, combo: 410, speed: 0, counter: 0, accuracy: 90, block: 15, disarm: 5, critical: 0 },
-        { number: 29, name: "Stick", damage: 4, combo: 150, speed: 0, counter: 20, accuracy: 90, block: 20, disarm: 10, critical: 7.28 },
+        { number: 29, name: "Stick", damage: 4, combo: 150, speed: 0, counter: 30, accuracy: 90, block: 20, disarm: 30, critical: 7.28 },
         { number: 30, name: "Spear", damage: 13, combo: 70, speed: 100, counter: 15, accuracy: 85, block: 10, disarm: 15, critical: 10 },
         { number: 31, name: "Leek", damage: 5, combo: 220, speed: 0, counter: 10, accuracy: 90, block: 15, disarm: 5, critical: 5 },
         { number: 32, name: "Knife", damage: 8, combo: 180, speed: 0, counter: 3, accuracy: 90, block: 15, disarm: 8, critical: 5 }

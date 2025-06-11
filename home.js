@@ -20,7 +20,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-        // this.scene.start("playerFight");
+        this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -81,6 +81,7 @@ class PlayerHome extends Phaser.Scene {
         // Clear the preview container
         this.characterContainer.removeAll(true);
         this.calculateLevelExp(this.currentCharDetails.level);
+        // this.currentCharDetails.level.points = 1;
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
@@ -944,6 +945,7 @@ class PlayerHome extends Phaser.Scene {
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
                 // randomUtils.name = "pets" // for manual testing overwrite
+                let actionToDO = "";
 
                 switch (randomUtils.name) {
                     case "skills":
@@ -953,7 +955,9 @@ class PlayerHome extends Phaser.Scene {
                         utils = this.getRandomWeapons();
                         break;
                     case "pets":
-                        utils = this.getRandomPets(this.availableUtils.pets);
+                        const resultPet = this.getRandomPets(this.availableUtils.pets);
+                        utils = resultPet[0];
+                        actionToDO = resultPet[1];
                         break;
                     case "stats":
                         const armors = [51, 46, 44, 38, 17, 9];
@@ -966,24 +970,49 @@ class PlayerHome extends Phaser.Scene {
                             }
                         }
 
-                        const randomStatsNumber = witharmor ? 4 : 3;
-                        const randomStatsNumberResult = this.randomizer(randomStatsNumber);
+                        const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
                         let keyName = "";
-                        if (randomStatsNumberResult == 0) {
-                            this.currentCharDetails.attributes.life += 8;
-                            keyName = "Life stats";
-                        } else if (randomStatsNumberResult == 1) {
-                            this.currentCharDetails.attributes.damage += 2;
-                            keyName = "Damage stats";
-                        } else if (randomStatsNumberResult == 2) {
-                            this.currentCharDetails.attributes.agile += 2;
-                            keyName = "Agile stats";
-                        } else if (randomStatsNumberResult == 3) {
-                            this.currentCharDetails.attributes.speed += 2;
-                            keyName = "Speed stats";
-                        } else if (randomStatsNumberResult == 4) {
-                            this.currentCharDetails.attributes.armor += 1;
-                            keyName = "Armor stats";
+                        switch (randomStatsNumber) {
+                            case 0: // life
+                                this.currentCharDetails.attributes.life += 8;
+                                const additionalLife = !!this.currentCharDetails.utilities.skills.find(skill => skill == 52);
+                                const additionalLifeImmortality = !!this.currentCharDetails.utilities.skills.find(skill => skill == 51);
+                                if (additionalLifeImmortality) this.currentCharDetails.attributes.life += 20;
+                                if (additionalLife) this.currentCharDetails.attributes.life += 5;
+                                keyName = "Life stats";
+                                break;
+                            case 1: // damage
+                                this.currentCharDetails.attributes.damage += 2;
+                                const additionalDamage = !!this.currentCharDetails.utilities.skills.find(skill => skill == 55);
+                                const additionalDamage_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 10);
+                                if (additionalDamage_GOD) this.currentCharDetails.attributes.damage += 2;
+                                if (additionalDamage) this.currentCharDetails.attributes.damage++;
+                                keyName = "Damage stats";
+                                break;
+                            case 2: // agile
+                                this.currentCharDetails.attributes.agile += 2;
+                                const additionalAgile = !!this.currentCharDetails.utilities.skills.find(skill => skill == 54);
+                                const additionalAgile_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 8);
+                                if (additionalAgile_GOD) this.currentCharDetails.attributes.agile += 2;
+                                if (additionalAgile) this.currentCharDetails.attributes.agile++;
+                                keyName = "Agile stats";
+                                break;
+                            case 3: // speed
+                                this.currentCharDetails.attributes.speed += 2;
+                                const additionalSpeed = !!this.currentCharDetails.utilities.skills.find(skill => skill == 53);
+                                const additionalSpeed_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 29);
+                                if (additionalSpeed_GOD) this.currentCharDetails.attributes.speed += 2;
+                                if (additionalSpeed) this.currentCharDetails.attributes.speed++;
+                                keyName = "Speed stats";
+                                break;
+                            case 4: // armor
+                                const armorPlus = witharmor ? 2 : 1;
+                                this.currentCharDetails.attributes.armor += armorPlus;
+                                keyName = "Armor stats";
+                                break;
+                            default:
+                                console.log("No stats found.");
+                                break;
                         }
                         utils = { key: "stats", name: keyName }
                         break;
@@ -991,7 +1020,7 @@ class PlayerHome extends Phaser.Scene {
                         console.log(CONSTANTS._errorMessages.noUtilitiesFound);
                 }
 
-                utilResults = utils ? { key: randomUtils.name, value: utils } : { key: "", value: "" };
+                utilResults = utils ? { key: randomUtils.name, value: utils, action: actionToDO } : { key: "", value: "" };
 
                 this.currentCharDetails.level.current++;
 
@@ -1005,7 +1034,7 @@ class PlayerHome extends Phaser.Scene {
                 const userPet = this.currentCharDetails.utilities.pets;
                 let additionalStatsTxt = "";
 
-                if (utilResults.value.name && userPet.length > 0 && addedStats[1]) {
+                if (utilResults.value.name && utilResults.value.name == "pets" && userPet.length > 0 && addedStats[1]) {
                     additionalStatsTxt = `<br>Life: ${userPet[0].life}, Damage: ${userPet[0].damage}, Agile: ${userPet[0].agile}, Speed: ${userPet[0].speed}, Armor: ${userPet[0].armor}`;
                     acquiredMessage = `<b>Pet</b> -> lvl up to <b>"${userPet[0].level} "</b>`;
                 }
@@ -1095,8 +1124,7 @@ class PlayerHome extends Phaser.Scene {
     getRandomPets(availPets) {
 
         if (this.currentCharDetails.utilities.pets.length > 0) {
-            this.currentCharDetails.utilities.pets[0].level++;
-            return this.currentCharDetails.utilities.pets[0];
+            return [this.currentCharDetails.utilities.pets[0], "petLvlUp"];
         }
         else {
             if (availPets.length == 0) return { name: null };
@@ -1139,7 +1167,7 @@ class PlayerHome extends Phaser.Scene {
 
                     if (petToSave.length > 0) this.currentCharDetails.utilities.pets.push(petToSave[0]);
 
-                    return petToSave.length > 0 ? petToSave[0] : { name: null };
+                    return petToSave.length > 0 ? [petToSave[0], ""] : [{ name: null }, ""];
                 }
             }
         }
@@ -1172,7 +1200,7 @@ class PlayerHome extends Phaser.Scene {
             }
         }
         const randomStatsNumber = witharmor ? this.randomizer(4) : this.randomizer(3);
-        
+
         switch (randomStatsNumber) {
             case 0: // life
                 this.currentCharDetails.attributes.life += 5;
@@ -1230,16 +1258,24 @@ class PlayerHome extends Phaser.Scene {
                 // do nothing
                 break;
             case "pets":
-                if (!!utils.value.name && petLength <= 1 && this.currentCharDetails.utilities.pets[0].level <= 1) {
+                if (!!utils.value.name && petLength == 1 && this.currentCharDetails.utilities.pets[0].level == 1 && utils.action == "") {
                     this.validatePlusStats_Pets(utils.value);
+                    break;
                 }
-                if (petLength > 0) {
-                    petLevel = true;
-                    randStatsPet = this.randomArrayIndex(["life", "agile", "damage", "speed", "armor"]);
-                    petAdditional = randStatsPet == "life" ? 5 : 1;
-                    this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
-                    result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+
+                if (petLength == 1 && utils.action == "petLvlUp") {
+                    this.currentCharDetails.utilities.pets[0].level++;
+                    if (this.currentCharDetails.utilities.pets[0].level > 1) {
+                        const choices = ["life", "agile", "damage", "speed", "armor"];
+                        const randomStats = randomizer(4);
+                        randStatsPet = choices[randomStats];
+                        petLevel = true;
+                        petAdditional = randStatsPet == "life" ? 5 : 1;
+                        this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
+                        result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                    }
                 }
+
                 break;
             default:
                 // do nothing for stats
@@ -1334,13 +1370,13 @@ class PlayerHome extends Phaser.Scene {
                 this.currentCharDetails.armorName = charArmor;
                 break;
             case 46: // surge of armor
-                this.currentCharDetails.attributes.armor += 7;
+                this.currentCharDetails.attributes.armor += 9;
                 break;
             case 9: // body armor
-                this.currentCharDetails.attributes.armor += 2;
+                this.currentCharDetails.attributes.armor += 4;
                 break;
             case 9: // leviathan armor
-                this.currentCharDetails.attributes.armor += 5;
+                this.currentCharDetails.attributes.armor += 6;
                 break;
             case 17: // aura 
                 this.currentCharDetails.attributes.armor += 1;
@@ -1549,6 +1585,12 @@ class PlayerHome extends Phaser.Scene {
     }
 
     createModalTable2(title, message, key) {
+        let finalMessage = message;
+        if (Array.isArray(message)) {
+            message = message.reverse();
+            finalMessage = message.join('');
+        }
+
         const modal = document.createElement("div");
         modal.innerHTML = `
             <div class="modal fade show d-block" tabindex="-1" role="dialog">
@@ -1560,7 +1602,7 @@ class PlayerHome extends Phaser.Scene {
                         <div class="modal-body" style="height: 500px; overflow-y: auto;">
                             <table class="table table-bordered">
                                 <tbody>
-                                    ${message}
+                                    ${finalMessage}
                                 </tbody>
                             </table>
                         </div>

@@ -296,6 +296,7 @@ class PlayerFight extends Phaser.Scene {
         const isChangeWeapon = isWithAction && script.action.type == "Change weapon";
         const isAttack = isWithAction && script.action.type == "Attack";
         const isDrink = isWithAction && script.action.type == "Drink";
+        const isSabotage = isWithAction && script.action.type == "Sabotage";
 
         const isDamage = isAttack && script.weapon && script.weapon.damage;
         const isWithNewWeapon = isWithAction ? script.action.new : false;
@@ -308,6 +309,10 @@ class PlayerFight extends Phaser.Scene {
 
         if (isPlayerWeaponUpdate) {
             this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== isWithNewWeapon);
+        }
+
+        if (isSabotage && isPlayer) {
+            
         }
 
         if (fPlayerWeapons.length > 0) {
@@ -824,7 +829,7 @@ class PlayerFight extends Phaser.Scene {
             let index = 0;
             this.renderCreateCharacter();
             const intervalId = setInterval(() => {
-                const allowedType = ["Change weapon", "Attack", "Drink"]
+                const allowedType = ["Change weapon", "Attack", "Drink", "Sabotage"]
                 const withAction = !!this.script[index] && this.script[index].action;
                 const isAllowed = withAction ? allowedType.includes(this.script[index].action.type) : false;
                 if (isAllowed) {
@@ -1056,16 +1061,16 @@ class PlayerFight extends Phaser.Scene {
         let weaponLength = 0;
 
         if (target == CONSTANTS._player) {
-            weaponLength = this.playerUtils.weapons.length;
+            weaponLength = this.fightPlayerWeapons.length;
             if (weaponLength >= 1) {
-                weaponToRemove = this.playerUtils.weapons[weaponLength - 1];
-                this.playerUtils.weapons.pop();
+                weaponToRemove = this.fightPlayerWeapons[weaponLength - 1];
+                this.fightPlayerWeapons.pop();
             }
         } else {
-            weaponLength = this.opponentUtils.weapons.length;
+            weaponLength = this.fightOpponentWeapons.length;
             if (weaponLength >= 1) {
-                weaponToRemove = this.opponentUtils.weapons[weaponLength - 1];
-                this.opponentUtils.weapons.pop();
+                weaponToRemove = this.fightOpponentWeapons[weaponLength - 1];
+                this.fightOpponentWeapons.pop();
             }
         }
 
@@ -1347,12 +1352,12 @@ class PlayerFight extends Phaser.Scene {
                     let player_weaponNumber = this.playerUtils.activeWeapon || -1;
                     let player_weaponToUse = CONSTANTS.weaponStats.find(w => w.number == player_weaponNumber);
                     let playerDamage = this.calculateDamage(playerStats.damage, opponentStats.armor, player_weaponToUse, CONSTANTS._player);
-                    
+
                     this.playerBlock = player_weaponToUse.block || 0;
 
                     this.processTurnsPet(
                         CONSTANTS._opponent, opponentPetDamage, opponentPetCombo, opponentPetWeaponToUse,
-                            player_weaponToUse, playerDamage, "Opponent"
+                        player_weaponToUse, playerDamage, "Opponent"
                     );
                 } else {
                     // opponent pet attacks players's pet
@@ -1929,7 +1934,7 @@ class PlayerFight extends Phaser.Scene {
         }
 
         if (this.playerLife <= 0 && this.canRevive.player) {
-            this.playerLife = this.life.max.player * 0.2;
+            this.playerLife = Math.max(0, Math.floor(this.life.max.player * 0.2));
             this.canRevive.player = false;
 
             this.generateLogs(
@@ -1940,7 +1945,7 @@ class PlayerFight extends Phaser.Scene {
             );
         }
         if (this.opponentLife <= 0 && this.canRevive.opponent) {
-            this.opponentLife = this.life.max.opponent * 0.2;
+            this.opponentLife = Math.max(0, Math.floor(this.life.max.opponent * 0.2));
             this.canRevive.opponent = false;
 
             this.generateLogs(
@@ -2029,6 +2034,11 @@ class PlayerFight extends Phaser.Scene {
             const withWeaponStriker = weaponStriker ? calculateChance(15) : false;
             const allowWeaponStriker = attackerWeapon.number != -1 && withWeaponStriker && !!comboInitMax && (comboInitMax[1] == 1);
             let finalDamageUse = withWeaponStriker ? Math.floor(attackerInitialDamage * 2) : Math.floor(attackerInitialDamage);
+
+            if (isWithThrownWeapon) {
+                finalDamageUse = attackerWeapon.damage;
+            }
+
             if (withRage) {
                 finalDamageUse = Math.floor(finalDamageUse * 1.6);
                 this.rage[theAttacker] = false;

@@ -441,6 +441,7 @@ class PlayerSelect extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
+                let actionToDO = "";
                 // randomUtils.name = "pets" // for manual testing overwrite
 
                 switch (randomUtils.name) {
@@ -451,7 +452,9 @@ class PlayerSelect extends Phaser.Scene {
                         utils = this.getRandomWeapons(charData, availUtils.weapons);
                         break;
                     case "pets":
-                        utils = this.getRandomPets(charData, availUtils.pets);
+                        const resultPet = this.getRandomPets(charData, availUtils.pets);
+                        utils = resultPet[0];
+                        actionToDO = resultPet[1];
                         break;
                     case "stats":
                         const armors = [51, 46, 44, 38, 17, 9];
@@ -463,24 +466,50 @@ class PlayerSelect extends Phaser.Scene {
                                 break;
                             }
                         }
-                        const randomStatsNumber = witharmor ? 4 : 3;
-                        const randomStatsNumberResult = randomizer(randomStatsNumber);
+                        
+                        const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
                         let keyName = "";
-                        if (randomStatsNumberResult == 0) {
-                            charData.attributes.life += 8;
-                            keyName = "Life stats";
-                        } else if (randomStatsNumberResult == 1) {
-                            charData.attributes.damage += 2;
-                            keyName = "Damage stats";
-                        } else if (randomStatsNumberResult == 2) {
-                            charData.attributes.agile += 2;
-                            keyName = "Agile stats";
-                        } else if (randomStatsNumberResult == 3) {
-                            charData.attributes.speed += 2;
-                            keyName = "Speed stats";
-                        } else if (randomStatsNumberResult == 4) {
-                            charData.attributes.armor += 1;
-                            keyName = "Armor stats";
+                        switch (randomStatsNumber) {
+                            case 0: // life
+                                charData.attributes.life += 8;
+                                const additionalLife = !!charData.utilities.skills.find(skill => skill == 52);
+                                const additionalLifeImmortality = !!charData.utilities.skills.find(skill => skill == 51);
+                                if (additionalLifeImmortality) charData.attributes.life += 20;
+                                if (additionalLife) charData.attributes.life += 5;
+                                keyName = "Life stats";
+                                break;
+                            case 1: // damage
+                                charData.attributes.damage += 2;
+                                const additionalDamage = !!charData.utilities.skills.find(skill => skill == 55);
+                                const additionalDamage_GOD = !!charData.utilities.skills.find(skill => skill == 10);
+                                if (additionalDamage_GOD) charData.attributes.damage += 2;
+                                if (additionalDamage) charData.attributes.damage++;
+                                keyName = "Damage stats";
+                                break;
+                            case 2: // agile
+                                charData.attributes.agile += 2;
+                                const additionalAgile = !!charData.utilities.skills.find(skill => skill == 54);
+                                const additionalAgile_GOD = !!charData.utilities.skills.find(skill => skill == 8);
+                                if (additionalAgile_GOD) charData.attributes.agile += 2;
+                                if (additionalAgile) charData.attributes.agile++;
+                                keyName = "Agile stats";
+                                break;
+                            case 3: // speed
+                                charData.attributes.speed += 2;
+                                const additionalSpeed = !!charData.utilities.skills.find(skill => skill == 53);
+                                const additionalSpeed_GOD = !!charData.utilities.skills.find(skill => skill == 29);
+                                if (additionalSpeed_GOD) charData.attributes.speed += 2;
+                                if (additionalSpeed) charData.attributes.speed++;
+                                keyName = "Speed stats";
+                                break;
+                            case 4: // armor
+                                const armorPlus = witharmor ? 2 : 1;
+                                charData.attributes.armor += armorPlus;
+                                keyName = "Armor stats";
+                                break;
+                            default:
+                                console.log("No stats found.");
+                                break;
                         }
                         utils = { key: "stats", name: keyName }
                         break;
@@ -488,7 +517,7 @@ class PlayerSelect extends Phaser.Scene {
                         console.log(CONSTANTS._errorMessages.noUtilitiesFound);
                 }
 
-                utilResults = utils ? { key: randomUtils.name, value: utils } : { key: "", value: "" };
+                utilResults = utils ? { key: randomUtils.name, value: utils, action: actionToDO } : { key: "", value: "" };
 
                 charData.level.current++;
 
@@ -567,7 +596,6 @@ class PlayerSelect extends Phaser.Scene {
     getRandomPets(charData, availPets) {
 
         if (charData.utilities.pets.length > 0) {
-            charData.utilities.pets[0].level++;
             return charData.utilities.pets[0];
         }
         else {
@@ -613,7 +641,7 @@ class PlayerSelect extends Phaser.Scene {
                         charData.utilities.pets.push(petToSave[0])
                     };
 
-                    return petToSave.length > 0 ? petToSave[0] : { name: null };
+                    return petToSave.length > 0 ? [petToSave[0], ""] : [{ name: null }, ""];
                 }
             }
         }
@@ -700,15 +728,22 @@ class PlayerSelect extends Phaser.Scene {
                 // do nothing
                 break;
             case "pets":
-                if (!!utils.value.name && petLength <= 1 && charData.utilities.pets[0].level <= 1) {
+                if (!!utils.value.name && petLength == 1 && charData.utilities.pets[0].level == 1 && utils.action == "") {
                     charData = this.validatePlusStats_Pets(charData, utils.value);
+                    break;
                 }
-                if (petLength > 0) {
-                    petLevel = true;
-                    randStatsPet = randomArrayIndex(["life", "agile", "damage", "speed", "armor"]);
-                    petAdditional = randStatsPet == "life" ? 5 : 1;
-                    charData.utilities.pets[0][randStatsPet] += petAdditional;
-                    result = charData.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                
+                if (petLength == 1 && utils.action == "petLvlUp"){
+                    charData.utilities.pets[0].level++;
+                    if (charData.utilities.pets[0].level > 1) {
+                        const choices = ["life", "agile", "damage", "speed", "armor"];
+                        const randomStats = randomizer(4);
+                        petLevel = true;
+                        randStatsPet = choices[randomStats];
+                        petAdditional = randStatsPet == "life" ? 5 : 1;
+                        charData.utilities.pets[0][randStatsPet] += petAdditional;
+                        result = charData.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                    }
                 }
                 break;
             default:
@@ -804,13 +839,13 @@ class PlayerSelect extends Phaser.Scene {
                 charData.armorName = charArmor;
                 break;
             case 46: // surge of armor
-                charData.attributes.armor += 7;
+                charData.attributes.armor += 9;
                 break;
             case 9: // body armor
-                charData.attributes.armor += 2;
+                charData.attributes.armor += 4;
                 break;
             case 9: // leviathan armor
-                charData.attributes.armor += 5;
+                charData.attributes.armor += 6;
                 break;
             case 17: // aura 
                 charData.attributes.armor += 1;
