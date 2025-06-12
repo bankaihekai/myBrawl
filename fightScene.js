@@ -929,7 +929,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 1000);
+            }, 400);
         } else {
             this.showWinner(winner);
         }
