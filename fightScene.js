@@ -292,13 +292,16 @@ class PlayerFight extends Phaser.Scene {
 
         const isWithAction = !!script && script.action;
         const target = isWithAction && script.action.target;
+        const poisonDefender = isWithAction && script.action.by;
 
         const isChangeWeapon = isWithAction && script.action.type == "Change weapon";
         const isAttack = isWithAction && script.action.type == "Attack";
         const isDrink = isWithAction && script.action.type == "Drink";
+        const isPoison = isWithAction && script.action.type == "Poison";
         const isSabotage = isWithAction && script.action.type == "Sabotage" && script.action.weaponRemoved;
 
         const isDamage = isAttack && script.weapon && script.weapon.damage;
+        const isDamagePoisoned = isPoison && script.weapon && script.weapon.damage;
         const isWithNewWeapon = isWithAction ? script.action.new : false;
 
         const isPlayer = isWithAction && script.action.by == "player";
@@ -307,6 +310,7 @@ class PlayerFight extends Phaser.Scene {
         const isOpponent = isWithAction && script.action.by == "opponent";
         const isOpponentWeaponUpdate = isWithAction && !!isChangeWeapon && !!isOpponent && !!isWithNewWeapon;
 
+        // player
         if (isPlayerWeaponUpdate) {
             this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== isWithNewWeapon);
         }
@@ -343,6 +347,7 @@ class PlayerFight extends Phaser.Scene {
             }
         }
 
+        // opponent
         if (isOpponentWeaponUpdate) {
             this.fightOpponentWeapons = fOpponentWeapons.filter(weapon => weapon !== isWithNewWeapon);
         }
@@ -389,6 +394,24 @@ class PlayerFight extends Phaser.Scene {
             let damageDisplay = this.add.text(isPlayerXY.x, isPlayerXY.y, `-${script.weapon.damage}`, {
                 fontSize: '45px',
                 fill: colorTarget,
+                fontStyle: 'bolder',
+                stroke: '#ffffff', // Border color
+                strokeThickness: 5 // Border thickness
+            });
+
+            this.characterContainer.add(damageDisplay);
+
+            // Remove the damage display after 1 second (1000ms)
+            this.time.delayedCall(400, () => {
+                damageDisplay.destroy();
+            });
+        }
+
+        // poison
+        if (poisonDefender && isDamagePoisoned && isPoison) {
+            let damageDisplay = this.add.text(isHealPlayerXY.x, isHealPlayerXY.y, `-${script.weapon.damage}`, {
+                fontSize: '45px',
+                fill: "#ff0000",
                 fontStyle: 'bolder',
                 stroke: '#ffffff', // Border color
                 strokeThickness: 5 // Border thickness
@@ -833,7 +856,7 @@ class PlayerFight extends Phaser.Scene {
             let index = 0;
             this.renderCreateCharacter();
             const intervalId = setInterval(() => {
-                const allowedType = ["Change weapon", "Attack", "Drink", "Sabotage"]
+                const allowedType = ["Change weapon", "Attack", "Drink", "Sabotage", "Poison"]
                 const withAction = !!this.script[index] && this.script[index].action;
                 const isAllowed = withAction ? allowedType.includes(this.script[index].action.type) : false;
                 if (isAllowed) {
@@ -906,7 +929,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 400);
+            }, 1000);
         } else {
             this.showWinner(winner);
         }
@@ -1869,24 +1892,24 @@ class PlayerFight extends Phaser.Scene {
 
         if (this.poisonTouch[theAttacker]) {
             if (theAttacker == CONSTANTS._player) {
-                const finalLifePoision = Math.max(0, this.opponentLife - 1);
+                const finalLifePoision = Math.max(0, this.opponentLife - 3);
                 this.opponentLife = finalLifePoision;
 
                 // damage pet
                 if (!!this.opponentUtils.pets && this.opponentPetLife > 0) {
-                    const finalLifePet = Math.max(0, this.opponentPetLife - 1);
+                    const finalLifePet = Math.max(0, this.opponentPetLife - 3);
                     this.opponentPetLife = finalLifePet;
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
-                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { name: "Poison Touch", remaining: "unli", damage: 3 },
                         { player: this.playerLife, opponent: this.opponentLife, opponentPetLife: finalLifePet }
                     );
                 } else {
                     this.generateLogs(
                         this.init,
                         { type: CONSTANTS._actions.poison, by: theDefender, attacker: theAttacker },
-                        { name: "Poison Touch", remaining: "unli", damage: 1 },
+                        { name: "Poison Touch", remaining: "unli", damage: 3 },
                         { player: this.playerLife, opponent: this.opponentLife }
                     );
                 }

@@ -857,7 +857,7 @@ const CONSTANTS = {
         { number: 17, name: "Short Sword", damage: 14, combo: 110, speed: 0, counter: 15, accuracy: 85, block: 15, disarm: 10, critical: 5 },
         { number: 18, name: "Scythe", damage: 22, combo: 80, speed: 100, counter: 15, accuracy: 85, block: 10, disarm: 15, critical: 10 },
         { number: 19, name: "Hammer", damage: 55, combo: -100, speed: 150, counter: 0, accuracy: 45, block: -20, disarm: 20, critical: 0 },
-        { number: 20, name: "Rubber Duck", damage: 1, combo: 260, speed: 0, counter: 0, accuracy: 95, block: 15, disarm: 5, critical: 0 },
+        { number: 20, name: "Rubber Duck", damage: 1, combo: 560, speed: 0, counter: 0, accuracy: 95, block: 15, disarm: 5, critical: 0 },
         { number: 21, name: "Mace", damage: 20, combo: 0, speed: 0, counter: 10, accuracy: 80, block: -10, disarm: 15, critical: 5 },
         { number: 22, name: "Behemoth Bone", damage: 16, combo: 100, speed: 0, counter: 3, accuracy: 90, block: -10, disarm: 15, critical: 10 },
         { number: 23, name: "Sai", damage: 9, combo: 125, speed: 0, counter: 15, accuracy: 80, block: 15, disarm: 70, critical: 5 },

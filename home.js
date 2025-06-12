@@ -20,7 +20,7 @@ class PlayerHome extends Phaser.Scene {
     }
 
     create() {
-        this.scene.start("playerFight");
+        // this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -81,7 +81,7 @@ class PlayerHome extends Phaser.Scene {
         // Clear the preview container
         this.characterContainer.removeAll(true);
         this.calculateLevelExp(this.currentCharDetails.level);
-        // this.currentCharDetails.level.points = 1;
+        // this.currentCharDetails.level.points = 30;
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
