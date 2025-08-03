@@ -19,8 +19,9 @@ class PlayerHome extends Phaser.Scene {
         this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
     }
 
+    //#region Create Scene
     create() {
-        // this.scene.start("playerFight");
+        this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -81,7 +82,7 @@ class PlayerHome extends Phaser.Scene {
         // Clear the preview container
         this.characterContainer.removeAll(true);
         this.calculateLevelExp(this.currentCharDetails.level);
-        // this.currentCharDetails.level.points = 30;
+        // this.currentCharDetails.level.points = 100;
         this.calculateLevelUp();
         this.createName();
         this.renderButtons();
@@ -918,18 +919,24 @@ class PlayerHome extends Phaser.Scene {
                 let randomUtils = {};
                 let utils = "";
 
-                // checker for empty utilities
-                const zero_avail_Skills = this.availableUtils.skills.length == 0 ? {} : { "name": "skills", "chance": 30 };
-                const zero_avail_Weapons = this.availableUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 35 };
-                const zero_avail_Pets = this.availableUtils.pets.length == 0 ? {} : { "name": "pets", "chance": 20 };
-                const avail_stats = { "name": "stats", "chance": 15 };
                 const toRender = [];
+                const isWithLevel = this.currentCharDetails.level.current >  1;
+                const skillChance = isWithLevel ? 30 : 45;
+                const weaponChance = isWithLevel ? 35 : 45;
+                const petChance = isWithLevel ? 20 : 10;
+                const avail_stats = { "name": "stats", "chance": 15 };
+                const zero_avail_Skills = this.availableUtils.skills.length == 0 ? {} : { "name": "skills", "chance": skillChance };
+                const zero_avail_Weapons = this.availableUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": weaponChance };
+                const zero_avail_Pets = this.availableUtils.pets.length == 0 ? {} : { "name": "pets", "chance": petChance };
+
+                // checker for empty utilities
+                if (this.currentCharDetails.level.current >  1) {
+                    toRender.push(avail_stats);
+                }
 
                 // checker for animal lover skill that can support multiple pets
                 const currentUserPetCount = this.currentCharDetails.utilities.pets.length;
                 const isAnimalLover = this.currentCharDetails.utilities.skills.filter(skill => skill == 24);
-
-                toRender.push(avail_stats);
 
                 if (this.availableUtils.skills.length > 0) toRender.push(zero_avail_Skills);
                 if (this.availableUtils.weapons.length > 0) toRender.push(zero_avail_Weapons);

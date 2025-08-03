@@ -167,9 +167,8 @@ class PlayerSelect extends Phaser.Scene {
         container.add(charAttireSprite);
 
         const armorResult = charAllData.utilities.skills.find(skill => skill == 44);
-        if (armorResult) {
-            const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
-            const charArmor = currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
+        if (armorResult && !!charAllData.armorName) {
+            const charArmor = charAllData.armorName; // set to 1 because no other skill yet added
             const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, charArmor)
                 .setFrame(0) // set to 1 because no other skill yet added
                 .setScale(charDetails.scale)

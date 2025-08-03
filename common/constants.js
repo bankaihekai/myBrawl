@@ -895,7 +895,1433 @@ const CONSTANTS = {
         skill: "Skill",
         thorns: "Thorns",
         died: "died"
-    }
+    },
+    testScript: [
+        {
+            "init": 0,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 0,
+            "action": {
+                "type": "Dodge",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 0,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 0,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 0,
+            "action": {
+                "type": "Dodge",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 0,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 1,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 1,
+            "action": {
+                "type": "Dodge",
+                "by": "player",
+                "attacker": "opponentPet"
+            }
+        },
+        {
+            "init": 1,
+            "action": {
+                "type": "Counter",
+                "by": "opponent",
+                "attacker": "opponentPet"
+            }
+        },
+        {
+            "init": 1,
+            "action": {
+                "type": "Dodge",
+                "by": "opponentPet",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 1,
+            "action": {
+                "type": "Return",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 2,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 2,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 105,
+                "opponent": 54
+            }
+        },
+        {
+            "init": 2,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 105,
+                "opponent": 50
+            }
+        },
+        {
+            "init": 2,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 3,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 3,
+            "action": {
+                "type": "Block",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 3,
+            "action": {
+                "type": "Dodge",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 3,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 4,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 4,
+            "action": {
+                "type": "Attack",
+                "by": "opponentPet",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "wild",
+                "damage": 9,
+                "crit": false
+            },
+            "life": {
+                "player": 96,
+                "opponent": 50
+            }
+        },
+        {
+            "init": 4,
+            "action": {
+                "type": "Return",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 5,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 5,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 96,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 5,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 6,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 6,
+            "action": {
+                "type": "Block",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 6,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 7,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 7,
+            "action": {
+                "type": "Attack",
+                "by": "opponentPet",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "wild",
+                "damage": 8,
+                "crit": false
+            },
+            "life": {
+                "player": 88,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 7,
+            "action": {
+                "type": "Return",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 8,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 8,
+            "action": {
+                "type": "Attack",
+                "by": "opponentPet",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "wild",
+                "damage": 9,
+                "crit": false
+            },
+            "life": {
+                "player": 79,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 8,
+            "action": {
+                "type": "Return",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 9,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 9,
+            "action": {
+                "type": "Dodge",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 9,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 10,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 10,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 75,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 10,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 11,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 11,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "opponentPet",
+                "remainingLife": 5,
+                "alive": true
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 75,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 11,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 12,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 12,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 72,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 12,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 13,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 13,
+            "action": {
+                "type": "Attack",
+                "by": "opponentPet",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "wild",
+                "damage": 8,
+                "crit": false
+            },
+            "life": {
+                "player": 64,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 13,
+            "action": {
+                "type": "Return",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 14,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 14,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "opponentPet",
+                "remainingLife": 2,
+                "alive": true
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 64,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 14,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 15,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 15,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 61,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 15,
+            "action": {
+                "type": "Block",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 15,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 16,
+            "action": {
+                "type": "Move",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 16,
+            "action": {
+                "type": "Dodge",
+                "by": "player",
+                "attacker": "opponentPet"
+            }
+        },
+        {
+            "init": 16,
+            "action": {
+                "type": "Counter",
+                "by": "opponent",
+                "attacker": "opponentPet"
+            }
+        },
+        {
+            "init": 16,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "opponentPet",
+                "remainingLife": 0,
+                "alive": false
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 61,
+                "opponent": 47
+            }
+        },
+        {
+            "init": 16,
+            "action": {
+                "type": "died",
+                "by": "opponentPet"
+            }
+        },
+        {
+            "init": 18,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 18,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 61,
+                "opponent": 43
+            }
+        },
+        {
+            "init": 18,
+            "action": {
+                "type": "Block",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 18,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 19,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 19,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 57,
+                "opponent": 43
+            }
+        },
+        {
+            "init": 19,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 21,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 21,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 53,
+                "opponent": 43
+            }
+        },
+        {
+            "init": 21,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 23,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 23,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 53,
+                "opponent": 39
+            }
+        },
+        {
+            "init": 23,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 24,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 24,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 49,
+                "opponent": 39
+            }
+        },
+        {
+            "init": 24,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 27,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 27,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 49,
+                "opponent": 36
+            }
+        },
+        {
+            "init": 27,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 28,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 28,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 45,
+                "opponent": 36
+            }
+        },
+        {
+            "init": 28,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 29,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 29,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 45,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 29,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 30,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 30,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 41,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 30,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 37,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 30,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 33,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 33,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 34,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 33,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 35,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 35,
+            "action": {
+                "type": "Block",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 35,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 36,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 36,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 31,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 36,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 39,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 39,
+            "action": {
+                "type": "Block",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 39,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 40,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 40,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 28,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 40,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 41,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 41,
+            "action": {
+                "type": "Dodge",
+                "by": "opponent",
+                "attacker": "player"
+            }
+        },
+        {
+            "init": 41,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 42,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 42,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 24,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 42,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 45,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 45,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 21,
+                "opponent": 33
+            }
+        },
+        {
+            "init": 45,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 48,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 48,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 21,
+                "opponent": 29
+            }
+        },
+        {
+            "init": 48,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 49,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 49,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 17,
+                "opponent": 29
+            }
+        },
+        {
+            "init": 49,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 13,
+                "opponent": 29
+            }
+        },
+        {
+            "init": 49,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 50,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 50,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 13,
+                "opponent": 26
+            }
+        },
+        {
+            "init": 50,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 51,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 51,
+            "action": {
+                "type": "Dodge",
+                "by": "player",
+                "attacker": "opponent"
+            }
+        },
+        {
+            "init": 51,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 10,
+                "opponent": 26
+            }
+        },
+        {
+            "init": 51,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 54,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 54,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 4,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 6,
+                "opponent": 26
+            }
+        },
+        {
+            "init": 54,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 58,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 58,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 3,
+                "opponent": 26
+            }
+        },
+        {
+            "init": 58,
+            "action": {
+                "type": "Return",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 59,
+            "action": {
+                "type": "Move",
+                "by": "player"
+            }
+        },
+        {
+            "init": 59,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 3,
+                "opponent": 23
+            }
+        },
+        {
+            "init": 59,
+            "action": {
+                "type": "Attack",
+                "by": "player",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 3,
+                "opponent": 20
+            }
+        },
+        {
+            "init": 59,
+            "action": {
+                "type": "Return",
+                "by": "player"
+            }
+        },
+        {
+            "init": 60,
+            "action": {
+                "type": "Move",
+                "by": "opponent"
+            }
+        },
+        {
+            "init": 60,
+            "action": {
+                "type": "Attack",
+                "by": "opponent",
+                "target": "human"
+            },
+            "weapon": {
+                "name": "Hands",
+                "damage": 3,
+                "crit": false,
+                "heal": 0
+            },
+            "life": {
+                "player": 0,
+                "opponent": 20
+            }
+        },
+        {
+            "init": 60,
+            "action": {
+                "type": "died",
+                "by": "player"
+            }
+        }
+    ]
 };
 
 // Optionally freeze the object to prevent modification

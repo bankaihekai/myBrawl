@@ -278,7 +278,6 @@ class PlayerFight extends Phaser.Scene {
         // throw {code: 500,  message: "Test error to check error handling"};
         this.createName();
         this.attackAndUpdate(); // initialize render life bar
-        // this.renderCreateCharacter();
         // this.renderButtons();
     }
 
@@ -309,6 +308,8 @@ class PlayerFight extends Phaser.Scene {
 
         const isOpponent = isWithAction && script.action.by == "opponent";
         const isOpponentWeaponUpdate = isWithAction && !!isChangeWeapon && !!isOpponent && !!isWithNewWeapon;
+
+        this.renderFightAnimation(this.characterContainer, script);
 
         // player
         if (isPlayerWeaponUpdate) {
@@ -351,7 +352,7 @@ class PlayerFight extends Phaser.Scene {
         if (isOpponentWeaponUpdate) {
             this.fightOpponentWeapons = fOpponentWeapons.filter(weapon => weapon !== isWithNewWeapon);
         }
-        
+
         if (isSabotage && isOpponent) {
             this.fightPlayerWeapons = fPlayerWeapons.filter(weapon => weapon !== script.action.weaponRemoved);
         }
@@ -441,65 +442,6 @@ class PlayerFight extends Phaser.Scene {
                 drinkDisplay.destroy();
             });
         }
-        // this.renderButtons();
-        // let startX = 110;
-        // let gap = 100;
-        // let rowLimit = 7;
-        // let nextRow_X = startX;
-
-        // for (let i = 0; i < rand_chars.length; i++) {
-        //     const randCharDetails = rand_chars[i];
-
-        //     // Check if we need to reset for the next row
-        //     if (i % rowLimit === 0 && i !== 0) {
-        //         nextRow_X = startX; // Reset x position for new row
-        //     }
-
-        //     const xSpacing = nextRow_X;
-        //     const ySpacing = 220;
-        //     const useSpacing_y = i < rowLimit
-        //         ? (this.characterContainer.height / 2) - CONSTANTS._charPostionY
-        //         : (this.characterContainer.height / 2) - CONSTANTS._charPostionY + ySpacing;
-
-        //     let currentCharDetails = {
-        //         gender: randCharDetails.gender,
-        //         bodyFrame: randCharDetails.bodyFrame,
-        //         hair: {
-        //             number: randCharDetails.hair.number,
-        //             frame: randCharDetails.hair.frame
-        //         },
-        //         basicAttire: randCharDetails.basicAttire
-        //     };
-
-        //     let charDetails = {
-        //         x: xSpacing,
-        //         y: useSpacing_y,
-        //         frame: 0,
-        //         scale: 3,
-        //         origin: 0.5
-        //     };
-
-        //     this.renderSprite(this.characterContainer, currentCharDetails, charDetails, randCharDetails);
-
-        //     let selectTxtOpponent = this.add.text(charDetails.x - 50, charDetails.y + 100, "Select", {
-        //         fontSize: '20px',
-        //         fill: '#000000',
-        //         fontStyle: 'bold',
-        //         stroke: '#ffffff', // Border color
-        //         strokeThickness: 2 // Border thickness
-        //     });
-        //     selectTxtOpponent.setInteractive();
-        //     this.characterContainer.add(selectTxtOpponent);
-
-        //     selectTxtOpponent.on("pointerdown", () => {
-        //         // this.scene.start('playerHome');
-        //         // to do create a fight scene simulation
-        //         this.saveToLocalStorage(CONSTANTS._opponent, rand_chars);
-        //         this.scene.start('playerFight');
-        //     });
-
-        //     nextRow_X += gap; // Move to the next position in row
-        // }
     }
 
     renderSprite(container, currentCharDetails, charDetails, charAllData) {
@@ -843,13 +785,14 @@ class PlayerFight extends Phaser.Scene {
     }
 
     // run through all added logs
-    // identify winer
+    // identify winner
     // all animation is render
+    //#region Display logs
     displayLogs(withInterval) {
         console.log({ script: this.script })
         const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
-
-        this.calculateWinner(winner);
+        this.script = CONSTANTS.testScript;
+        // this.calculateWinner(winner);
 
         if (withInterval) {
             // Use setInterval to print each script element every 1 second
@@ -929,7 +872,7 @@ class PlayerFight extends Phaser.Scene {
                     clearInterval(intervalId); // Stop the interval once all elements are printed
                     this.showWinner(winner);
                 }
-            }, 400);
+            }, 1000);
         } else {
             this.showWinner(winner);
         }
@@ -2632,5 +2575,146 @@ class PlayerFight extends Phaser.Scene {
         }
         saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
         saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+    }
+
+    //#region Fight Animation
+    renderFightAnimation(container, script) {
+        const isWithScript = !!script;
+        const playerDetails = structuredClone(this.currentCharDetails);
+        const opponentDetails = structuredClone(this.loadedOpponent);
+        const playerPosition = {
+            x: 250,
+            y: 380,
+            scale: 2
+        };
+        const opponentPosition = {
+            x: 550,
+            y: 380,
+            scale: 2
+        };
+
+        if (!isWithScript) {
+
+            // player
+            const charType = "body_".concat(playerDetails.gender);
+            this.anims.create({
+                key: 'player_body_pose', // name of the animation
+                frames: this.anims.generateFrameNames(charType, {
+                    start: playerDetails.bodyFrame,
+                    end: playerDetails.bodyFrame + 1
+                }),
+                frameRate: 8,     // how fast it animates
+                // repeat: -1        // -1 means loop forever
+            });
+            const charSprite = this.add.sprite(playerPosition.x, playerPosition.y, charType).setScale(playerPosition.scale).play('player_body_pose');
+            container.add(charSprite);
+
+            const charAttireType = "body_basic_attire_".concat(playerDetails.gender);
+            this.anims.create({
+                key: 'player_body_attire', // name of the animation
+                frames: this.anims.generateFrameNames(charAttireType, {
+                    start: playerDetails.basicAttire,
+                    end: playerDetails.basicAttire + 1
+                }),
+                frameRate: 8,     // how fast it animates
+                // repeat: -1        // -1 means loop forever
+            });
+            const charAttireSprite = this.add.sprite(playerPosition.x, playerPosition.y, charAttireType).setScale(playerPosition.scale).play('player_body_attire');
+            container.add(charAttireSprite);
+
+            const armorResult = playerDetails.utilities.skills.find(skill => skill == 44);
+            if (armorResult && !!playerDetails.armorName) {
+                const armorKey = "player_body_armor";
+                this.anims.create({
+                    key: armorKey, // name of the animation
+                    frames: this.anims.generateFrameNames(playerDetails.armorName, {
+                        start: 0,
+                        end: 1
+                    }),
+                    frameRate: 8,     // how fast it animates
+                    // repeat: -1        // -1 means loop forever
+                });
+                const charArmorSprite = this.add.sprite(playerPosition.x, playerPosition.y, playerDetails.armorName).setScale(playerPosition.scale).play(armorKey);
+                container.add(charArmorSprite);
+            }
+
+            if (playerDetails.hair.number !== 0 && playerDetails.hair.number !== null) {
+                const charHair = "hair_".concat(playerDetails.gender, playerDetails.hair.number);
+                this.anims.create({
+                    key: 'player_body_hair', // name of the animation
+                    frames: this.anims.generateFrameNames(charHair, {
+                        start: playerDetails.hair.frame,
+                        end: playerDetails.hair.frame + 1
+                    }),
+                    frameRate: 8,     // how fast it animates
+                    // repeat: -1        // -1 means loop forever
+                });
+                const charHairSprite = this.add.sprite(playerPosition.x, playerPosition.y, charHair).setScale(playerPosition.scale).play('player_body_hair');
+                container.add(charHairSprite);
+            }
+
+            // opponent
+            const charType_opponent = "body_".concat(opponentDetails.gender);
+            this.anims.create({
+                key: 'opponent_body_pose', // name of the animation
+                frames: this.anims.generateFrameNames(charType_opponent, {
+                    start: opponentDetails.bodyFrame,
+                    end: opponentDetails.bodyFrame + 1
+                }),
+                frameRate: 8,     // how fast it animates
+                // repeat: -1        // -1 means loop forever
+            });
+            const charSprite_opponent = this.add.sprite(opponentPosition.x, opponentPosition.y, charType_opponent).setScale(opponentPosition.scale).play('opponent_body_pose').setFlipX(true);
+            container.add(charSprite_opponent);
+            
+            const charAttireType_opponent = "body_basic_attire_".concat(opponentDetails.gender);
+            this.anims.create({
+                key: 'opponent_body_attire', // name of the animation
+                frames: this.anims.generateFrameNames(charAttireType_opponent, {
+                    start: opponentDetails.basicAttire,
+                    end: opponentDetails.basicAttire + 1
+                }),
+                frameRate: 8,     // how fast it animates
+                // repeat: -1        // -1 means loop forever
+            });
+            const charAttireSprite_opponent = this.add.sprite(opponentPosition.x, opponentPosition.y, charAttireType_opponent).setScale(opponentPosition.scale).play('opponent_body_attire').setFlipX(true);
+            container.add(charAttireSprite_opponent);
+
+            const armorResult_opponent = opponentDetails.utilities.skills.find(skill => skill == 44);
+            if (armorResult_opponent && !!opponentDetails.armorName) {
+                const armorKey_opponent = "opponent_body_armor";
+                this.anims.create({
+                    key: armorKey_opponent, // name of the animation
+                    frames: this.anims.generateFrameNames(opponentDetails.armorName, {
+                        start: 0,
+                        end: 1
+                    }),
+                    frameRate: 8,     // how fast it animates
+            //         // repeat: -1        // -1 means loop forever
+                });
+                const charArmorSprite_opponent = this.add.sprite(opponentPosition.x, opponentPosition.y, opponentDetails.armorName).setScale(opponentPosition.scale).play(armorKey_opponent).setFlipX(true);
+                container.add(charArmorSprite_opponent);
+            }
+
+            if (opponentDetails.hair.number !== 0 && opponentDetails.hair.number !== null) {
+                const charHair_opponent = "hair_".concat(opponentDetails.gender, opponentDetails.hair.number);
+                this.anims.create({
+                    key: 'opponent_body_hair', // name of the animation
+                    frames: this.anims.generateFrameNames(charHair_opponent, {
+                        start: opponentDetails.hair.frame,
+                        end: opponentDetails.hair.frame + 1
+                    }),
+                    frameRate: 8,     // how fast it animates
+                    // repeat: -1        // -1 means loop forever
+                });
+                const charHairSprite_opponent = this.add.sprite(opponentPosition.x, opponentPosition.y, charHair_opponent).setScale(opponentPosition.scale).play('opponent_body_hair').setFlipX(true);
+                container.add(charHairSprite_opponent);
+            }
+        }
+        else {
+            const isWithAction = isWithScript && script.action;
+            const isMoved = isWithAction && script.action.type == CONSTANTS._actions.move;
+
+        }
     }
 }
