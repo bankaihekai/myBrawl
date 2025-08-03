@@ -26,5 +26,5 @@ This project is created **for learning and coding practice purposes only** and h
 
 ### 1. Clone the repository
 ```bash
-git clone [https://github.com/your-username/myBrawl.git](https://github.com/bankaihekai/myBrawl.git)
+git clone https://github.com/bankaihekai/myBrawl.git
 cd myBrawl
