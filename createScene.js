@@ -58,7 +58,7 @@ class CreateScene extends Phaser.Scene {
                 this.existingUsers = users;
             })
             .catch(error => {
-                // print error message 1
+                // print error message 12
                 console.error(CONSTANTS._errorMessages.phaserError, error);
             }).finally(() => {
                 this.setLoading(false); // Hide the loading screen when done
