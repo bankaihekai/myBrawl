@@ -32,7 +32,8 @@ const CONSTANTS = {
         failedDecrypt: "Failed to decrypt data.",
         noSpace: "Spaces are not allowed!",
         noSpecialChar: "Special characters are not allowed!",
-        maxCharNameLength: "Name cannot exceed 14 characters! Current length: "
+        maxCharNameLength: "Name cannot exceed 14 characters! Current length: ",
+        phaserError: "Error fetching users in Phaser:",
     },
     _successMessages: {
         savedPassword: "Password saved successfully!",
