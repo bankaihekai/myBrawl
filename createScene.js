@@ -47,7 +47,6 @@ class CreateScene extends Phaser.Scene {
         }
 
         this.existingUsers = [];
-
     }
 
     create() {
@@ -66,7 +65,7 @@ class CreateScene extends Phaser.Scene {
 
         this.displayloggedOut();
         this.validateLoggedIn();
-        // localStorage.removeItem(CONSTANTS._charDetailsKey); // temporary comment for login user
+
         this.centerX = this.sys.game.config.width / 2;
         this.centerY = this.sys.game.config.height / 2;
 
@@ -74,7 +73,6 @@ class CreateScene extends Phaser.Scene {
         this.mainContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
 
         this.background = this.add.image(0, 0, "bg-close").setOrigin(0);
-        // this.background = this.add.image(0, 0, "bg-open").setOrigin(0);
         this.background.displayWidth = CONSTANTS._gameWidth;
         this.background.displayHeight = CONSTANTS._gameHeight;
         this.mainContainer.add(this.background);
@@ -93,8 +91,6 @@ class CreateScene extends Phaser.Scene {
         this.createBarStatus(this.currentCharDetails.attributes);
         this.renderCreateCharacter();
         this.renderButtons();
-        // console.log(this.getRandomUtils()); // get any weapon, skill, pet, etc.
-
     }
 
     createBorder(width, height) {
@@ -148,7 +144,6 @@ class CreateScene extends Phaser.Scene {
         this.currentCharDetails.basicAttire = currentCharDetails.basicAttire;
 
         this.renderSprite(this.characterContainer, currentCharDetails, charDetails);
-        // console.log(this.currentCharDetails);
     }
 
     renderSprite(container, currentCharDetails, charDetails) {
@@ -193,10 +188,10 @@ class CreateScene extends Phaser.Scene {
 
             let genderButtonOption;
             switch (this.currentCharDetails.gender) {
-                case "male":
+                case CONSTANTS._genders[1]: // Male
                     genderButtonOption = 5;
                     break;
-                case "female":
+                case CONSTANTS._genders[0]: // Female
                     genderButtonOption = 4;
                     break;
                 default:
@@ -297,9 +292,6 @@ class CreateScene extends Phaser.Scene {
         const maxSegments = 10; // Always 10 segments per bar
         const segmentWidth = barWidth / maxSegments; // Width of each segment
 
-        // CREATE COLORED BARs
-        // this.creteBars(this.characterContainer);
-
         const getColor = (value) => {
             // Return colors based on value ranges
             if (value == 0) return CONSTANTS._colors[1]; // 01-10 slight Yellow-Green
@@ -392,14 +384,6 @@ class CreateScene extends Phaser.Scene {
             const charShadow = this.add.sprite(-15, 8, "buttons").setFrame(iconFrame).setScale(0.4);
             this.barContainer.add(charShadow);
 
-            // Add a label for the attribute
-            // const attributeText = attribute.charAt(0).toUpperCase() + attribute.slice(1);
-            // const label = this.add.text(-51, 0, attributeText, {
-            //     fontSize: "14px",
-            //     color: "#ffffff"
-            // });
-            // this.barContainer.add(label);
-
             const txtLocation = attribute == "life" ? 0 : 85;
             const valueLabel = this.add.text(txtLocation, 0, value, {
                 fontSize: "14px",
@@ -420,7 +404,6 @@ class CreateScene extends Phaser.Scene {
     }
 
     createName() {
-        // Clear the container first
         this.charNameContainer.removeAll(true);
 
         const createAChampionText = this.add.sprite(95, 0, "createAChampion").setFrame(1).setOrigin(0, 0);
@@ -604,7 +587,6 @@ class CreateScene extends Phaser.Scene {
     }
 
     getRandomUtils() {
-        // todo avoid getting same skills and weapons
         const randomUtils = this.getRandomItem(CONSTANTS._utils);
         let utils;
         switch (randomUtils.name) {
@@ -665,8 +647,6 @@ class CreateScene extends Phaser.Scene {
                 console.error(CONSTANTS._errorMessages.failedDecrypt, error);
             }
         }
-        // get db user data
-        // login user data
     }
 
     displayloggedOut() {
@@ -674,10 +654,7 @@ class CreateScene extends Phaser.Scene {
         const localStorageLogout = localStorage.getItem(CONSTANTS._logout);
 
         if (localStorageLogout) {
-            // setTimeout(() => {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.logoutSuccess, true);
-            // }, 500);
-
             localStorage.removeItem(CONSTANTS._charUserKey);
             localStorage.removeItem(CONSTANTS._charDetailsKey);
             localStorage.removeItem(CONSTANTS._logout);
