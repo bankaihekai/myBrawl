@@ -21,7 +21,7 @@ class PlayerHome extends Phaser.Scene {
 
     //#region Create Scene
     create() {
-        this.scene.start("playerFight");
+        // this.scene.start("playerFight");
         const loadIsLogin = this.loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
@@ -1740,4 +1740,5 @@ class PlayerHome extends Phaser.Scene {
         }
     }
 }
+
 
