@@ -791,7 +791,7 @@ class PlayerFight extends Phaser.Scene {
     displayLogs(withInterval) {
         console.log({ script: this.script })
         const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
-        this.script = CONSTANTS.testScript;
+        // this.script = CONSTANTS.testScript;
         // this.calculateWinner(winner);
 
         if (withInterval) {
