@@ -201,6 +201,45 @@ class PlayerFight extends Phaser.Scene {
             this.scene.start('playGame');
         }
 
+        // ----------------------------------------
+        // TEST CODE
+        // ---------------------------------------
+        // player
+        // this.currentCharDetails.utilities.skills.push(30);
+        // this.currentCharDetails.utilities.pets.push({ "name": "Dog", types: 'A' });
+        // this.currentCharDetails.attributes.damage = 5;
+        // opponent
+        // this.loadedOpponent.utilities.skills.push(14);
+        // this.loadedOpponent.utilities.weapons.push(1);
+        // this.loadedOpponent.utilities.weapons.push(2);
+        // this.loadedOpponent.utilities.weapons.push(3);
+        // this.loadedOpponent.attributes.damage = 5;
+
+        // ----------------------------------------
+        // TEST CODE
+        // ---------------------------------------
+
+        this.centerX = this.sys.game.config.width / 2;
+        this.centerY = this.sys.game.config.height / 2;
+
+        this.mainContainer = this.add.container(0, 0);
+        this.mainContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
+
+        const rand_bg = randomizer(14);
+        this.background = this.add.image(0, 0, "bg-".concat(rand_bg)).setOrigin(0);
+        this.background.displayWidth = CONSTANTS._gameWidth;
+        this.background.displayHeight = CONSTANTS._gameHeight;
+        this.mainContainer.add(this.background);
+
+        this.characterContainer = this.add.container(0, 0);
+        this.characterContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
+
+        this.charNameContainer = this.add.container(0, 0);
+        this.charNameContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
+
+        this.charLifeBarContainer = this.add.container(0, 0);
+        this.charLifeBarContainer.setSize(CONSTANTS._gameWidth, CONSTANTS._gameHeight);
+
         this.life = {
             max: {
                 player: Number(this.currentCharDetails.attributes.life),
@@ -230,13 +269,16 @@ class PlayerFight extends Phaser.Scene {
             activeSkill: null
         }
 
-        // console.log({ loadedOpponent: this.loadedOpponent });
-        // console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ loadedOpponent: this.loadedOpponent });
+        console.log({ loadedCharacter: this.currentCharDetails });
 
         this.fightPlayerWeapons = structuredClone(this.playerUtils.weapons);
         this.fightOpponentWeapons = structuredClone(this.opponentUtils.weapons);
 
-        this.attackAndUpdate();
+        // throw {code: 500,  message: "Test error to check error handling"};
+        this.createName();
+        this.attackAndUpdate(); // initialize render life bar
+        // this.renderButtons();
     }
 
     renderCreateCharacter(script) {
@@ -400,6 +442,51 @@ class PlayerFight extends Phaser.Scene {
                 drinkDisplay.destroy();
             });
         }
+    }
+
+    renderSprite(container, currentCharDetails, charDetails, charAllData) {
+        const charShadow = this.add.sprite(charDetails.x - 20, charDetails.y - 5, "buttons").setFrame(8).setScale(3);
+        container.add(charShadow);
+
+        const charType = "body_".concat(currentCharDetails.gender);
+        const charSprite = this.add.sprite(charDetails.x, charDetails.y, charType)
+            .setFrame(currentCharDetails.bodyFrame)
+            .setScale(charDetails.scale)
+            .setOrigin(charDetails.origin);
+
+        container.add(charSprite);
+
+        const charAttireType = "body_basic_attire_".concat(currentCharDetails.gender);
+        const charAttireSprite = this.add.sprite(charDetails.x, charDetails.y, charAttireType)
+            .setFrame(currentCharDetails.basicAttire)
+            .setScale(charDetails.scale)
+            .setOrigin(charDetails.origin);
+
+        container.add(charAttireSprite);
+
+        const armorResult = charAllData.utilities.skills.find(skill => skill == 44);
+        if (armorResult) {
+            const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
+            const charArmor = currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
+            const charArmorSprite = this.add.sprite(charDetails.x, charDetails.y, charArmor)
+                .setFrame(0) // set to 1 because no other skill yet added
+                .setScale(charDetails.scale)
+                .setOrigin(charDetails.origin);
+
+            container.add(charArmorSprite);
+        }
+
+        if (currentCharDetails.hair.number !== 0 && currentCharDetails.hair.number !== null) {
+            const charHair = "hair_".concat(currentCharDetails.gender, currentCharDetails.hair.number);
+            const charHairSprite = this.add.sprite(charDetails.x, charDetails.y, charHair)
+                .setFrame(currentCharDetails.hair.frame)
+                .setScale(charDetails.scale)
+                .setOrigin(charDetails.origin);
+
+            container.add(charHairSprite);
+        }
+
+        // this.renderUtils(container, charDetails);
     }
 
     createName() {
@@ -634,6 +721,160 @@ class PlayerFight extends Phaser.Scene {
         return result;
     }
 
+    // render LIFE BARS
+    renderLife() {
+
+        this.charLifeBarContainer.removeAll(true);
+        const defaultWidth = 350;
+        const barWidthPlayer = this.life.current.playerWidth;
+        const barWidthOpponent = this.life.current.opponentWidth;
+
+        const barLength = 20;
+        const colorRed = 0xff0000;
+        const colorGreen = 0x00ff00;
+        const borderColor = 0x000000;
+        // Player life bar (Lost - Red)
+        this.playerLifeBarLost = this.add.rectangle(220, 100, 350, barLength, colorRed);
+        this.charLifeBarContainer.add(this.playerLifeBarLost);
+
+        // Add border for Player life bar (Lost - Red)
+        const playerLifeBarLostBorder = this.add.graphics();
+        playerLifeBarLostBorder.lineStyle(2, borderColor, 1); // Border width: 2px
+        playerLifeBarLostBorder.strokeRect(
+            this.playerLifeBarLost.x - this.playerLifeBarLost.width / 2,
+            this.playerLifeBarLost.y - this.playerLifeBarLost.height / 2,
+            this.playerLifeBarLost.width,
+            this.playerLifeBarLost.height
+        );
+        this.charLifeBarContainer.add(playerLifeBarLostBorder);
+
+
+        // Player life bar (Green)
+        this.playerLifeBar = this.add.rectangle(
+            220 - (350 - barWidthPlayer) / 2, // Shift left when reducing width
+            100,
+            barWidthPlayer,
+            barLength,
+            colorGreen
+        );
+        this.charLifeBarContainer.add(this.playerLifeBar);
+        // Opponent life bar (Lost - Red)
+        this.opponentLifeBarLost = this.add.rectangle(580, 100, 350, barLength, colorRed);
+        this.charLifeBarContainer.add(this.opponentLifeBarLost);
+
+        // Add border for Opponent life bar (Lost - Red)
+        const opponentLifeBarLostBorder = this.add.graphics();
+        opponentLifeBarLostBorder.lineStyle(2, borderColor, 1); // Border width: 2px
+        opponentLifeBarLostBorder.strokeRect(
+            this.opponentLifeBarLost.x - this.opponentLifeBarLost.width / 2,
+            this.opponentLifeBarLost.y - this.opponentLifeBarLost.height / 2,
+            this.opponentLifeBarLost.width,
+            this.opponentLifeBarLost.height
+        );
+        this.charLifeBarContainer.add(opponentLifeBarLostBorder);
+
+        // Opponent life bar (Green)
+        this.opponentLifeBar = this.add.rectangle(
+            580 - (350 - barWidthOpponent) / 2, // Shift left when reducing width
+            100,
+            barWidthOpponent,
+            barLength,
+            colorGreen
+        );
+        this.charLifeBarContainer.add(this.opponentLifeBar);
+    }
+
+    // run through all added logs
+    // identify winner
+    // all animation is render
+    //#region Display logs
+    displayLogs(withInterval) {
+        console.log({ script: this.script })
+        const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
+        // this.script = CONSTANTS.testScript;
+        // this.calculateWinner(winner);
+
+        if (withInterval) {
+            // Use setInterval to print each script element every 1 second
+            let index = 0;
+            this.renderCreateCharacter();
+            const intervalId = setInterval(() => {
+                if (!!this.script[index] && this.script[index].action) {
+                    this.renderCreateCharacter(this.script[index]);
+                }
+                if (index < this.script.length) {
+                    console.log(JSON.stringify(this.script[index])); // Print the current script element
+
+                    const actionType = this.script[index].action.type;
+
+                    // attacker who execute the action
+                    if (actionType == CONSTANTS._actions.attack ||
+                        actionType == CONSTANTS._actions.throw
+                    ) {
+                        const attacker = this.script[index].action.by;
+                        const defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+
+                        this.updateLife(defender, remainingLife); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who dealt poison
+                    if (actionType == CONSTANTS._actions.poison) {
+                        const attacker = this.script[index].action.attacker;
+                        const defender = attacker == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLife = attacker == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+
+                        this.updateLife(defender, remainingLife); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who use the revive drink bandage
+                    if (actionType == CONSTANTS._actions.revive ||
+                        actionType == CONSTANTS._actions.drink ||
+                        actionType == CONSTANTS._actions.bandage
+                    ) {
+                        const attacker = this.script[index].action.by;
+
+                        // with revive
+                        const rlRevive = attacker == CONSTANTS._player ? this.script[index].life.player : this.script[index].life.opponent;
+
+                        this.updateLife(attacker, rlRevive); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who have self inflicted damage
+                    if (
+                        actionType == CONSTANTS._actions.thorns
+                    ) {
+                        const defender = this.script[index].action.by; // the one with thorns defender
+                        const attackerToBeHurt = defender == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+                        const remainingLifeLeft = defender == CONSTANTS._player ? this.script[index].life.opponent : this.script[index].life.player;
+
+                        this.updateLife(attackerToBeHurt, remainingLifeLeft); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    // attacker who execute the action
+                    if (actionType == "Pet attack"
+                    ) {
+                        const defender = this.script[index].action.target;
+
+                        this.updateLife(defender, this.script[index].life[defender]); // life to deduct, remaining life  
+                        this.renderLife();
+                    }
+
+                    index++; // Move to the next element
+                } else {
+                    clearInterval(intervalId); // Stop the interval once all elements are printed
+                    this.showWinner(winner);
+                }
+            }, 1000);
+        } else {
+            this.showWinner(winner);
+        }
+    }
+
     // accuracy, defender
     calculateAccuracy(accuracy, target) {
 
@@ -850,7 +1091,7 @@ class PlayerFight extends Phaser.Scene {
 
     attackAndUpdate() {
 
-        // this.renderLife();
+        this.renderLife();
         const playerStats = structuredClone(this.currentCharDetails.attributes);
         const opponentStats = structuredClone(this.loadedOpponent.attributes);
         this.playerLife = playerStats.life;
@@ -1108,24 +1349,50 @@ class PlayerFight extends Phaser.Scene {
 
             this.init = i;
         }
-
-        let prevFightData = JSON.parse(decryptData("fightLogs"));
-        const fightLogsId = prevFightData ? String(prevFightData.length + 1) : 0;
-        const winner = this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent;
-        const fightDetailsRaw = {
+        // this.displayLogs(true); // true for setinterval 1sec
+        const fightLogsId = this.currentCharDetails.logs.fight.length + 1;
+        this.currentCharDetails.logs.fight.push({
             id: fightLogsId,
             playerDetails: this.currentCharDetails,
             opponentDetails: this.loadedOpponent,
             fightScript: this.script,
             winner: this.playerLife > 0 ? CONSTANTS._player : CONSTANTS._opponent
-        };
-        prevFightData.push(fightDetailsRaw);
+        });
         
-        this.calculateWinner(winner);
-        localStorage.setItem("fightLogs", encryptedData("fightLogs", JSON.stringify(prevFightData))); // html table
-        localStorage.setItem("fightResult", true);
-        localStorage.removeItem("opponent");
-        location.reload();
+        saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails);
+    }
+
+    updateLife(target, remaining) {
+        const maxWidth = 350;
+        if (target == CONSTANTS._player) {
+            let playerMaxLife = this.life.max.player;  // life
+            let playerCurrentLife = remaining;  // life
+
+            const healthBarWidth = (playerCurrentLife / playerMaxLife) * maxWidth;
+            this.life.current.playerWidth = healthBarWidth;
+            this.life.current.player = playerCurrentLife;
+        } else {
+            let opponentMaxLife = this.life.max.opponent;  // life
+            let opponentCurrentLife = remaining;  // life
+
+            const healthBarWidth = (opponentCurrentLife / opponentMaxLife) * maxWidth;
+            this.life.current.opponentWidth = healthBarWidth;
+            this.life.current.opponent = opponentCurrentLife;
+        }
+    }
+
+    checkStunned(targetUser) {
+        // check if the target user is stunned to skip movement
+        const target = targetUser == CONSTANTS._player ? CONSTANTS._player : CONSTANTS._opponent;
+        const defender = targetUser == CONSTANTS._player ? CONSTANTS._opponent : CONSTANTS._player;
+
+        if (this.isStun[target]) {
+            this.generateLogs(this.init, { type: CONSTANTS._actions.stunned, by: defender, attacker: target });
+            this.isStun[target] = false;
+            return true;
+        }
+
+        return false;
     }
 
     calculateStun(targetuser) { // target user == attacker
@@ -1144,6 +1411,21 @@ class PlayerFight extends Phaser.Scene {
         }
 
         this.isStun[defender] = isStunned ? true : false;
+    }
+
+    showWinner(winner) {
+        console.log(`Winner: ${winner}`); // Print the victor
+
+        const winner_X = winner == CONSTANTS._player ? 100 : 480;
+        const winner_y = 150;
+        let winnerDisplay = this.add.text(winner_X, winner_y, "Winner!", {
+            fontSize: '50px',
+            fill: '#000000',
+            fontStyle: 'bold',
+            stroke: '#00ff00', // Border color
+            strokeThickness: 3 // Border thickness
+        });
+        this.charNameContainer.add(winnerDisplay);
     }
 
     processTurns(attacker, attackerDamage, attackerCombo, attacker_weaponToUse, defender_weaponToUse, defenderDamage, petDetails, isCounter) {

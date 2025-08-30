@@ -240,6 +240,7 @@ class CreateScene extends Phaser.Scene {
                     this.currentCharDetails.kdStats.createdDate = new Date().toLocaleDateString('en-US');
                     this.saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
                     this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                    localStorage.setItem("fightLogs", encryptedData("fightLogs", JSON.stringify([])));
                     this.scene.start("playerHome");
                 } else {
                     this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.userAlreadyExist);
@@ -406,70 +407,71 @@ class CreateScene extends Phaser.Scene {
     createName() {
         this.charNameContainer.removeAll(true);
 
-        const createAChampionText = this.add.sprite(95, 0, "createAChampion").setFrame(1).setOrigin(0, 0);
+        const createAChampionText = this.add.sprite(95, 0, "createAChampion").setFrame(0).setOrigin(0, 0);
         this.charNameContainer.add(createAChampionText);
 
-        const loginText = this.add.sprite(this.scale.width - 110, 0, "loginTxt").setFrame(1).setOrigin(0, 0);
+        const loginText = this.add.sprite(this.scale.width - 110, 0, "loginTxt").setFrame(0).setOrigin(0, 0);
         loginText.setInteractive();
         this.charNameContainer.add(loginText);
 
         loginText.on("pointerdown", () => {
-            this.flags.isSaving = true;
+            this.createToast(this.generateRandomKeys(), "🛠️ Under Maintenance", false);
+            // this.flags.isSaving = true;
 
-            const modal = document.createElement("div");
-            modal.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        background: white;
-                        padding: 20px;
-                        box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-                        text-align: center;
-                        border-radius: 8px;
-                    ">
-                        <p>Username:</p>
-                        <input type="text" id="usernameInput" style="padding: 5px; width: 200px;">
-                        <p>Password:</p>
-                        <input type="password" id="passwordInput" style="padding: 5px; width: 200px;">
-                        <br><br>
-                        <button id="submitPasswordBtn" style="padding: 5px 10px;">Submit</button>
-                        <button id="cancelPasswordBtn" style="padding: 5px 10px; margin-left: 10px;">Cancel</button>
-                    </div>
-                `;
+            // const modal = document.createElement("div");
+            // modal.innerHTML = `
+            //         <div style="
+            //             position: fixed;
+            //             top: 50%;
+            //             left: 50%;
+            //             transform: translate(-50%, -50%);
+            //             background: white;
+            //             padding: 20px;
+            //             box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            //             text-align: center;
+            //             border-radius: 8px;
+            //         ">
+            //             <p>Username:</p>
+            //             <input type="text" id="usernameInput" style="padding: 5px; width: 200px;">
+            //             <p>Password:</p>
+            //             <input type="password" id="passwordInput" style="padding: 5px; width: 200px;">
+            //             <br><br>
+            //             <button id="submitPasswordBtn" style="padding: 5px 10px;">Submit</button>
+            //             <button id="cancelPasswordBtn" style="padding: 5px 10px; margin-left: 10px;">Cancel</button>
+            //         </div>
+            //     `;
 
-            document.body.appendChild(modal);
+            // document.body.appendChild(modal);
 
-            document.getElementById("submitPasswordBtn").addEventListener("click", () => {
-                const password = document.getElementById("passwordInput").value;
-                const user_name = document.getElementById("usernameInput").value;
+            // document.getElementById("submitPasswordBtn").addEventListener("click", () => {
+            //     const password = document.getElementById("passwordInput").value;
+            //     const user_name = document.getElementById("usernameInput").value;
 
-                if (user_name && password) {
-                    const activeUserName = this.existingUsers.filter(data => data.name == user_name);
+            //     if (user_name && password) {
+            //         const activeUserName = this.existingUsers.filter(data => data.name == user_name);
 
-                    if (activeUserName.length > 0) {
-                        this.saveToLocalStorage("recentLogin", true);
-                        this.saveToLocalStorage(CONSTANTS._charUserKey, activeUserName[0].name); // character user key
-                        this.saveToLocalStorage(CONSTANTS._charDetailsKey, activeUserName[0]); // character data
-                        this.validateLoggedIn();
+            //         if (activeUserName.length > 0) {
+            //             this.saveToLocalStorage("recentLogin", true);
+            //             this.saveToLocalStorage(CONSTANTS._charUserKey, activeUserName[0].name); // character user key
+            //             this.saveToLocalStorage(CONSTANTS._charDetailsKey, activeUserName[0]); // character data
+            //             this.validateLoggedIn();
 
-                    } else {
-                        this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
-                    }
-                } else {
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requireCreds);
-                }
+            //         } else {
+            //             this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
+            //         }
+            //     } else {
+            //         this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requireCreds);
+            //     }
 
-                document.body.removeChild(modal);
-            });
+            //     document.body.removeChild(modal);
+            // });
 
-            // Handle modal cancel
-            document.getElementById("cancelPasswordBtn").addEventListener("click", () => {
-                this.flags.isSaving = false;
-                document.body.removeChild(modal);
-            });
-            // Show prompt for username
+            // // Handle modal cancel
+            // document.getElementById("cancelPasswordBtn").addEventListener("click", () => {
+            //     this.flags.isSaving = false;
+            //     document.body.removeChild(modal);
+            // });
+            // // Show prompt for username
 
         });
 

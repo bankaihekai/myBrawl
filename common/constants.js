@@ -837,6 +837,26 @@ const CONSTANTS = {
         { "name": "Bird", types: 'A', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 100 },
         { "name": "Bird", types: 'B', level: 1, life: 8, damage: 5, agile: 7, speed: 6, armor: 0, comboRate: 150, dodge: 10, accuracy: 100 }
     ],
+    _petsAll2: [
+        { "name": "Bear", types: 'A', level: 1, damage: 20, accuracy: 5, maxAccuracy: 70 },
+        { "name": "Bear", types: 'B', level: 1, damage: 20, accuracy: 5, maxAccuracy: 70 },
+        { "name": "Bear", types: 'C', level: 1, damage: 20, accuracy: 5, maxAccuracy: 70 },
+
+        { "name": "Dog", types: 'A', level: 1, damage: 8, accuracy: 15, maxAccuracy: 85 },
+        { "name": "Dog", types: 'B', level: 1, damage: 8, accuracy: 15, maxAccuracy: 85 },
+
+        { "name": "Snake", types: 'A', level: 1, damage: 10, accuracy: 10, maxAccuracy: 75 },
+        { "name": "Snake", types: 'B', level: 1, damage: 10, accuracy: 10, maxAccuracy: 75 },
+
+        { "name": "Rat", types: 'A', level: 1, damage: 7, accuracy: 30, maxAccuracy: 100 },
+        { "name": "Rat", types: 'B', level: 1, damage: 7, accuracy: 30, maxAccuracy: 100 },
+
+        { "name": "Cat", types: 'A', level: 1, damage: 6, accuracy: 20, maxAccuracy: 90 },
+        { "name": "Cat", types: 'B', level: 1, damage: 6, accuracy: 20, maxAccuracy: 90 },
+
+        { "name": "Bird", types: 'A', level: 1, damage: 5, accuracy: 25, maxAccuracy: 95 },
+        { "name": "Bird", types: 'B', level: 1, damage: 5, accuracy: 25, maxAccuracy: 95 },
+    ],
     weaponStats: [
         { number: -1, name: "Hands", damage: 0, combo: 20, speed: 0, counter: 3, accuracy: 80, block: 10, disarm: 5, critical: 0 },
         { number: 1, name: "Heater Shield", damage: 12, combo: -150, speed: 200, counter: 30, accuracy: 60, block: 45, disarm: 15, critical: 0 },

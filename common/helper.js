@@ -1,6 +1,4 @@
-/**
- * Data encryption and decryption functions for local storage
- */
+//#region encrypt & decrypt
 
 function encryptedData(key, data) {
     return CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
@@ -35,9 +33,9 @@ function generateRandomKeys() {
     return Math.random().toString(36).substring(2, 7);
 }
 
-/**
- * Data value/number calculation
- */
+//#endregion
+
+//#region value/number
 
 function randomizer(max) {
     return Phaser.Math.Between(0, max);
@@ -60,9 +58,13 @@ function calculateChance(chance) {
     return randomValue <= chance; // Returns true if item is achieved, false otherwise
 }
 
-/**
- * HTML Display and Interaction Functions
- */
+function calculatePercentage(partNum, wholeNum) {
+    return (partNum / wholeNum ) * 100;
+}
+
+//#endregion
+
+//#region HTML Display
 
 function setLoading(withLoading) {
     const loadingScreen = document.getElementById("loading-screen");
@@ -72,3 +74,5 @@ function setLoading(withLoading) {
         console.warn("Loading screen element not found!");
     }
 }
+
+//#endregion

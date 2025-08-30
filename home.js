@@ -11,7 +11,7 @@ class PlayerHome extends Phaser.Scene {
         }
 
         this.availableUtils = {
-            pets: CONSTANTS._petsAll,
+            pets: CONSTANTS._petsAll2,
             weapons: CONSTANTS._weaponsAvailable,
             skills: CONSTANTS._skills
         };
@@ -44,6 +44,22 @@ class PlayerHome extends Phaser.Scene {
             this.scene.start('playGame');
         }
         this.validateAvailableUtils();
+
+        this.latestFight = JSON.parse(decryptData("fightLogs"));
+        if (!!this.latestFight && this.latestFight.length > 0) {
+
+            const recentFight = this.latestFight[this.latestFight.length - 1];
+            const withFightResult = localStorage.getItem("fightResult");
+
+            if (withFightResult && withFightResult == "true") {
+                const playerWin = recentFight.winner == "player";
+                const fightMessage = playerWin ? "You win!" : "You lose!";
+
+                this.createToast(this.generateRandomKeys(), fightMessage, playerWin);
+
+                localStorage.setItem("fightResult", false);
+            }
+        }
 
         this.centerX = this.sys.game.config.width / 2;
         this.centerY = this.sys.game.config.height / 2;
@@ -193,7 +209,94 @@ class PlayerHome extends Phaser.Scene {
         this.createToolTip(fightHistory_icon, "Fight History", "buttons", "fhistory");
 
         fightHistory_icon.on("pointerdown", () => {
-            this.createModalTable2('Fight History', "<h1 class='text-danger'>Fight History not yet available</h1>");
+            // this.createModalTable2('Fight History', "<h1 class='text-danger'>Fight History not yet available</h1>");
+            let logData = this.latestFight;
+
+            // if (this.latestFight.length > 5) {
+            //     logData = this.latestFight.slice(-5);
+            // }
+            console.log(logData);
+            const fightTableDetails = logData.map((data) => {
+
+                const playerName = data.playerDetails.name;
+                const opponentName = data.opponentDetails.name;
+                const playerLevel = data.playerDetails.level.current;
+                const opponentLevel = data.opponentDetails.level.current;
+                const winner = data.winner == "player" ? "🏆" : "🥈";
+                const title = `${winner + " " + playerName} (lvl ${playerLevel}) VS. ${opponentName} (lvl ${opponentLevel})`;
+
+                // const playerLife = data.playerDetails.attributes.life;
+                // const opponentLife = data.opponentDetails.attributes.life;
+                // const fightScriptLength = data.fightScript.length - 1;
+                // const lifeRemaining = {
+                //     player: data.fightScript[fightScriptLength - 1].life.player,
+                //     opponent: data.fightScript[fightScriptLength - 1].life.opponent
+                // };
+
+                // const attackThrow = data.fightScript.filter(data => data.action && (data.action.type == "Attack" || data.action.type == "Throw"));
+                // const playerAttackThrow = attackThrow.filter(data => data.action.by == "player");
+                // const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent");
+                // const playerPetAttackThrow = attackThrow.filter(data => data.action.by == "playerPet");
+                // const opponentPetAttackThrow = attackThrow.filter(data => data.action.by == "opponentPet");
+
+                // const dodgeDetails = data.fightScript.filter(data => data.action && data.action.type == "Dodge");
+                // const playerDodge = dodgeDetails.filter(data => data.action.by == "player").length;
+                // const opponentDodge = dodgeDetails.filter(data => data.action.by == "opponent").length;
+
+                // const playerTotalHits = playerAttackThrow.length + opponentDodge;
+                // const opponentTotalHits = opponentAttackThrow.length + playerDodge;
+
+                // const playerDodgeRate = Math.floor(calculatePercentage(playerDodge, opponentTotalHits));
+                // const opponentDodgeRate = Math.floor(calculatePercentage(opponentDodge, playerTotalHits));
+                // // player || opponent : dodge == (opponent || player => hits)
+
+                // // character dealt damage
+                // const playerTotalDealtDamage = playerAttackThrow.reduce((sum, attacks) => {
+                //     return sum + attacks.weapon.damage;
+                // }, 0);
+                // const opponentTotalDealtDamage = opponentAttackThrow.reduce((sum, attacks) => {
+                //     return sum + attacks.weapon.damage;
+                // }, 0);
+
+                // //pet dealt damage
+                // const playerPetTotalDealtDamage = playerPetAttackThrow.reduce((sum, attacks) => {
+                //     return sum + attacks.weapon.damage;
+                // }, 0);
+                // const opponentPetTotalDealtDamage = opponentPetAttackThrow.reduce((sum, attacks) => {
+                //     return sum + attacks.weapon.damage;
+                // }, 0);
+
+                // const lastAction = data.fightScript.slice(-2);
+                // const lastHit = {
+                //     actionBy: lastAction[0].action,
+                //     weaponUsed: lastAction[0].weapon
+                // };
+                // const lastHitMessage = `${lastHit.actionBy.by} ${lastHit.actionBy.type} with ${lastHit.weaponUsed.name}`;
+
+                // const resultDetail = {
+                //     player: {
+                //         name: playerName,
+                //         lifeRemaining: `${lifeRemaining.player || 0}/${playerLife}`, // remaining life in logs
+                //         hits: playerTotalHits, // success and failed hits
+                //         dodgeRate: `${playerDodgeRate}%`, // enemy hits count : your dodge count
+                //         damageDone: playerTotalDealtDamage,
+                //         damageDonePet: playerPetTotalDealtDamage
+                //     },
+                //     opponent: {
+                //         name: opponentName,
+                //         lifeRemaining: `${lifeRemaining.opponent || 0}/${opponentLife}`,
+                //         hits: opponentTotalHits,
+                //         dodgeRate: `${opponentDodgeRate}%`,
+                //         damageDone: opponentTotalDealtDamage,
+                //         damageDonePet: opponentPetTotalDealtDamage
+                //     },
+                //     lastAction: lastHitMessage
+                // };
+
+                return this.htmlFormat(title, null, data.winner);
+            });
+
+            this.createModalTable3('Fight History', fightTableDetails);
         });
 
         // center
@@ -436,9 +539,9 @@ class PlayerHome extends Phaser.Scene {
         };
 
         Object.entries(petAttributes).forEach(([attribute, value], index) => {
-            if (["name", "types", "level", "comboRate", "dodge", "accuracy"].includes(attribute)) return;
+            if (["name", "types", "level", "comboRate", "dodge", "maxAccuracy"].includes(attribute)) return;
 
-            this.barContainer2 = this.add.container(this.centerX - 130, 350 + index * (barHeight + 5));
+            this.barContainer2 = this.add.container(this.centerX - 160, 380 + index * (barHeight + 10));
 
             if (attribute !== "life") {
                 // Calculate the quotient and fractional part for the segments
@@ -510,6 +613,9 @@ class PlayerHome extends Phaser.Scene {
                 case "armor":
                     iconFrame = 34;
                     break;
+                case "accuracy":
+                    iconFrame = 35;
+                    break;
                 default:
                     break;
             }
@@ -524,9 +630,9 @@ class PlayerHome extends Phaser.Scene {
             //     color: "#ffffff"
             // });
             // this.barContainer2.add(label);
-
+            const valueTxt =  attribute == "damage" ? value : value + "/" + petAttributes.maxAccuracy + "%";
             const txtLocation = attribute == "life" ? 0 : 85;
-            const valueLabel = this.add.text(txtLocation, 0, value, {
+            const valueLabel = this.add.text(txtLocation, 0, valueTxt, {
                 fontSize: "14px",
                 color: "#ffffff"
             });
@@ -582,7 +688,7 @@ class PlayerHome extends Phaser.Scene {
         this.charNameContainer.add(kdrStat);
 
         // to do - change to logout sprite
-        const logoutTxt = this.add.sprite(this.scale.width - 110, 0, "logoutTxt").setFrame(1).setOrigin(0, 0);
+        const logoutTxt = this.add.sprite(this.scale.width - 110, 0, "logoutTxt").setFrame(0).setOrigin(0, 0);
         logoutTxt.setInteractive();
         this.charNameContainer.add(logoutTxt);
 
@@ -595,6 +701,7 @@ class PlayerHome extends Phaser.Scene {
             if (isLogout) {
                 localStorage.removeItem(CONSTANTS._charUserKey);
                 localStorage.removeItem(CONSTANTS._charDetailsKey);
+                localStorage.removeItem("fightLogs");
                 localStorage.setItem(CONSTANTS._logout, 'true');
                 location.reload();
             }
@@ -644,9 +751,10 @@ class PlayerHome extends Phaser.Scene {
 
             // Show the input and buttons on pointerdown
             noPassword.on('pointerdown', () => {
-                passwordInput.style.display = 'block';
-                buttonContainer.style.display = 'block';
-                passwordInput.focus();
+                this.createToast(this.generateRandomKeys(), "🛠️ Under Maintenance", false);
+                // passwordInput.style.display = 'block';
+                // buttonContainer.style.display = 'block';
+                // passwordInput.focus();
             });
 
             // Handle the confirm button click
@@ -920,7 +1028,7 @@ class PlayerHome extends Phaser.Scene {
                 let utils = "";
 
                 const toRender = [];
-                const isWithLevel = this.currentCharDetails.level.current >  1;
+                const isWithLevel = this.currentCharDetails.level.current > 1;
                 const skillChance = isWithLevel ? 30 : 45;
                 const weaponChance = isWithLevel ? 35 : 45;
                 const petChance = isWithLevel ? 20 : 10;
@@ -930,7 +1038,7 @@ class PlayerHome extends Phaser.Scene {
                 const zero_avail_Pets = this.availableUtils.pets.length == 0 ? {} : { "name": "pets", "chance": petChance };
 
                 // checker for empty utilities
-                if (this.currentCharDetails.level.current >  1) {
+                if (this.currentCharDetails.level.current > 1) {
                     toRender.push(avail_stats);
                 }
 
@@ -1431,6 +1539,52 @@ class PlayerHome extends Phaser.Scene {
         });
     }
 
+    createModalTableFightResult(key, message, data) {
+        // console.log(data);
+        // const encryptedData = localStorage.getItem(key);
+        // if (!encryptedData) {
+        //     throw {
+        //         code: 500,
+        //         message: "testing error"
+        //     }
+        // }; // safety check
+
+        // const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
+        // const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+
+        // console.log(bytes);
+
+        const modal = document.createElement("div");
+        modal.innerHTML = `
+            <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success">
+                            <h5 class="modal-title text-light">Fight Result: ####!</h5>
+                        </div>
+                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    ${message}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close modal on button click
+        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
+            modal.remove();
+        });
+    }
+
     /**
      * Create reusable toast component to display message
      * @param {string} key - use as button id
@@ -1629,6 +1783,40 @@ class PlayerHome extends Phaser.Scene {
         });
     }
 
+    createModalTable3(title, message, key) {
+        let finalMessage = message;
+        if (Array.isArray(message)) {
+            message = message.reverse();
+            finalMessage = message.join('');
+        }
+
+        const modal = document.createElement("div");
+        modal.innerHTML = `
+            <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success">
+                            <h5 class="modal-title text-light">${title}</h5>
+                        </div>
+                        <div class="modal-body" style="height: 500px; overflow-y: auto;">
+                            ${finalMessage}
+                        </div>
+                        <div class="modal-footer">
+                            <button id="${key}closeModalBtn" class="btn btn-secondary">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close modal on button click
+        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
+            modal.remove();
+        });
+    }
+
     setLoading(withLoading) {
         const loadingScreen = document.getElementById("loading-screen");
         if (loadingScreen) {
@@ -1738,6 +1926,23 @@ class PlayerHome extends Phaser.Scene {
             this.currentCharDetails.level.points += 1;
             this.currentCharDetails.level.experience = 0;
         }
+    }
+
+    htmlFormat(title, bodyMessage, winner) {
+        const design = winner == "player" ? "bg-success" : "bg-danger";
+
+        return `
+            <div class="text-white rounded p-2 mb-1 ${design} d-flex justify-content-evenly">
+                <div class="text-center">
+                    ${title}
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-primary btn-sm border border-success-subtle">
+                        Action
+                    </button>
+                </div>
+            </div>
+        `;
     }
 }
 

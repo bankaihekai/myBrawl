@@ -9,11 +9,6 @@ class PlayerSelect extends Phaser.Scene {
             isSaving: false // flag to lock naming while entering password
         }
 
-        // this.availableUtils = {
-        //     pets: CONSTANTS._petsAll,
-        //     weapons: CONSTANTS._weaponsAvailable,
-        //     skills: CONSTANTS._skills
-        // };
         this.binKey = "67d9878c8a456b7966787549";
         this.masterKey = "$2a$10$Mya1QQvt8foHg2AaLxkgaeZ2mRJ4HnwVKlD4ElQkL3TvUl94sJtau";
     }
@@ -71,21 +66,12 @@ class PlayerSelect extends Phaser.Scene {
         this.renderCreateCharacter();
     }
 
-    createBorder(width, height) {
-        const border = this.add.graphics();
-        border.lineStyle(4, 0xffffff, 1); // Set border thickness and color (white)
-        border.strokeRect(-0, -0 / 2, width, height); // Draw the rectangle centered around the origin
-        return border;
-    }
-
     renderCreateCharacter() {
         // Clear the preview container
         this.characterContainer.removeAll(true);
         this.createName();
         let rand_chars = this.renderRandomCharacter(this.currentCharDetails.level.current);
-        // console.log({ rand_chars: rand_chars });
 
-        // this.calculateLevelUp();
         let startX = 110;
         let gap = 100;
         let rowLimit = 7;
@@ -190,36 +176,12 @@ class PlayerSelect extends Phaser.Scene {
         // this.renderUtils(container, charDetails);
     }
 
-    changeGender() {
-        this.currentCharDetails.gender = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._genders[0] : CONSTANTS._genders[1];
-        this.renderCreateCharacter();
-    }
-
-    changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.renderCreateCharacter();
-    }
-
-    changeRandom() {
-
-        this.currentCharDetails.gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
-
-        const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        this.renderCreateCharacter();
-    }
-
     createName() {
         // Clear the container first
         this.charNameContainer.removeAll(true);
 
         // to do - change to logout sprite
-        const logoutTxt = this.add.sprite(this.scale.width - 110, 0, "logoutTxt").setFrame(1).setOrigin(0, 0);
+        const logoutTxt = this.add.sprite(this.scale.width - 110, 0, "logoutTxt").setFrame(0).setOrigin(0, 0);
         logoutTxt.setInteractive();
         this.charNameContainer.add(logoutTxt);
 
@@ -858,44 +820,6 @@ class PlayerSelect extends Phaser.Scene {
     }
 
     /**
-     * Create reusable modal with table component to display message
-     * @param {string} key - use as button id
-     * @param {string} message - modal message, must contain table row and data elements
-     * @returns {void}
-     */
-    createModalTable(key, message) {
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">Level Up!</h5>
-                        </div>
-                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
-    }
-
-    /**
      * Create reusable toast component to display message
      * @param {string} key - use as button id
      * @param {string} message - toast message
@@ -1007,73 +931,6 @@ class PlayerSelect extends Phaser.Scene {
         }
 
         return availUtils;
-    }
-
-    creteBars(container) {
-
-        const barWidth = 80; // Total width of the bar
-        const barHeight = 15; // Height of each segment
-        const maxSegments = 10; // Always 10 segments per bar
-        const segmentWidth = barWidth / maxSegments; // Width of each segment
-
-        for (let i = 1; i <= CONSTANTS._colors.length - 1; i++) {
-            const color = CONSTANTS._colors[i]; // Use the pre-determined colors
-            const borderThickness = 1; // Thickness of the border
-            const borderColor = color[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
-            // Create the outer rectangle (border)
-            const outerSegment = this.add.rectangle(
-                i * segmentWidth, // Position segments horizontally with spacing
-                0, // Align vertically
-                segmentWidth, // Outer rectangle includes the border
-                barHeight, // Outer rectangle includes the border
-                borderColor // Border color (black)
-            );
-            outerSegment.setOrigin(0); // Align to the top-left
-            container.add(outerSegment);
-
-            // Create the inner rectangle (fill)
-            const innerSegment = this.add.rectangle(
-                i * segmentWidth + borderThickness, // Adjust for border thickness
-                borderThickness, // Adjust for border thickness
-                segmentWidth - 2, // Adjust for border thickness
-                barHeight - 2, // Adjust for border thickness
-                Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
-            );
-            innerSegment.setOrigin(0); // Align to the top-left
-            container.add(innerSegment);
-        }
-    }
-
-    createModalTable2(title, message, key) {
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">${title}</h5>
-                        </div>
-                        <div class="modal-body" style="height: 500px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-secondary">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
     }
 
     setLoading(withLoading) {
