@@ -352,7 +352,7 @@ class PlayerSelect extends Phaser.Scene {
      */
     calculateLevelUp(charData) {
         let availUtils = {
-            pets: CONSTANTS._petsAll,
+            pets: CONSTANTS._petsAll2,
             weapons: CONSTANTS._weaponsAvailable,
             skills: CONSTANTS._skills
         };
@@ -392,9 +392,7 @@ class PlayerSelect extends Phaser.Scene {
                 if (availUtils.skills.length > 0) toRender.push(zero_avail_Skills);
                 if (availUtils.weapons.length > 0) toRender.push(zero_avail_Weapons);
                 if (availUtils.pets.length > 0) {
-                    if (currentUserPetCount == 0) {
-                        toRender.push(zero_avail_Pets);
-                    } else if (currentUserPetCount > 0 && isAnimalLover.length > 0) {
+                    if (currentUserPetCount >= 0) {
                         toRender.push(zero_avail_Pets);
                     } else {
                         // do nothing -> dont add pets
@@ -427,7 +425,7 @@ class PlayerSelect extends Phaser.Scene {
                                 break;
                             }
                         }
-                        
+
                         const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
                         let keyName = "";
                         switch (randomStatsNumber) {
@@ -693,8 +691,8 @@ class PlayerSelect extends Phaser.Scene {
                     charData = this.validatePlusStats_Pets(charData, utils.value);
                     break;
                 }
-                
-                if (petLength == 1 && utils.action == "petLvlUp"){
+
+                if (petLength == 1 && utils.action == "petLvlUp") {
                     charData.utilities.pets[0].level++;
                     if (charData.utilities.pets[0].level > 1) {
                         const choices = ["life", "agile", "damage", "speed", "armor"];
@@ -704,6 +702,35 @@ class PlayerSelect extends Phaser.Scene {
                         petAdditional = randStatsPet == "life" ? 5 : 1;
                         charData.utilities.pets[0][randStatsPet] += petAdditional;
                         result = charData.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)}` : "";
+                    }
+                }
+
+                if (petLength == 1 && utils.action == "petLvlUp") {
+                    charData.utilities.pets[0].level++;
+                    if (charData.utilities.pets[0].level > 1) {
+                        const choices = ["accuracy", "damage"];
+                        const randomStats = randomizer(1);
+                        randStatsPet = choices[randomStats];
+                        petLevel = true;
+                        const botPet = structuredClone(charData.utilities.pets[0]);
+
+                        if (randStatsPet == "accuracy" && botPet.accuracy < botPet.maxAccuracy) {
+
+                            const petAdditionalAccuracy = randomizerMinMax(2, 5);
+                            const petAccuracyValue = botPet.accuracy + petAdditionalAccuracy;
+                            const isPetMaxAccuracy = petAccuracyValue >= botPet.maxAccuracy;
+
+                            if (isPetMaxAccuracy) {
+                                charData.utilities.pets[0].accuracy = botPet.maxAccuracy;
+                            } else {
+                                charData.utilities.pets[0].accuracy += petAdditional;
+                            }
+                        } else {
+                            petAdditional += randomizerMinMax(2, 5);
+                            charData.utilities.pets[0][randStatsPet] += petAdditional;
+                        }
+
+                        result = charData.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)} +${petAdditional}` : "";
                     }
                 }
                 break;
@@ -733,7 +760,8 @@ class PlayerSelect extends Phaser.Scene {
         };
         const deductionValue = isSurgeOfLife && isImmortality ? 2 : isSurgeOfLife ? 1 : 0;
         const currentLife = charData.attributes.life - petsDeductions[petName][deductionValue];
-        charData.attributes.life = currentLife <= 0 ? 1 : currentLife;
+        charData.attributes.life = Math.max(1, currentLife);
+        charData.attributes.skills.push(101);
         return charData;
     }
 
@@ -811,7 +839,12 @@ class PlayerSelect extends Phaser.Scene {
             case 17: // aura 
                 charData.attributes.armor += 1;
                 break;
-            
+            case 11: // pet master 
+                charData.utilities.pets[0].accuracy = Math.min(charData.utilities.pets[0].maxAccuracy, charData.utilities.pets[0].accuracy + 10);
+                break;
+            case 21: // strong bite
+                charData.utilities.pets[0].damage += Math.floor((charData.utilities.pets[0].damage * 0.2) + 5);
+                break;
             default:
                 break;
         }
