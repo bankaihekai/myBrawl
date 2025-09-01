@@ -51,17 +51,17 @@ class CreateScene extends Phaser.Scene {
 
     create() {
 
-        this.setLoading(true);
-        getAllUsers()
-            .then(users => {
-                this.existingUsers = users;
-            })
-            .catch(error => {
-                // print error message 33
-                console.error(CONSTANTS._errorMessages.phaserError, error);
-            }).finally(() => {
-                this.setLoading(false); // Hide the loading screen when done
-            });
+        // this.setLoading(true);
+        // getAllUsers()
+        //     .then(users => {
+        //         this.existingUsers = users;
+        //     })
+        //     .catch(error => {
+        //         // print error message 33
+        //         console.error(CONSTANTS._errorMessages.phaserError, error);
+        //     }).finally(() => {
+        //         this.setLoading(false); // Hide the loading screen when done
+        //     });
 
         this.displayloggedOut();
         this.validateLoggedIn();

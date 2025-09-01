@@ -210,9 +210,10 @@ const CONSTANTS = {
         },
         {
             "name": "Pet Master",
-            "description": "Masters train them, but they choose you.",
+            "description": "Your pet’s aim just got scary good.",
             "chance": 0.89,
-            number: 11
+            number: 11,
+            require: 101
         },
         {
             "name": "Poisonous touch",
@@ -270,9 +271,10 @@ const CONSTANTS = {
         },
         {
             "name": "Strong Bite",
-            "description": "Munch on fallen enemies for extra HP. Not weird at all!",
+            "description": "Your pet thinks enemies are chew toys. More bite, less bark",
             "chance": 0.89,
-            number: 21
+            number: 21,
+            require: 101
         },
         {
             "name": "Scare",
@@ -288,9 +290,10 @@ const CONSTANTS = {
         },
         {
             "name": "Animals Lover",
-            "description": "You attract more pets than a walking bag of treats.",
+            "description": "Your clingy pet fights hard and attacks twice or more",
             "chance": 1.19,
-            number: 24
+            number: 24,
+            require: 101
         },
         {
             "name": "Discharge",
@@ -546,9 +549,10 @@ const CONSTANTS = {
         },
         {
             "name": "Pet Master",
-            "description": "Masters train them, but they choose you.",
+            "description": "Your pet’s aim just got scary good.",
             "chance": 0.89,
-            number: 11
+            number: 11,
+            require: 101
         },
         {
             "name": "Poisonous touch",
@@ -606,9 +610,10 @@ const CONSTANTS = {
         },
         {
             "name": "Strong Bite",
-            "description": "Munch on fallen enemies for extra HP. Not weird at all!",
+            "description": "Your pet thinks enemies are chew toys. More bite, less bark",
             "chance": 0.89,
-            number: 21
+            number: 21,
+            require: 101
         },
         {
             "name": "Scare",
@@ -624,9 +629,10 @@ const CONSTANTS = {
         },
         {
             "name": "Animals Lover",
-            "description": "You attract more pets than a walking bag of treats.",
+            "description": "Your clingy pet fights hard and attacks twice or more",
             "chance": 1.19,
-            number: 24
+            number: 24,
+            require: 101
         },
         {
             "name": "Discharge",

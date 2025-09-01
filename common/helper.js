@@ -41,6 +41,10 @@ function randomizer(max) {
     return Phaser.Math.Between(0, max);
 }
 
+function randomizerMinMax(min, max) {
+    return Phaser.Math.Between(min, max);
+}
+
 function getMaxExpForLevel(level) {
     return Math.round(level * 1.5);
 }
