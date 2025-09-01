@@ -12,7 +12,7 @@ class PlayerHome extends Phaser.Scene {
 
         this.availableUtils = {
             pets: CONSTANTS._petsAll2,
-            weapons: CONSTANTS._weaponsAvailable,
+            weapons: structuredClone(CONSTANTS._weapons),
             skills: CONSTANTS._skills
         };
         this.binKey = "67d9878c8a456b7966787549";

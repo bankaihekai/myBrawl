@@ -353,7 +353,7 @@ class PlayerSelect extends Phaser.Scene {
     calculateLevelUp(charData) {
         let availUtils = {
             pets: CONSTANTS._petsAll2,
-            weapons: CONSTANTS._weaponsAvailable,
+            weapons: structuredClone(CONSTANTS._weapons),
             skills: CONSTANTS._skills
         };
         availUtils = this.validateAvailableUtils(charData, availUtils);
