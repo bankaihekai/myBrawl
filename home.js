@@ -11,7 +11,7 @@ class PlayerHome extends Phaser.Scene {
         }
 
         this.availableUtils = {
-            pets: CONSTANTS._petsAll2,
+            pets: structuredClone(CONSTANTS._petsAll),
             weapons: structuredClone(CONSTANTS._weapons),
             skills: CONSTANTS._skills
         };
@@ -43,6 +43,9 @@ class PlayerHome extends Phaser.Scene {
 
             this.scene.start('playGame');
         }
+
+        this.loadedCharacterLogs = this.loadCharacter("fightLogs");
+
         this.validateAvailableUtils();
 
         this.latestFight = JSON.parse(decryptData("fightLogs"));
@@ -104,6 +107,7 @@ class PlayerHome extends Phaser.Scene {
         this.renderButtons();
 
         console.log({ loadedCharacter: this.currentCharDetails });
+        console.log({ loadedCharacterLogs: JSON.parse(this.loadedCharacterLogs) });
 
         // Define your desired numbers
         const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
@@ -539,9 +543,9 @@ class PlayerHome extends Phaser.Scene {
         };
 
         Object.entries(petAttributes).forEach(([attribute, value], index) => {
-            if (["name", "types", "level", "comboRate", "dodge", "maxAccuracy"].includes(attribute)) return;
+            if (["name", "types", "level", "comboRate", "dodge", "maxAccuracy", "speed"].includes(attribute)) return;
 
-            this.barContainer2 = this.add.container(this.centerX - 160, 380 + index * (barHeight + 10));
+            this.barContainer2 = this.add.container(this.centerX - 160, 350 + index * (barHeight + 5));
 
             if (attribute !== "life") {
                 // Calculate the quotient and fractional part for the segments
@@ -630,7 +634,7 @@ class PlayerHome extends Phaser.Scene {
             //     color: "#ffffff"
             // });
             // this.barContainer2.add(label);
-            const valueTxt =  attribute == "damage" ? value : value + "/" + petAttributes.maxAccuracy + "%";
+            const valueTxt =  attribute == "accuracy" ? value + "/" + petAttributes.maxAccuracy + "%" : value;
             const txtLocation = attribute == "life" ? 0 : 85;
             const valueLabel = this.add.text(txtLocation, 0, valueTxt, {
                 fontSize: "14px",
@@ -1010,6 +1014,8 @@ class PlayerHome extends Phaser.Scene {
      */
     calculateLevelUp() {
 
+        this.currentCharDetails.level.points = 1;
+
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
                 life: 60,
@@ -1057,7 +1063,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                // randomUtils.name = "pets" // for manual testing overwrite
+                randomUtils.name = "pets" // for manual testing overwrite
                 let actionToDO = "";
 
                 switch (randomUtils.name) {
@@ -1515,7 +1521,7 @@ class PlayerHome extends Phaser.Scene {
                 this.currentCharDetails.utilities.pets[0].accuracy = Math.min(this.currentCharDetails.utilities.pets[0].maxAccuracy, this.currentCharDetails.utilities.pets[0].accuracy + 10);
                 break;
             case 21: // strong bite
-                this.currentCharDetails.utilities.pets[0].damage += Math.floor((this.currentCharDetails.utilities.pets[0].damage * 0.2) + 5);
+                this.currentCharDetails.utilities.pets[0].damage += Math.floor((this.currentCharDetails.utilities.pets[0].damage * 0.5) + 5);
                 break;
             default:
                 break;

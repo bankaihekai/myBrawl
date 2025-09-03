@@ -352,7 +352,7 @@ class PlayerSelect extends Phaser.Scene {
      */
     calculateLevelUp(charData) {
         let availUtils = {
-            pets: CONSTANTS._petsAll2,
+            pets: structuredClone(CONSTANTS._petsAll),
             weapons: structuredClone(CONSTANTS._weapons),
             skills: CONSTANTS._skills
         };
@@ -761,7 +761,7 @@ class PlayerSelect extends Phaser.Scene {
         const deductionValue = isSurgeOfLife && isImmortality ? 2 : isSurgeOfLife ? 1 : 0;
         const currentLife = charData.attributes.life - petsDeductions[petName][deductionValue];
         charData.attributes.life = Math.max(1, currentLife);
-        charData.attributes.skills.push(101);
+        charData.utilities.skills.push(101);
         return charData;
     }
 
