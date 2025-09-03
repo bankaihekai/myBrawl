@@ -1014,7 +1014,7 @@ class PlayerHome extends Phaser.Scene {
      */
     calculateLevelUp() {
 
-        this.currentCharDetails.level.points = 1;
+        // this.currentCharDetails.level.points = 1;
 
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
@@ -1063,7 +1063,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                randomUtils.name = "pets" // for manual testing overwrite
+                // randomUtils.name = "pets" // for manual testing overwrite
                 let actionToDO = "";
 
                 switch (randomUtils.name) {
