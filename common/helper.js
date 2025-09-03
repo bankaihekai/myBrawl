@@ -66,6 +66,67 @@ function calculatePercentage(partNum, wholeNum) {
     return (partNum / wholeNum ) * 100;
 }
 
+function calculatePetCombo(withAnimalsLover, petDetails) {
+    let combo = 1; // Attack 1 always happens
+    const { name } = petDetails;
+
+    switch (name) {
+        case "Bear": {
+            const bearMaxCombo = withAnimalsLover ? 2 : 1;
+            if (withAnimalsLover) {
+                const bearSecondAttack = calculateChance(20) ? 1 : 0; // 20% accuracy
+                combo = Math.min(combo + bearSecondAttack, bearMaxCombo);
+            }
+            break;
+        }
+        case "Dog": {
+            const dogMaxCombo = withAnimalsLover ? 2 : 1;
+            if (withAnimalsLover) {
+                const dogSecondAttack = calculateChance(40) ? 1 : 0; // 40% accuracy
+                combo = Math.min(combo + dogSecondAttack, dogMaxCombo);
+            }
+            break;
+        }
+        case "Snake": {
+            const snakeMaxCombo = withAnimalsLover ? 2 : 1;
+            if (withAnimalsLover) {
+                const snakeSecondAttack = calculateChance(30) ? 1 : 0; // 30% accuracy
+                combo = Math.min(combo + snakeSecondAttack, snakeMaxCombo);
+            }
+            break;
+        }
+        case "Rat": {
+            const ratMaxCombo = withAnimalsLover ? 3 : 1;
+            if (withAnimalsLover) {
+                const ratSecondAttack = calculateChance(60) ? 1 : 0; // 60% accuracy
+                const ratThirdAttack = calculateChance(60) ? 1 : 0; // 60% accuracy
+                combo = Math.min(combo + ratSecondAttack + ratThirdAttack, ratMaxCombo);
+            }
+            break;
+        }
+        case "Cat": {
+            const catMaxCombo = withAnimalsLover ? 2 : 1;
+            if (withAnimalsLover) {
+                const catSecondAttack = calculateChance(50) ? 1 : 0; // 50% accuracy
+                combo = Math.min(combo + catSecondAttack, catMaxCombo);
+            }
+            break;
+        }
+        case "Bird": {
+            const birdMaxCombo = withAnimalsLover ? 2 : 1;
+            if (withAnimalsLover) {
+                const birdSecondAttack = calculateChance(40) ? 1 : 0; // 40% accuracy
+                combo = Math.min(combo + birdSecondAttack, birdMaxCombo);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    return combo;
+}
+
 //#endregion
 
 //#region HTML Display

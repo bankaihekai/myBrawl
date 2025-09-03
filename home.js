@@ -1965,7 +1965,7 @@ class PlayerHome extends Phaser.Scene {
                 </div>
                 <div class="d-flex justify-content-end">
                     <button class="btn btn-primary btn-sm border border-success-subtle">
-                        Action
+                        View
                     </button>
                 </div>
             </div>
