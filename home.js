@@ -219,7 +219,7 @@ class PlayerHome extends Phaser.Scene {
             // if (this.latestFight.length > 5) {
             //     logData = this.latestFight.slice(-5);
             // }
-            console.log(logData);
+            let id = 1;
             const fightTableDetails = logData.map((data) => {
 
                 const playerName = data.playerDetails.name;
@@ -229,75 +229,77 @@ class PlayerHome extends Phaser.Scene {
                 const winner = data.winner == "player" ? "🏆" : "🥈";
                 const title = `${winner + " " + playerName} (lvl ${playerLevel}) VS. ${opponentName} (lvl ${opponentLevel})`;
 
-                // const playerLife = data.playerDetails.attributes.life;
-                // const opponentLife = data.opponentDetails.attributes.life;
-                // const fightScriptLength = data.fightScript.length - 1;
-                // const lifeRemaining = {
-                //     player: data.fightScript[fightScriptLength - 1].life.player,
-                //     opponent: data.fightScript[fightScriptLength - 1].life.opponent
-                // };
+                const playerLife = data.playerDetails.attributes.life;
+                const opponentLife = data.opponentDetails.attributes.life;
 
-                // const attackThrow = data.fightScript.filter(data => data.action && (data.action.type == "Attack" || data.action.type == "Throw"));
-                // const playerAttackThrow = attackThrow.filter(data => data.action.by == "player");
-                // const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent");
-                // const playerPetAttackThrow = attackThrow.filter(data => data.action.by == "playerPet");
-                // const opponentPetAttackThrow = attackThrow.filter(data => data.action.by == "opponentPet");
+                const playerLifePetMax = data.playerDetails.utilities.pets.length > 0 ? data.playerDetails.utilities.pets[0].life : 0;
+                const opponentLifePetMax = data.opponentDetails.utilities.pets.length > 0 ? data.opponentDetails.utilities.pets[0].life : 0;
 
-                // const dodgeDetails = data.fightScript.filter(data => data.action && data.action.type == "Dodge");
-                // const playerDodge = dodgeDetails.filter(data => data.action.by == "player").length;
-                // const opponentDodge = dodgeDetails.filter(data => data.action.by == "opponent").length;
+                const PlayerPetLife = data.fightScript.filter(data => data.action && data.action.target == "playerPet");
+                const OpponentPetLife = data.fightScript.filter(data => data.action && data.action.target == "opponentPet");
 
-                // const playerTotalHits = playerAttackThrow.length + opponentDodge;
-                // const opponentTotalHits = opponentAttackThrow.length + playerDodge;
+                const lastLifePlayerPet = playerLifePetMax > 0 ? PlayerPetLife[PlayerPetLife.length -1].action.remainingLife : 0;
+                const lastLifeOpponentPet = opponentLifePetMax > 0 ? OpponentPetLife[OpponentPetLife.length -1].action.remainingLife : 0;
 
-                // const playerDodgeRate = Math.floor(calculatePercentage(playerDodge, opponentTotalHits));
-                // const opponentDodgeRate = Math.floor(calculatePercentage(opponentDodge, playerTotalHits));
-                // // player || opponent : dodge == (opponent || player => hits)
+                const fightScriptLength = data.fightScript.length - 1;
+                const lifeRemaining = {
+                    player: data.fightScript[fightScriptLength - 1].life.player,
+                    opponent: data.fightScript[fightScriptLength - 1].life.opponent
+                };
 
-                // // character dealt damage
-                // const playerTotalDealtDamage = playerAttackThrow.reduce((sum, attacks) => {
-                //     return sum + attacks.weapon.damage;
-                // }, 0);
-                // const opponentTotalDealtDamage = opponentAttackThrow.reduce((sum, attacks) => {
-                //     return sum + attacks.weapon.damage;
-                // }, 0);
+                const attackThrow = data.fightScript.filter(data => data.action && (data.action.type == "Attack" || data.action.type == "Throw"));
+                const dodgeDetails = data.fightScript.filter(data => data.action && data.action.type == "Dodge");
 
-                // //pet dealt damage
-                // const playerPetTotalDealtDamage = playerPetAttackThrow.reduce((sum, attacks) => {
-                //     return sum + attacks.weapon.damage;
-                // }, 0);
-                // const opponentPetTotalDealtDamage = opponentPetAttackThrow.reduce((sum, attacks) => {
-                //     return sum + attacks.weapon.damage;
-                // }, 0);
+                // target human
+                const playerAttackThrow = attackThrow.filter(data => data.action.by == "player" || data.action.by == "playerPet");
+                const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet");
 
-                // const lastAction = data.fightScript.slice(-2);
-                // const lastHit = {
-                //     actionBy: lastAction[0].action,
-                //     weaponUsed: lastAction[0].weapon
-                // };
-                // const lastHitMessage = `${lastHit.actionBy.by} ${lastHit.actionBy.type} with ${lastHit.weaponUsed.name}`;
+                const playerDodge = dodgeDetails.filter(data => data.action.by == "player" || data.action.by == "playerPet").length;
+                const opponentDodge = dodgeDetails.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet").length;
 
-                // const resultDetail = {
-                //     player: {
-                //         name: playerName,
-                //         lifeRemaining: `${lifeRemaining.player || 0}/${playerLife}`, // remaining life in logs
-                //         hits: playerTotalHits, // success and failed hits
-                //         dodgeRate: `${playerDodgeRate}%`, // enemy hits count : your dodge count
-                //         damageDone: playerTotalDealtDamage,
-                //         damageDonePet: playerPetTotalDealtDamage
-                //     },
-                //     opponent: {
-                //         name: opponentName,
-                //         lifeRemaining: `${lifeRemaining.opponent || 0}/${opponentLife}`,
-                //         hits: opponentTotalHits,
-                //         dodgeRate: `${opponentDodgeRate}%`,
-                //         damageDone: opponentTotalDealtDamage,
-                //         damageDonePet: opponentPetTotalDealtDamage
-                //     },
-                //     lastAction: lastHitMessage
-                // };
+                const playerTotalHits = playerAttackThrow.length + opponentDodge;
+                const opponentTotalHits = opponentAttackThrow.length + playerDodge;
 
-                return this.htmlFormat(title, null, data.winner);
+                const playerDodgeRate = Math.floor(calculatePercentage(playerDodge, opponentTotalHits));
+                const opponentDodgeRate = Math.floor(calculatePercentage(opponentDodge, playerTotalHits));
+                // player || opponent : dodge == (opponent || player => hits)
+
+                // character dealt damage
+                const playerTotalDealtDamage = playerAttackThrow.reduce((sum, attacks) => {
+                    return Math.max(0, sum + attacks.weapon.damage);
+                }, 0);
+                const opponentTotalDealtDamage = opponentAttackThrow.reduce((sum, attacks) => {
+                    return Math.max(0, sum + attacks.weapon.damage);
+                }, 0);
+
+                const lastAction = data.fightScript.slice(-2);
+                const lastHit = {
+                    actionBy: lastAction[0].action,
+                    weaponUsed: lastAction[0].weapon
+                };
+                const lastHitMessage = `${lastHit.actionBy.by} ${lastHit.actionBy.type} with ${lastHit.weaponUsed.name}`;
+
+                const resultDetail = {
+                    id: data.id,
+                    player: {
+                        name: playerName,
+                        lifeRemaining: `${lifeRemaining.player || 0} / ${playerLife}`, // remaining life in logs
+                        petLifeRemaining: lastLifePlayerPet + " / " + playerLifePetMax,
+                        hitsDamage: playerTotalHits + " / " + playerTotalDealtDamage, // success and failed hits
+                        dodgeRate: `${playerDodgeRate}%`
+                    },
+                    opponent: {
+                        name: opponentName,
+                        lifeRemaining: `${lifeRemaining.opponent || 0} / ${opponentLife}`,
+                        petLifeRemaining: lastLifeOpponentPet + " / " + opponentLifePetMax,
+                        hitsDamage: opponentTotalHits + " / " + opponentTotalDealtDamage,
+                        dodgeRate: `${opponentDodgeRate}%`
+                    },
+                    lastAction: lastHitMessage
+                };
+
+                id++;
+                return this.htmlFormat(title, resultDetail, data.winner);
             });
 
             this.createModalTable3('Fight History', fightTableDetails);
@@ -634,7 +636,7 @@ class PlayerHome extends Phaser.Scene {
             //     color: "#ffffff"
             // });
             // this.barContainer2.add(label);
-            const valueTxt =  attribute == "accuracy" ? value + "/" + petAttributes.maxAccuracy + "%" : value;
+            const valueTxt = attribute == "accuracy" ? value + "/" + petAttributes.maxAccuracy + "%" : value;
             const txtLocation = attribute == "life" ? 0 : 85;
             const valueLabel = this.add.text(txtLocation, 0, valueTxt, {
                 fontSize: "14px",
@@ -1386,12 +1388,12 @@ class PlayerHome extends Phaser.Scene {
                 if (petLength == 1 && utils.action == "petLvlUp") {
                     this.currentCharDetails.utilities.pets[0].level++;
                     if (this.currentCharDetails.utilities.pets[0].level > 1) {
-                        const choices = ["accuracy", "damage"];
-                        const randomStats = randomizer(1);
+                        const choices = ["accuracy", "damage", "agile", "armor", "life"];
+                        const randomStats = randomizer(4);
                         randStatsPet = choices[randomStats];
 
                         if (randStatsPet == "accuracy" && petDetails.accuracy < petDetails.maxAccuracy) {
-
+                            
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
                             const petAccuracyValue = petDetails.accuracy + petAdditionalAccuracy;
                             const isPetMaxAccuracy = petAccuracyValue >= petDetails.maxAccuracy;
@@ -1399,15 +1401,17 @@ class PlayerHome extends Phaser.Scene {
                             if (isPetMaxAccuracy) {
                                 this.currentCharDetails.utilities.pets[0].accuracy = petDetails.maxAccuracy;
                             } else {
-                                this.currentCharDetails.utilities.pets[0].accuracy += petAdditional;
+                                this.currentCharDetails.utilities.pets[0].accuracy += petAdditionalAccuracy;
+                                petAdditional += petAdditionalAccuracy;
                             }
                         } else {
                             petAdditional += randomizerMinMax(2, 5);
                             this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
                         }
 
+                        
                         petLevel = true;
-                        result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `and ${resultTxt.replace("{stats}", randStatsPet)} +${petAdditional}` : "";
+                        result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `, ${resultTxt.replace("{stats}", randStatsPet)} +${petAdditional}` : "";
                     }
                 }
 
@@ -1957,16 +1961,78 @@ class PlayerHome extends Phaser.Scene {
 
     htmlFormat(title, bodyMessage, winner) {
         const design = winner == "player" ? "bg-success" : "bg-danger";
+        const accordionId = `accordion-${bodyMessage.id}`;
+        const bodyMessageID = bodyMessage.id;
+        const designPlayerDodgeRate = bodyMessage.player.dodgeRate == "0%" ? "text-danger fw-bold" : "";
+
+        // Get the key/value from the object (since you said only one entry per objec
 
         return `
-            <div class="text-white rounded p-2 mb-1 ${design} d-flex justify-content-evenly">
-                <div class="text-center">
-                    ${title}
-                </div>
-                <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary btn-sm border border-success-subtle">
-                        View
-                    </button>
+            <div class="text-white rounded">
+                <div class="accordion" id="${accordionId}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-${bodyMessageID}">
+                            <button class="accordion-button collapsed text-white ${design}" type="button"
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse-${bodyMessageID}" 
+                                    aria-expanded="false" 
+                                    aria-controls="collapse-${bodyMessageID}">
+                                ${title}
+                            </button>
+                        </h2>
+                        <div id="collapse-${bodyMessageID}" 
+                            class="accordion-collapse collapse" 
+                            aria-labelledby="heading-${bodyMessageID}" 
+                            data-bs-parent="#${accordionId}">
+                            <div class="accordion-body">
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Attribute</th>
+                                            <th>Player</th>
+                                            <th>Opponent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Name</td>
+                                            <td>${bodyMessage.player.name}</td>
+                                            <td>${bodyMessage.opponent.name}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pet Life Remaining</td>
+                                            <td>${bodyMessage.player.petLifeRemaining}</td>
+                                            <td>${bodyMessage.opponent.petLifeRemaining}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Life Remaining</td>
+                                            <td>${bodyMessage.player.lifeRemaining}</td>
+                                            <td>${bodyMessage.opponent.lifeRemaining}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hits / Damage</td>
+                                            <td>${bodyMessage.player.hitsDamage}</td>
+                                            <td>${bodyMessage.opponent.hitsDamage}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dodge Rate</td>
+                                            <td class="${designPlayerDodgeRate}">${bodyMessage.player.dodgeRate}</td>
+                                            <td>${bodyMessage.opponent.dodgeRate}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Last Action</td>
+                                            <td colspan="2">${bodyMessage.lastAction}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">
+                                                <button class="btn btn-sm btn-secondary w-100" disabled>View fight is under maintenance</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;

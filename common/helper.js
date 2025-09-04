@@ -63,7 +63,7 @@ function calculateChance(chance) {
 }
 
 function calculatePercentage(partNum, wholeNum) {
-    return (partNum / wholeNum ) * 100;
+    return (partNum / wholeNum) * 100;
 }
 
 function calculatePetCombo(withAnimalsLover, petDetails) {
