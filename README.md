@@ -1,6 +1,9 @@
 # myBrawl
 
 myBrawl is a **practice project** inspired by the game **[MyBrute](https://www.mybrute.com/)**.  
+
+MyBrawl link **[My Brawl](https://bankaihekai.github.io/myBrawl/)**.
+
 This project is created **for learning and coding practice purposes only** and has **no commercial intent or affiliation** with the original game or its creators.
 
 ---
