@@ -285,14 +285,14 @@ class PlayerHome extends Phaser.Scene {
                         name: playerName,
                         lifeRemaining: `${lifeRemaining.player || 0} / ${playerLife}`, // remaining life in logs
                         petLifeRemaining: lastLifePlayerPet + " / " + playerLifePetMax,
-                        hitsDamage: playerTotalHits + " / " + playerTotalDealtDamage, // success and failed hits
+                        hitsDamage: playerTotalHits + " - " + playerTotalDealtDamage, // success and failed hits
                         dodgeRate: `${playerDodgeRate}%`
                     },
                     opponent: {
                         name: opponentName,
                         lifeRemaining: `${lifeRemaining.opponent || 0} / ${opponentLife}`,
                         petLifeRemaining: lastLifeOpponentPet + " / " + opponentLifePetMax,
-                        hitsDamage: opponentTotalHits + " / " + opponentTotalDealtDamage,
+                        hitsDamage: opponentTotalHits + " - " + opponentTotalDealtDamage,
                         dodgeRate: `${opponentDodgeRate}%`
                     },
                     lastAction: lastHitMessage
@@ -2010,7 +2010,7 @@ class PlayerHome extends Phaser.Scene {
                                             <td>${bodyMessage.opponent.lifeRemaining}</td>
                                         </tr>
                                         <tr>
-                                            <td>Hits / Damage</td>
+                                            <td>Hits & Damage</td>
                                             <td>${bodyMessage.player.hitsDamage}</td>
                                             <td>${bodyMessage.opponent.hitsDamage}</td>
                                         </tr>

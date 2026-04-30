@@ -140,4 +140,13 @@ function setLoading(withLoading) {
     }
 }
 
+function setLoading(withLoading) {
+    const loadingScreen = document.getElementById("loading-screen");
+    if (loadingScreen) {
+        loadingScreen.style.display = withLoading ? "flex" : "none";
+    } else {
+        console.warn("Loading screen element not found!");
+    }
+}
+
 //#endregion

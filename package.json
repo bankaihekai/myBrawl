@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/bankaihekai/myBrawl/issues"
   },
-  "homepage": "https://github.com/bankaihekai/myBrawl#readme"
+  "homepage": "https://github.com/bankaihekai/myBrawl#readme",
+  "dependencies": {
+    "lodash": "^4.18.1"
+  }
 }
