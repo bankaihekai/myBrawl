@@ -536,8 +536,8 @@ class CreateScene extends Phaser.Scene {
 
         switch (utilKeys) {
             case "skills":
-                position.x += 180, // left
-                    position.y -= 170 // top
+                position.x += -30, // left
+                    position.y -= 280 // top
                 break;
             case "weapons":
                 break;

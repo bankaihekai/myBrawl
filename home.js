@@ -337,30 +337,6 @@ class PlayerHome extends Phaser.Scene {
 
     }
 
-    changeGender() {
-        this.currentCharDetails.gender = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._genders[0] : CONSTANTS._genders[1];
-        this.renderCreateCharacter();
-    }
-
-    changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.renderCreateCharacter();
-    }
-
-    changeRandom() {
-
-        this.currentCharDetails.gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-
-        const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = this.randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        this.renderCreateCharacter();
-    }
-
     createBarStatus(charAttributes) {
 
         const barWidth = 80; // Total width of the bar
@@ -818,8 +794,8 @@ class PlayerHome extends Phaser.Scene {
 
         switch (utilKeys) {
             case "skills":
-                position.x += 180, // left
-                    position.y -= 170 // top
+                position.x += -30, // left
+                    position.y -= 280 // top
                 break;
             case "weapons":
                 break;
@@ -1570,52 +1546,6 @@ class PlayerHome extends Phaser.Scene {
         });
     }
 
-    createModalTableFightResult(key, message, data) {
-        // console.log(data);
-        // const encryptedData = localStorage.getItem(key);
-        // if (!encryptedData) {
-        //     throw {
-        //         code: 500,
-        //         message: "testing error"
-        //     }
-        // }; // safety check
-
-        // const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        // const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
-        // console.log(bytes);
-
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">Fight Result: ####!</h5>
-                        </div>
-                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
-    }
-
     /**
      * Create reusable toast component to display message
      * @param {string} key - use as button id
@@ -1684,39 +1614,6 @@ class PlayerHome extends Phaser.Scene {
         return Math.random().toString(36).substring(2, 7);
     }
 
-    createCursorTooltip() {
-        // Create tooltip element
-        const tooltip = document.createElement("div");
-        tooltip.id = "cursor-tooltip";
-        tooltip.className = "position-absolute bg-dark text-white border rounded p-2";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "1000";
-        tooltip.style.pointerEvents = "none"; // Prevents interference with other elements
-        tooltip.style.fontSize = "14px";
-        tooltip.style.border = "1px solid white";
-        tooltip.style.borderRadius = "5px";
-        tooltip.style.padding = "5px";
-        tooltip.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.2)";
-
-        document.body.appendChild(tooltip);
-
-        // Update tooltip position on mouse move
-        document.addEventListener("mousemove", (event) => {
-            tooltip.style.left = `${event.pageX + 10}px`; // Offset to prevent overlap
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.innerHTML = `X: ${event.pageX}, Y: ${event.pageY}`;
-        });
-
-        // Hide on mouse out
-        document.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-        });
-
-        document.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-        });
-    }
-
     validateAvailableUtils() {
 
         if (this.currentCharDetails.utilities.weapons.length != 0) {
@@ -1729,41 +1626,6 @@ class PlayerHome extends Phaser.Scene {
 
         if (this.currentCharDetails.utilities.pets.length != 0) {
             this.availableUtils.pets = this.availableUtils.pets.filter(item => !this.currentCharDetails.utilities.pets.includes(item.name) && !this.currentCharDetails.utilities.pets.includes(item.types));
-        }
-    }
-
-    creteBars(container) {
-
-        const barWidth = 80; // Total width of the bar
-        const barHeight = 15; // Height of each segment
-        const maxSegments = 10; // Always 10 segments per bar
-        const segmentWidth = barWidth / maxSegments; // Width of each segment
-
-        for (let i = 1; i <= CONSTANTS._colors.length - 1; i++) {
-            const color = CONSTANTS._colors[i]; // Use the pre-determined colors
-            const borderThickness = 1; // Thickness of the border
-            const borderColor = color[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
-            // Create the outer rectangle (border)
-            const outerSegment = this.add.rectangle(
-                i * segmentWidth, // Position segments horizontally with spacing
-                0, // Align vertically
-                segmentWidth, // Outer rectangle includes the border
-                barHeight, // Outer rectangle includes the border
-                borderColor // Border color (black)
-            );
-            outerSegment.setOrigin(0); // Align to the top-left
-            container.add(outerSegment);
-
-            // Create the inner rectangle (fill)
-            const innerSegment = this.add.rectangle(
-                i * segmentWidth + borderThickness, // Adjust for border thickness
-                borderThickness, // Adjust for border thickness
-                segmentWidth - 2, // Adjust for border thickness
-                barHeight - 2, // Adjust for border thickness
-                Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
-            );
-            innerSegment.setOrigin(0); // Align to the top-left
-            container.add(innerSegment);
         }
     }
 
@@ -1855,46 +1717,6 @@ class PlayerHome extends Phaser.Scene {
         } else {
             console.warn("Loading screen element not found!");
         }
-    }
-
-    renderRandomCharacter(lvlPoints) {
-
-        const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-        const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const rand_hairNumber = this.randomizer(rand_hairGenderValue);
-        const rand_hairFrame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        const rand_basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        const rand_bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        let randomChar = {
-            level: {
-                current: 0,
-                experience: 0,
-                points: lvlPoints || 1
-            },
-            name: "Dummy" + this.randomizer(999),
-            gender: rand_Gender,
-            bodyFrame: rand_bodyFrame,
-            hair: {
-                number: rand_hairNumber,
-                frame: rand_hairFrame
-            },
-            basicAttire: rand_basicAttire,
-            utilities: {
-                skills: [],
-                weapons: [],
-                pets: []
-            },
-            attributes: {
-                life: 60,
-                damage: 1,
-                agile: 1,
-                speed: 1,
-                armor: 0
-            }
-        }
-
-        return randomChar;
     }
 
     validatePetFrame(pet) {
