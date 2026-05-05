@@ -360,7 +360,7 @@ class PlayerSelect extends Phaser.Scene {
 
         if (!charData.attributes) { // set to default attributes
             charData.attributes = {
-                life: 60,
+                life: 30,
                 damage: 2,
                 agile: 2,
                 speed: 2,

@@ -28,7 +28,7 @@ class CreateScene extends Phaser.Scene {
                 pets: []
             },
             attributes: {
-                life: 60,
+                life: 30,
                 damage: 2,
                 agile: 2,
                 speed: 2,
