@@ -16,13 +16,13 @@ class PlayerSelect extends Phaser.Scene {
     create() {
 
         localStorage.removeItem("opponent");
-        const loadIsLogin = this.loadCharacter("recentLogin");
+        const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
-        const loadedCharacter = this.loadCharacter(CONSTANTS._charDetailsKey);
+        const loadedCharacter = loadCharacter(CONSTANTS._charDetailsKey);
         if (!!loadedCharacter) {
             this.currentCharDetails = loadedCharacter;
             this.validateLoggedIn(this.currentCharDetails.name);
@@ -38,7 +38,7 @@ class PlayerSelect extends Phaser.Scene {
             this.scene.start('playGame');
         }
         // this.validateAvailableUtils();
-        const loadedOpponent = this.loadCharacter("opponent");
+        const loadedOpponent = loadCharacter("opponent");
         if (loadedOpponent) {
             this.scene.start('playerFight');
         }
@@ -261,7 +261,7 @@ class PlayerSelect extends Phaser.Scene {
                     // Clear the input value
                     passwordInput.value = '';
                     this.currentCharDetails.psd = encryptedData(userInput, userInput);
-                    this.setLoading(true);
+                    setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if (data) {
                             saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
@@ -274,7 +274,7 @@ class PlayerSelect extends Phaser.Scene {
                             this.currentCharDetails.psd = null;
                             this.createToast(generateRandomKeys(), error.message || JSON.stringify(error), false);
                         }).finally(() => {
-                            this.setLoading(false);
+                            setLoading(false);
                         });
 
                     this.renderCreateCharacter();
@@ -315,21 +315,6 @@ class PlayerSelect extends Phaser.Scene {
         backTxt.on("pointerdown", () => {
             this.scene.start('playerHome');
         });
-    }
-
-    loadCharacter(key) {
-        const encryptedData = localStorage.getItem(key);
-
-        if (encryptedData) {
-            try {
-                return decryptData(key);
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
     }
 
     validateLoggedIn(username) {
@@ -964,15 +949,6 @@ class PlayerSelect extends Phaser.Scene {
         }
 
         return availUtils;
-    }
-
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
-        }
     }
 
     renderRandomCharacter(lvlPoints) {
