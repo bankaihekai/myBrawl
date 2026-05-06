@@ -108,12 +108,12 @@ class CreateScene extends Phaser.Scene {
         this.renderUtils();
 
         // Define your desired numbers
-        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
+        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         const randomHairFrames = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : Phaser.Utils.Array.GetRandom(CONSTANTS._hairFrames);
         const hairGenderValue = gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : this.randomizer(hairGenderValue);
+        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : randomizer(hairGenderValue);
         const hairFrameNumber = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : randomHairFrames;
 
         const basicAttireRandomFrames = this.currentCharDetails.basicAttire != null ? this.currentCharDetails.basicAttire : Phaser.Utils.Array.GetRandom(CONSTANTS._basicAttireFrames);
@@ -177,10 +177,6 @@ class CreateScene extends Phaser.Scene {
         }
     }
 
-    randomizer(max) {
-        return Phaser.Math.Between(0, max);
-    }
-
     renderButtons() {
         this.buttonContainer.removeAll(true);
 
@@ -235,15 +231,15 @@ class CreateScene extends Phaser.Scene {
 
                     const randomId = CryptoJS.lib.WordArray.random(16).toString(CryptoJS.enc.Hex);
 
-                    this.saveToLocalStorage("recentLogin", true);
+                    saveToLocalStorage("recentLogin", true);
                     this.currentCharDetails.id = randomId;
                     this.currentCharDetails.kdStats.createdDate = new Date().toLocaleDateString('en-US');
-                    this.saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
-                    this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                    saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
+                    saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
                     localStorage.setItem("fightLogs", encryptedData("fightLogs", JSON.stringify([])));
                     this.scene.start("playerHome");
                 } else {
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.userAlreadyExist);
+                    this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.userAlreadyExist);
                 }
             });
 
@@ -267,21 +263,21 @@ class CreateScene extends Phaser.Scene {
     }
 
     changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
         this.renderCreateCharacter();
     }
 
     changeRandom() {
 
-        this.currentCharDetails.gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+        this.currentCharDetails.gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
 
         const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = this.randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.number = randomizer(hairGenderValue);
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         this.renderCreateCharacter();
     }
@@ -415,7 +411,7 @@ class CreateScene extends Phaser.Scene {
         this.charNameContainer.add(loginText);
 
         loginText.on("pointerdown", () => {
-            this.createToast(this.generateRandomKeys(), "🛠️ Under Maintenance", false);
+            this.createToast(generateRandomKeys(), "🛠️ Under Maintenance", false);
             // this.flags.isSaving = true;
 
             // const modal = document.createElement("div");
@@ -457,10 +453,10 @@ class CreateScene extends Phaser.Scene {
             //             this.validateLoggedIn();
 
             //         } else {
-            //             this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
+            //             this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.invalidCreds);
             //         }
             //     } else {
-            //         this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.requireCreds);
+            //         this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.requireCreds);
             //     }
 
             //     document.body.removeChild(modal);
@@ -504,16 +500,16 @@ class CreateScene extends Phaser.Scene {
                         if (!this.flags.isLock) this.changeRandom();
                     } else {
                         // Optional: Feedback for exceeding max characters
-                        this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.maxCharNameLength.concat(this.currentCharDetails.name.length));
+                        this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.maxCharNameLength.concat(this.currentCharDetails.name.length));
                         this.flags.isSaving = true;
                     }
                 }
                 // Handle invalid input (e.g., spaces)
                 else if (event.key === " ") {
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.noSpace);
+                    this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.noSpace);
                     this.flags.isSaving = true;
                 } else if (!event.key.match(/^[a-zA-Z0-9]*$/)) {
-                    this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.noSpecialChar);
+                    this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.noSpecialChar);
                     this.flags.isSaving = true;
                 }
 
@@ -600,37 +596,14 @@ class CreateScene extends Phaser.Scene {
                 break;
             case "pets":
                 var petResult = this.getRandomItem(CONSTANTS._pets);
-                petResult.types = petResult.types[this.randomizer(petResult.types.length - 1)];
+                petResult.types = petResult.types[randomizer(petResult.types.length - 1)];
                 utils = petResult;
                 break;
             default:
-                this.createToast(this.generateRandomKeys(), CONSTANTS._errorMessages.noUtilitiesFound);
+                this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.noUtilitiesFound);
         }
 
         if (utils) return { key: randomUtils.name, value: utils };
-    }
-
-    saveToLocalStorage(key, data) {
-        const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
-        localStorage.setItem(key, encryptedData);
-    };
-
-    loadCharacter() {
-        const encryptedData = localStorage.getItem(CONSTANTS._charDetailsKey);
-
-        if (encryptedData) {
-            try {
-                const bytes = CryptoJS.AES.decrypt(encryptedData, CONSTANTS._charDetailsKey.concat("1"));
-                const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-                // console.log("Character loaded!", decryptedData);
-                return decryptedData;
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
     }
 
     validateLoggedIn() {
@@ -656,7 +629,7 @@ class CreateScene extends Phaser.Scene {
         const localStorageLogout = localStorage.getItem(CONSTANTS._logout);
 
         if (localStorageLogout) {
-            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.logoutSuccess, true);
+            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.logoutSuccess, true);
             localStorage.removeItem(CONSTANTS._charUserKey);
             localStorage.removeItem(CONSTANTS._charDetailsKey);
             localStorage.removeItem(CONSTANTS._logout);
@@ -727,10 +700,6 @@ class CreateScene extends Phaser.Scene {
         }, 3000);
     }
 
-    generateRandomKeys() {
-        return Math.random().toString(36).substring(2, 7);
-    }
-
     renderUtils() {
         const columns = 11; // Number of sprites per row
         const spriteSize = 32; // Size of each sprite
@@ -749,15 +718,6 @@ class CreateScene extends Phaser.Scene {
 
             this.characterContainer.add(closeSkill_sprite);
             maxSprites--;
-        }
-    }
-
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
         }
     }
 }
