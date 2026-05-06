@@ -22,13 +22,13 @@ class PlayerHome extends Phaser.Scene {
     //#region Create Scene
     create() {
         // this.scene.start("playerFight");
-        const loadIsLogin = this.loadCharacter("recentLogin");
+        const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
-            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
+            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
-        const loadedCharacter = this.loadCharacter(CONSTANTS._charDetailsKey);
+        const loadedCharacter = loadCharacter(CONSTANTS._charDetailsKey);
         if (!!loadedCharacter) {
             this.currentCharDetails = loadedCharacter;
             this.validateLoggedIn(this.currentCharDetails.name);
@@ -44,7 +44,7 @@ class PlayerHome extends Phaser.Scene {
             this.scene.start('playGame');
         }
 
-        this.loadedCharacterLogs = this.loadCharacter("fightLogs");
+        this.loadedCharacterLogs = loadCharacter("fightLogs");
 
         this.validateAvailableUtils();
 
@@ -58,7 +58,7 @@ class PlayerHome extends Phaser.Scene {
                 const playerWin = recentFight.winner == "player";
                 const fightMessage = playerWin ? "You win!" : "You lose!";
 
-                this.createToast(this.generateRandomKeys(), fightMessage, playerWin);
+                this.createToast(generateRandomKeys(), fightMessage, playerWin);
 
                 localStorage.setItem("fightResult", false);
             }
@@ -110,12 +110,12 @@ class PlayerHome extends Phaser.Scene {
         console.log({ loadedCharacterLogs: JSON.parse(this.loadedCharacterLogs) });
 
         // Define your desired numbers
-        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
+        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         const randomHairFrames = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : Phaser.Utils.Array.GetRandom(CONSTANTS._hairFrames);
         const hairGenderValue = gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : this.randomizer(hairGenderValue);
+        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : randomizer(hairGenderValue);
         const hairFrameNumber = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : randomHairFrames;
 
         const basicAttireRandomFrames = this.currentCharDetails.basicAttire != null ? this.currentCharDetails.basicAttire : Phaser.Utils.Array.GetRandom(CONSTANTS._basicAttireFrames);
@@ -189,10 +189,6 @@ class PlayerHome extends Phaser.Scene {
         }
 
         this.renderUtils(container, charDetails);
-    }
-
-    randomizer(max) {
-        return Phaser.Math.Between(0, max);
     }
 
     renderButtons() {
@@ -346,20 +342,20 @@ class PlayerHome extends Phaser.Scene {
     }
 
     changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
         this.renderCreateCharacter();
     }
 
     changeRandom() {
 
-        this.currentCharDetails.gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+        this.currentCharDetails.gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
 
         const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = this.randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        this.currentCharDetails.hair.number = randomizer(hairGenderValue);
+        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         this.renderCreateCharacter();
     }
@@ -760,7 +756,7 @@ class PlayerHome extends Phaser.Scene {
 
             // Show the input and buttons on pointerdown
             noPassword.on('pointerdown', () => {
-                this.createToast(this.generateRandomKeys(), "🛠️ Under Maintenance", false);
+                this.createToast(generateRandomKeys(), "🛠️ Under Maintenance", false);
                 // passwordInput.style.display = 'block';
                 // buttonContainer.style.display = 'block';
                 // passwordInput.focus();
@@ -778,21 +774,21 @@ class PlayerHome extends Phaser.Scene {
                     buttonContainer.style.display = 'none';
                     // Clear the input value
                     passwordInput.value = '';
-                    this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
-                    this.setLoading(true);
+                    this.currentCharDetails.psd = encryptedData(userInput, userInput);
+                    setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if (data) {
-                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
+                            saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
                         } else {
                             throw { code: 500, message: "Saving data failed!" };
                         }
                     })
                         .catch(error => {
                             this.currentCharDetails.psd = null;
-                            this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                            this.createToast(generateRandomKeys(), error.message || JSON.stringify(error), false);
                         }).finally(() => {
-                            this.setLoading(false);
+                            setLoading(false);
                         });
 
                     this.renderCreateCharacter();
@@ -857,38 +853,8 @@ class PlayerHome extends Phaser.Scene {
         toHover.on("pointerout", () => document.getElementById("phaser-tooltip")?.remove());
     }
 
-    saveToLocalStorage(key, data) {
-        const encryptedData = this.encryptedData(key, data);
-        localStorage.setItem(key, encryptedData);
-    };
-
-    encryptedData(key, data) {
-        return CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
-    }
-
-    decryptData(key) {
-        const encryptedData = localStorage.getItem(key);
-        const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    };
-
-    loadCharacter(key) {
-        const encryptedData = localStorage.getItem(key);
-
-        if (encryptedData) {
-            try {
-                return this.decryptData(key);
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
     validateLoggedIn(username) {
-        const userLoggedKey = this.decryptData(CONSTANTS._charUserKey);
+        const userLoggedKey = decryptData(CONSTANTS._charUserKey);
         const compareResult = userLoggedKey == username;
 
         if (!compareResult) {
@@ -1173,8 +1139,8 @@ class PlayerHome extends Phaser.Scene {
             this.createModalTable('LevelUp', message);
 
             this.currentCharDetails.level.points = 0;
-            this.saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
-            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+            saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
+            saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
 
             // console.log({ currentCharDetails: this.currentCharDetails.utilities.weapons });
             // console.log({ availableUtils: this.availableUtils.weapons });
@@ -1323,7 +1289,7 @@ class PlayerHome extends Phaser.Scene {
                 break;
             }
         }
-        const randomStatsNumber = witharmor ? this.randomizer(4) : this.randomizer(3);
+        const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
 
         switch (randomStatsNumber) {
             case 0: // life
@@ -1507,7 +1473,7 @@ class PlayerHome extends Phaser.Scene {
                 this.currentCharDetails.attributes.armor += 10;
                 this.currentCharDetails.attributes.speed = subtractedSpeed <= 0 ? 1 : subtractedSpeed;
 
-                const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
+                const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
                 const charArmor = this.currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
 
                 this.currentCharDetails.armorName = charArmor;
@@ -1683,10 +1649,6 @@ class PlayerHome extends Phaser.Scene {
         }, 3000);
     }
 
-    generateRandomKeys() {
-        return Math.random().toString(36).substring(2, 7);
-    }
-
     createCursorTooltip() {
         // Create tooltip element
         const tooltip = document.createElement("div");
@@ -1770,15 +1732,6 @@ class PlayerHome extends Phaser.Scene {
         }
     }
 
-    randomArrayIndex(data) {
-
-        // Generate a random index
-        const randomIndex = Math.floor(Math.random() * data.length);
-
-        // Select the random value from the array
-        return data[randomIndex];
-    }
-
     createModalTable2(title, message, key) {
         let finalMessage = message;
         if (Array.isArray(message)) {
@@ -1851,23 +1804,14 @@ class PlayerHome extends Phaser.Scene {
         });
     }
 
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
-        }
-    }
-
     renderRandomCharacter(lvlPoints) {
 
-        const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
+        const rand_Gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
         const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const rand_hairNumber = this.randomizer(rand_hairGenderValue);
-        const rand_hairFrame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        const rand_basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        const rand_bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const rand_hairNumber = randomizer(rand_hairGenderValue);
+        const rand_hairFrame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
+        const rand_basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const rand_bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         let randomChar = {
             level: {
@@ -1875,7 +1819,7 @@ class PlayerHome extends Phaser.Scene {
                 experience: 0,
                 points: lvlPoints || 1
             },
-            name: "Dummy" + this.randomizer(999),
+            name: "Dummy" + randomizer(999),
             gender: rand_Gender,
             bodyFrame: rand_bodyFrame,
             hair: {
