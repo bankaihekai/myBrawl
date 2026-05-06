@@ -212,11 +212,16 @@ class PlayerHome extends Phaser.Scene {
             // this.createModalTable2('Fight History', "<h1 class='text-danger'>Fight History not yet available</h1>");
             let logData = this.latestFight;
 
+            if (logData.length > 5) {
+                const latestFights = logData.slice(-5);
+                logData = latestFights;
+            }
+
             // if (this.latestFight.length > 5) {
             //     logData = this.latestFight.slice(-5);
             // }
             let id = 1;
-            const fightTableDetails = logData.map((data) => {
+                        const fightTableDetails = logData.map((data) => {
 
                 const playerName = data.playerDetails.name;
                 const opponentName = data.opponentDetails.name;
@@ -233,7 +238,7 @@ class PlayerHome extends Phaser.Scene {
 
                 // const PlayerPetLife = data.fightScript.filter(data => data.action && data.action.target == "playerPet");
                 // const OpponentPetLife = data.fightScript.filter(data => data.action && data.action.target == "opponentPet");
-                
+
                 // const lastLifePlayerPet = playerLifePetMax > 0 && PlayerPetLife.length > 0 ? PlayerPetLife[PlayerPetLife.length -1].action.remainingLife : 0;
                 // const lastLifeOpponentPet = opponentLifePetMax > 0 && OpponentPetLife.length > 0 ? OpponentPetLife[OpponentPetLife.length -1].action.remainingLife : 0;
 
@@ -244,29 +249,21 @@ class PlayerHome extends Phaser.Scene {
                 };
 
                 const attackThrow = data.fightScript.filter(data => data.action && (data.action.type == "Attack" || data.action.type == "Throw"));
-                const dodgeDetails = data.fightScript.filter(data => data.action && data.action.type == "Dodge");
+                const dodgeDetails = data.fightScript.filter(data => data.action && (data.action.type == "Dodge"));
+                const blockDetails = data.fightScript.filter(data => data.action && (data.action.type == "Block"));
 
-                // target human
-                const playerAttackThrow = attackThrow.filter(data => data.action.by == "player" || data.action.by == "playerPet");
-                const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet");
+                // target human / playerPet / opponentPet
+                const playerAttackThrow = attackThrow.filter(data => data.action.by == "player");
+                const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent");
 
-                const playerDodge = dodgeDetails.filter(data => data.action.by == "player" || data.action.by == "playerPet").length;
-                const opponentDodge = dodgeDetails.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet").length;
+                const playerDodgeCount = dodgeDetails.filter(data => data.action.by == "player").length;
+                const opponentDodgeCount = dodgeDetails.filter(data => data.action.by == "opponent").length;
 
-                const playerTotalHits = playerAttackThrow.length + opponentDodge;
-                const opponentTotalHits = opponentAttackThrow.length + playerDodge;
+                const playerBlockCount = blockDetails.filter(data => data.action.by == "player").length;
+                const opponentBlockCount = blockDetails.filter(data => data.action.by == "opponent").length;
 
-                const playerDodgeRate = Math.floor(calculatePercentage(playerDodge, opponentTotalHits));
-                const opponentDodgeRate = Math.floor(calculatePercentage(opponentDodge, playerTotalHits));
-                // player || opponent : dodge == (opponent || player => hits)
-
-                // character dealt damage
-                const playerTotalDealtDamage = playerAttackThrow.reduce((sum, attacks) => {
-                    return Math.max(0, sum + attacks.weapon.damage);
-                }, 0);
-                const opponentTotalDealtDamage = opponentAttackThrow.reduce((sum, attacks) => {
-                    return Math.max(0, sum + attacks.weapon.damage);
-                }, 0);
+                const playerTotalHits = playerAttackThrow.length + opponentDodgeCount;
+                const opponentTotalHits = opponentAttackThrow.length + playerDodgeCount;
 
                 const lastAction = data.fightScript.slice(-2);
                 const lastHit = {
@@ -284,15 +281,15 @@ class PlayerHome extends Phaser.Scene {
                         name: playerName,
                         lifeRemaining: `<b class="${playerLifeDesign}">${lifeRemaining.player || 0}</b> / ${playerLife}`, // remaining life in logs
                         // petLifeRemaining: lastLifePlayerPet + " / " + playerLifePetMax,
-                        DamageReceived: `${opponentTotalDealtDamage}`,
-                        dodgeRate: `${playerDodgeRate}`
+                        dodgeCount: `${playerDodgeCount}`,
+                        blockCount: `${playerBlockCount}`
                     },
                     opponent: {
                         name: opponentName,
                         lifeRemaining: `<b class="${opponentLifeDesign}">${lifeRemaining.opponent || 0}</b> / ${opponentLife}`,
                         // petLifeRemaining: lastLifeOpponentPet + " / " + opponentLifePetMax,
-                        DamageReceived: `${playerTotalDealtDamage}`,
-                        dodgeRate: `${opponentDodgeRate}`
+                        dodgeCount: `${opponentDodgeCount}`,
+                        blockCount: `${opponentBlockCount}`
                     },
                     lastAction: lastHitMessage
                 };
@@ -301,7 +298,7 @@ class PlayerHome extends Phaser.Scene {
                 return this.htmlFormat(title, resultDetail, data.winner);
             });
 
-            this.createModalTable3('Fight History', fightTableDetails);
+            this.createModalTable3('Fight History (Latest 5 fights)', fightTableDetails);
         });
 
         // center
@@ -996,7 +993,7 @@ class PlayerHome extends Phaser.Scene {
                 armor: 0
             };
         }
-
+        this.currentCharDetails.level.points = 1;
         if (this.currentCharDetails.level.points > 0) {
             let gainedUtils = [];
             for (let i = 1; i <= this.currentCharDetails.level.points; i++) {
@@ -1134,7 +1131,14 @@ class PlayerHome extends Phaser.Scene {
             }
             const message = gainedUtils.map((util, index) => `<tr><td>${index + 1}</td><td>${util}</td></tr>`).join("");
             const dateAcquired = new Date().toLocaleDateString('en-US');
-            const message2 = gainedUtils.map((util) => `<tr><td>${this.currentCharDetails.level.current}</td><td>${util}</td><td>${dateAcquired}</td></tr>`).join("");
+            // level, acquired, Bunos, Life, Damage, Agile, Speed, Armor, date
+            const message2 = gainedUtils.map((util) => `
+                <tr>
+                    <td>${this.currentCharDetails.level.current}</td>
+                    <td>${util}</td>
+                    <td>${dateAcquired}</td>
+                </tr>
+            `).join("");
             this.currentCharDetails.logs.utility.push(message2);
             this.createModalTable('LevelUp', message);
 
@@ -1362,7 +1366,7 @@ class PlayerHome extends Phaser.Scene {
                         randStatsPet = choices[randomStats];
 
                         if (randStatsPet == "accuracy" && petDetails.accuracy < petDetails.maxAccuracy) {
-                            
+
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
                             const petAccuracyValue = petDetails.accuracy + petAdditionalAccuracy;
                             const isPetMaxAccuracy = petAccuracyValue >= petDetails.maxAccuracy;
@@ -1378,7 +1382,7 @@ class PlayerHome extends Phaser.Scene {
                             this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
                         }
 
-                        
+
                         petLevel = true;
                         result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `, ${resultTxt.replace("{stats}", randStatsPet)} +${petAdditional}` : "";
                     }
@@ -1906,16 +1910,21 @@ class PlayerHome extends Phaser.Scene {
         }
     }
 
+    //#region HTML Formatters
+
     htmlFormat(title, bodyMessage, winner) {
         const design = winner == "player" ? "bg-success" : "bg-danger";
         const accordionId = `accordion-${bodyMessage.id}`;
         const bodyMessageID = bodyMessage.id;
-        const designPlayerDodgeRate = Number(bodyMessage.player.dodgeRate) > Number(bodyMessage.opponent.dodgeRate) ? "text-success fw-bold" : "text-danger  fw-bold";
-        const designOpponentDodgeRate = Number(bodyMessage.player.dodgeRate) < Number(bodyMessage.opponent.dodgeRate) ? "text-success fw-bold" : "text-danger  fw-bold";
+
+        const designPlayerDodgeCount = Number(bodyMessage.player.dodgeCount) > Number(bodyMessage.opponent.dodgeCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+        const designOpponentDodgeCount = Number(bodyMessage.player.dodgeCount) < Number(bodyMessage.opponent.dodgeCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+
+        const designPlayerBlockCount = Number(bodyMessage.player.blockCount) > Number(bodyMessage.opponent.blockCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+        const designOpponentBlockCount = Number(bodyMessage.player.blockCount) < Number(bodyMessage.opponent.blockCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+
         const designPlayerLife = Number(bodyMessage.player.lifeRemaining) > Number(bodyMessage.opponent.lifeRemaining) ? "text-success fw-bold" : "text-danger fw-bold";
         const designOpponentLife = Number(bodyMessage.opponent.lifeRemaining) > Number(bodyMessage.player.lifeRemaining) ? "text-success fw-bold" : "text-danger fw-bold";
-        const designPlayerDamageRate = Number(bodyMessage.player.DamageReceived) > Number(bodyMessage.opponent.DamageReceived) ? "text-danger fw-bold" : "text-success fw-bold";
-        const designOpponentDamageRate = Number(bodyMessage.opponent.DamageReceived) > Number(bodyMessage.player.DamageReceived) ? "text-danger fw-bold" : "text-success fw-bold";
         // Get the key/value from the object (since you said only one entry per objec
 
         return `
@@ -1956,14 +1965,14 @@ class PlayerHome extends Phaser.Scene {
                                             <td>${bodyMessage.opponent.lifeRemaining}</td>
                                         </tr>
                                         <tr>
-                                            <td>Damage Received</td>
-                                            <td class="${designPlayerDamageRate}">${bodyMessage.player.DamageReceived}</td>
-                                            <td class="${designOpponentDamageRate}">${bodyMessage.opponent.DamageReceived}</td>
+                                            <td>Dodge Count</td>
+                                            <td class="${designPlayerDodgeCount}">${bodyMessage.player.dodgeCount}</td>
+                                            <td class="${designOpponentDodgeCount}">${bodyMessage.opponent.dodgeCount}</td>
                                         </tr>
                                         <tr>
-                                            <td>Dodge Rate</td>
-                                            <td class="${designPlayerDodgeRate}">${bodyMessage.player.dodgeRate}%</td>
-                                            <td class="${designOpponentDodgeRate}">${bodyMessage.opponent.dodgeRate}%</td>
+                                            <td>Block Count</td>
+                                            <td class="${designPlayerBlockCount}">${bodyMessage.player.blockCount}</td>
+                                            <td class="${designOpponentBlockCount}">${bodyMessage.opponent.blockCount}</td>
                                         </tr>
                                         <tr>
                                             <td>Last Action</td>
@@ -1983,6 +1992,8 @@ class PlayerHome extends Phaser.Scene {
             </div>
         `;
     }
+
+    //#endregion HTML Formatters
 }
 
 
