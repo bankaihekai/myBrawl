@@ -901,39 +901,6 @@ class PlayerSelect extends Phaser.Scene {
         }, 3000);
     }
 
-    createCursorTooltip() {
-        // Create tooltip element
-        const tooltip = document.createElement("div");
-        tooltip.id = "cursor-tooltip";
-        tooltip.className = "position-absolute bg-dark text-white border rounded p-2";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "1000";
-        tooltip.style.pointerEvents = "none"; // Prevents interference with other elements
-        tooltip.style.fontSize = "14px";
-        tooltip.style.border = "1px solid white";
-        tooltip.style.borderRadius = "5px";
-        tooltip.style.padding = "5px";
-        tooltip.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.2)";
-
-        document.body.appendChild(tooltip);
-
-        // Update tooltip position on mouse move
-        document.addEventListener("mousemove", (event) => {
-            tooltip.style.left = `${event.pageX + 10}px`; // Offset to prevent overlap
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.innerHTML = `X: ${event.pageX}, Y: ${event.pageY}`;
-        });
-
-        // Hide on mouse out
-        document.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-        });
-
-        document.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-        });
-    }
-
     validateAvailableUtils(charData, availUtils) {
 
         if (charData.utilities.weapons.length != 0) {
