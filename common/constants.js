@@ -1960,7 +1960,10 @@ const CONSTANTS = {
                 "by": "player"
             }
         }
-    ]
+    ],
+    _styling: {
+        bonus: "bg-success text-white"
+    }
 };
 
 // Optionally freeze the object to prevent modification

@@ -200,7 +200,7 @@ class PlayerHome extends Phaser.Scene {
         this.createToolTip(setting_icon, "Settings", "buttons", "settings");
 
         setting_icon.on("pointerdown", () => {
-            this.createModalTable2('Settings', "<h1 class='text-danger'>Settings not yet available</h1>");
+            this.createModalTable3('Settings', "<h1 class='text-danger'>Settings not yet available</h1>");
         });
 
         const fightHistory_icon = this.add.sprite(this.centerX / 2 - 40, this.centerY + 30, "buttons").setFrame(31);
@@ -319,7 +319,7 @@ class PlayerHome extends Phaser.Scene {
         this.createToolTip(learnBook_icon, "Library", "buttons");
 
         learnBook_icon.on("pointerdown", () => {
-            this.createModalTable2('Library', "<h1 class='text-danger'>Library not yet available</h1>", "library");
+            this.createModalTable3('Library', "<h1 class='text-danger'>Library not yet available</h1>", "library");
         });
 
         const lvlUpHistory_icon = this.add.sprite(this.centerX / 2 + 140, this.centerY + 30, "buttons").setFrame(29);
@@ -333,27 +333,10 @@ class PlayerHome extends Phaser.Scene {
 
     }
 
-    changeGender() {
-        this.currentCharDetails.gender = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._genders[0] : CONSTANTS._genders[1];
-        this.renderCreateCharacter();
-    }
-
     changeColor() {
         this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
         this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
         this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.renderCreateCharacter();
-    }
-
-    changeRandom() {
-
-        this.currentCharDetails.gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
-
-        const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-
         this.renderCreateCharacter();
     }
 
@@ -1357,10 +1340,10 @@ class PlayerHome extends Phaser.Scene {
                         if (petDetails.accuracy >= petDetails.maxAccuracy) {
                             choices = ["damage", "agile", "armor", "life"];
                         }
-   
+
                         const randomStats = randomizer(4);
                         randStatsPet = choices[randomStats];
-                        
+
                         if (randStatsPet == "accuracy" && petDetails.accuracy < petDetails.maxAccuracy) {
 
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
@@ -1516,16 +1499,23 @@ class PlayerHome extends Phaser.Scene {
     createModalTable(key, message) {
 
         const tableMessage = message.map((util) => {
+
+            const bonusLifeStyle = util.addedStats.character.stats == "Life" ? CONSTANTS._styling.bonus : "";
+            const bonusDamageStyle = util.addedStats.character.stats == "Damage" ? CONSTANTS._styling.bonus : "";
+            const bonusAgileStyle = util.addedStats.character.stats == "Agile" ? CONSTANTS._styling.bonus : "";
+            const bonusSpeedStyle = util.addedStats.character.stats == "Speed" ? CONSTANTS._styling.bonus : "";
+            const bonusArmorStyle = util.addedStats.character.stats == "Armor" ? CONSTANTS._styling.bonus : "";
+
             return `
                 <tr>
                     <td>${util.charLevel || ""}</td>
                     <td>${util.acquired || util.addedStats.maxUtils || ""}</td>
                     <td>${util.addedStats.character.stats || ""}</td>
-                    <td>${Number(util.charAttributes.life)}</td>
-                    <td>${Number(util.charAttributes.damage)}</td>
-                    <td>${Number(util.charAttributes.agile)}</td>
-                    <td>${Number(util.charAttributes.speed)}</td>
-                    <td>${Number(util.charAttributes.armor)}</td>
+                    <td class='${bonusLifeStyle}'>${Number(util.charAttributes.life)}</td>
+                    <td class='${bonusDamageStyle}'>${Number(util.charAttributes.damage)}</td>
+                    <td class='${bonusAgileStyle}'>${Number(util.charAttributes.agile)}</td>
+                    <td class='${bonusSpeedStyle}'>${Number(util.charAttributes.speed)}</td>
+                    <td class='${bonusArmorStyle}'>${Number(util.charAttributes.armor)}</td>
                     <td>${util.dateAcquired || ""}</td>
                 </tr>
             `;
@@ -1542,7 +1532,7 @@ class PlayerHome extends Phaser.Scene {
                         </div>
                         <div class="modal-body" style="height: 200px; overflow-y: auto;">
                             <div class="table-responsive">
-                                <table class="table table-sm table-bordered" style="font-size: 0.8rem;">
+                                <table class="table table-sm table-bordered text-center" style="font-size: 0.8rem;">
                                     <tbody>
                                         <tr>
                                             <th>LvL</th>
@@ -1559,52 +1549,6 @@ class PlayerHome extends Phaser.Scene {
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
-    }
-
-    createModalTableFightResult(key, message, data) {
-        // console.log(data);
-        // const encryptedData = localStorage.getItem(key);
-        // if (!encryptedData) {
-        //     throw {
-        //         code: 500,
-        //         message: "testing error"
-        //     }
-        // }; // safety check
-
-        // const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        // const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
-        // console.log(bytes);
-
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">Fight Result: ####!</h5>
-                        </div>
-                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
                         </div>
                         <div class="modal-footer">
                             <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
@@ -1686,39 +1630,6 @@ class PlayerHome extends Phaser.Scene {
         }, 3000);
     }
 
-    createCursorTooltip() {
-        // Create tooltip element
-        const tooltip = document.createElement("div");
-        tooltip.id = "cursor-tooltip";
-        tooltip.className = "position-absolute bg-dark text-white border rounded p-2";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "1000";
-        tooltip.style.pointerEvents = "none"; // Prevents interference with other elements
-        tooltip.style.fontSize = "14px";
-        tooltip.style.border = "1px solid white";
-        tooltip.style.borderRadius = "5px";
-        tooltip.style.padding = "5px";
-        tooltip.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.2)";
-
-        document.body.appendChild(tooltip);
-
-        // Update tooltip position on mouse move
-        document.addEventListener("mousemove", (event) => {
-            tooltip.style.left = `${event.pageX + 10}px`; // Offset to prevent overlap
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.innerHTML = `X: ${event.pageX}, Y: ${event.pageY}`;
-        });
-
-        // Hide on mouse out
-        document.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-        });
-
-        document.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-        });
-    }
-
     validateAvailableUtils() {
 
         if (this.currentCharDetails.utilities.weapons.length != 0) {
@@ -1734,60 +1645,34 @@ class PlayerHome extends Phaser.Scene {
         }
     }
 
-    creteBars(container) {
-
-        const barWidth = 80; // Total width of the bar
-        const barHeight = 15; // Height of each segment
-        const maxSegments = 10; // Always 10 segments per bar
-        const segmentWidth = barWidth / maxSegments; // Width of each segment
-
-        for (let i = 1; i <= CONSTANTS._colors.length - 1; i++) {
-            const color = CONSTANTS._colors[i]; // Use the pre-determined colors
-            const borderThickness = 1; // Thickness of the border
-            const borderColor = color[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
-            // Create the outer rectangle (border)
-            const outerSegment = this.add.rectangle(
-                i * segmentWidth, // Position segments horizontally with spacing
-                0, // Align vertically
-                segmentWidth, // Outer rectangle includes the border
-                barHeight, // Outer rectangle includes the border
-                borderColor // Border color (black)
-            );
-            outerSegment.setOrigin(0); // Align to the top-left
-            container.add(outerSegment);
-
-            // Create the inner rectangle (fill)
-            const innerSegment = this.add.rectangle(
-                i * segmentWidth + borderThickness, // Adjust for border thickness
-                borderThickness, // Adjust for border thickness
-                segmentWidth - 2, // Adjust for border thickness
-                barHeight - 2, // Adjust for border thickness
-                Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
-            );
-            innerSegment.setOrigin(0); // Align to the top-left
-            container.add(innerSegment);
-        }
-    }
-
     createModalTable2(title, message, key) {
 
-        let arrayOfUtils = message.flat();
+        let reversedTable = message;
+        let arrayOfUtils = reversedTable.flat();
         const tableMessage = arrayOfUtils.map((util) => {
+
+            const bonusLifeStyle = util.addedStats.character.stats == "Life" ? CONSTANTS._styling.bonus : "";
+            const bonusDamageStyle = util.addedStats.character.stats == "Damage" ? CONSTANTS._styling.bonus : "";
+            const bonusAgileStyle = util.addedStats.character.stats == "Agile" ? CONSTANTS._styling.bonus : "";
+            const bonusSpeedStyle = util.addedStats.character.stats == "Speed" ? CONSTANTS._styling.bonus : "";
+            const bonusArmorStyle = util.addedStats.character.stats == "Armor" ? CONSTANTS._styling.bonus : "";
+
             return (`
                 <tr>
                     <td>${util.charLevel || ""}</td>
                     <td>${util.acquired || util.addedStats.maxUtils || ""}</td>
                     <td>${util.addedStats.character.stats || ""}</td>
-                    <td>${Number(util.charAttributes.life)}</td>
-                    <td>${Number(util.charAttributes.damage)}</td>
-                    <td>${Number(util.charAttributes.agile)}</td>
-                    <td>${Number(util.charAttributes.speed)}</td>
-                    <td>${Number(util.charAttributes.armor)}</td>
+                    <td class='${bonusLifeStyle}'>${Number(util.charAttributes.life)}</td>
+                    <td class='${bonusDamageStyle}'>${Number(util.charAttributes.damage)}</td>
+                    <td class='${bonusAgileStyle}'>${Number(util.charAttributes.agile)}</td>
+                    <td class='${bonusSpeedStyle}'>${Number(util.charAttributes.speed)}</td>
+                    <td class='${bonusArmorStyle}'>${Number(util.charAttributes.armor)}</td>
                     <td>${util.dateAcquired || ""}</td>
                 </tr>`
             );
         });
-        const reversedTable = tableMessage.reverse().join("");
+        reversedTable = tableMessage.reverse().join("");
+
         const modal = document.createElement("div");
 
         modal.innerHTML = `
@@ -1799,7 +1684,7 @@ class PlayerHome extends Phaser.Scene {
                         </div>
                         <div class="modal-body" style="height: 500px; overflow-y: auto;">
                             <div class="table-responsive">
-                                <table class="table table-sm table-bordered" style="font-size: 0.8rem;">
+                                <table class="table table-sm table-bordered text-center" style="font-size: 0.8rem;">
                                     <tr>
                                         <th>LvL</th>
                                         <th>Acquired</th>
@@ -1865,46 +1750,6 @@ class PlayerHome extends Phaser.Scene {
         document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
             modal.remove();
         });
-    }
-
-    renderRandomCharacter(lvlPoints) {
-
-        const rand_Gender = CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
-        const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const rand_hairNumber = randomizer(rand_hairGenderValue);
-        const rand_hairFrame = CONSTANTS._hairFrames[randomizer(CONSTANTS._hairFrames.length - 1)];
-        const rand_basicAttire = CONSTANTS._basicAttireFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-        const rand_bodyFrame = CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        let randomChar = {
-            level: {
-                current: 0,
-                experience: 0,
-                points: lvlPoints || 1
-            },
-            name: "Dummy" + randomizer(999),
-            gender: rand_Gender,
-            bodyFrame: rand_bodyFrame,
-            hair: {
-                number: rand_hairNumber,
-                frame: rand_hairFrame
-            },
-            basicAttire: rand_basicAttire,
-            utilities: {
-                skills: [],
-                weapons: [],
-                pets: []
-            },
-            attributes: {
-                life: 30,
-                damage: 1,
-                agile: 1,
-                speed: 1,
-                armor: 0
-            }
-        }
-
-        return randomChar;
     }
 
     validatePetFrame(pet) {
