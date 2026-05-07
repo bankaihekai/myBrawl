@@ -221,7 +221,7 @@ class PlayerHome extends Phaser.Scene {
             //     logData = this.latestFight.slice(-5);
             // }
             let id = 1;
-                        const fightTableDetails = logData.map((data) => {
+            const fightTableDetails = logData.map((data) => {
 
                 const playerName = data.playerDetails.name;
                 const opponentName = data.opponentDetails.name;
@@ -993,7 +993,7 @@ class PlayerHome extends Phaser.Scene {
                 armor: 0
             };
         }
-        this.currentCharDetails.level.points = 1;
+
         if (this.currentCharDetails.level.points > 0) {
             let gainedUtils = [];
             for (let i = 1; i <= this.currentCharDetails.level.points; i++) {
@@ -1066,7 +1066,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalLifeImmortality = !!this.currentCharDetails.utilities.skills.find(skill => skill == 51);
                                 if (additionalLifeImmortality) this.currentCharDetails.attributes.life += 20;
                                 if (additionalLife) this.currentCharDetails.attributes.life += 5;
-                                keyName = "Life stats";
+                                keyName = "Life";
                                 break;
                             case 1: // damage
                                 this.currentCharDetails.attributes.damage += 2;
@@ -1074,7 +1074,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalDamage_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 10);
                                 if (additionalDamage_GOD) this.currentCharDetails.attributes.damage += 2;
                                 if (additionalDamage) this.currentCharDetails.attributes.damage++;
-                                keyName = "Damage stats";
+                                keyName = "Damage";
                                 break;
                             case 2: // agile
                                 this.currentCharDetails.attributes.agile += 2;
@@ -1082,7 +1082,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalAgile_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 8);
                                 if (additionalAgile_GOD) this.currentCharDetails.attributes.agile += 2;
                                 if (additionalAgile) this.currentCharDetails.attributes.agile++;
-                                keyName = "Agile stats";
+                                keyName = "Agile";
                                 break;
                             case 3: // speed
                                 this.currentCharDetails.attributes.speed += 2;
@@ -1090,12 +1090,12 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalSpeed_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 29);
                                 if (additionalSpeed_GOD) this.currentCharDetails.attributes.speed += 2;
                                 if (additionalSpeed) this.currentCharDetails.attributes.speed++;
-                                keyName = "Speed stats";
+                                keyName = "Speed";
                                 break;
                             case 4: // armor
                                 const armorPlus = witharmor ? 2 : 1;
                                 this.currentCharDetails.attributes.armor += armorPlus;
-                                keyName = "Armor stats";
+                                keyName = "Armor";
                                 break;
                             default:
                                 console.log("No stats found.");
@@ -1114,32 +1114,28 @@ class PlayerHome extends Phaser.Scene {
                 this.validateAvailableUtils();
 
                 let addedStats = this.validateNewUtils(utilResults);
-                const charAttributes = this.currentCharDetails.attributes;
-                const charStatsPlus = !!addedStats[2].charStats ? addedStats[2].charStats : "";
-                let newStats = `<br><b>Character</b> -> ${charStatsPlus} Life: ${charAttributes.life}, Damage: ${charAttributes.damage}, Agile: ${charAttributes.agile}, Speed: ${charAttributes.speed}, Armor: ${charAttributes.armor}`;
-                let acquiredMessage = utilResults.value.name ? `Acquired <b>"${utilResults.value.name}"</b> and ` : "";
                 const userPet = this.currentCharDetails.utilities.pets;
                 let additionalStatsTxt = "";
-
-                if (utilResults.value.name && utilResults.value.name == "pets" && userPet.length > 0 && addedStats[1]) {
-                    additionalStatsTxt = `<br>Life: ${userPet[0].life}, Damage: ${userPet[0].damage}, Agile: ${userPet[0].agile}, Speed: ${userPet[0].speed}, Armor: ${userPet[0].armor}`;
-                    acquiredMessage = `<b>Pet</b> -> lvl up to <b>"${userPet[0].level} "</b>`;
-                }
-
-                gainedUtils.push(acquiredMessage.concat(addedStats[0], additionalStatsTxt, newStats));
-
+                gainedUtils.push({
+                    acquired: utilResults.value.name,
+                    charLevel: this.currentCharDetails.level.current,
+                    addedStats: addedStats,
+                    charAttributes: { ...this.currentCharDetails.attributes }
+                });
             }
-            const message = gainedUtils.map((util, index) => `<tr><td>${index + 1}</td><td>${util}</td></tr>`).join("");
             const dateAcquired = new Date().toLocaleDateString('en-US');
-            // level, acquired, Bunos, Life, Damage, Agile, Speed, Armor, date
-            const message2 = gainedUtils.map((util) => `
-                <tr>
-                    <td>${this.currentCharDetails.level.current}</td>
-                    <td>${util}</td>
-                    <td>${dateAcquired}</td>
-                </tr>
-            `).join("");
-            this.currentCharDetails.logs.utility.push(message2);
+            // level, acquired, Bonus, Life, Damage, Agile, Speed, Armor, date
+            const message = gainedUtils.map((util) => {
+                return {
+                    acquired: util.acquired,
+                    charLevel: util.charLevel || "",
+                    addedStats: util.addedStats,
+                    charAttributes: util.charAttributes,
+                    dateAcquired: dateAcquired
+                }
+            });
+
+            this.currentCharDetails.logs.utility.push(message);
             this.createModalTable('LevelUp', message);
 
             this.currentCharDetails.level.points = 0;
@@ -1276,15 +1272,11 @@ class PlayerHome extends Phaser.Scene {
         const petLength = this.currentCharDetails.utilities.pets.length;
         const utilitiesKey = utils.key;
         const armors = [51, 46, 44, 38, 17, 9];
-        let resultTxt = `Increase <b>"{stats}"</b>`;
-        let resultTxtChar = `Increase <b>"{stats}"</b>`;
-        let result = "";
-        let resultChar = "";
         let statsKey = "";
         let petLevel = false;
-        let randStatsPet = "";
+        let randStatsPet = null;
         let petAdditional = 0;
-        let charStatsKey = "";
+        let charStatsKey = null;
         let witharmor = false;
 
         for (let armor of armors) {
@@ -1303,7 +1295,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalLifeImmortality) this.currentCharDetails.attributes.life += 20;
                 if (additionalLife) this.currentCharDetails.attributes.life += 5;
                 if (utils.value.name == null) this.currentCharDetails.attributes.life += 5;
-                charStatsKey = "life";
+                charStatsKey = "Life";
                 break;
             case 1: // damage
                 this.currentCharDetails.attributes.damage++;
@@ -1312,7 +1304,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalDamage_GOD) this.currentCharDetails.attributes.damage += 2;
                 if (additionalDamage) this.currentCharDetails.attributes.damage++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.damage++;
-                charStatsKey = "damage";
+                charStatsKey = "Damage";
                 break;
             case 2: // agile
                 this.currentCharDetails.attributes.agile++;
@@ -1321,7 +1313,7 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalAgile_GOD) this.currentCharDetails.attributes.agile += 2;
                 if (additionalAgile) this.currentCharDetails.attributes.agile++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.agile++;
-                charStatsKey = "agile";
+                charStatsKey = "Agile";
                 break;
             case 3: // speed
                 this.currentCharDetails.attributes.speed++;
@@ -1330,19 +1322,17 @@ class PlayerHome extends Phaser.Scene {
                 if (additionalSpeed_GOD) this.currentCharDetails.attributes.speed += 2;
                 if (additionalSpeed) this.currentCharDetails.attributes.speed++;
                 if (utils.value.name == null) this.currentCharDetails.attributes.speed++;
-                charStatsKey = "speed";
+                charStatsKey = "Speed";
                 break;
             case 4: // armor
                 this.currentCharDetails.attributes.armor += 1;
                 if (utils.value.name == null) this.currentCharDetails.attributes.armor += 1;
-                charStatsKey = "armor";
+                charStatsKey = "Armor";
                 break;
             default:
                 console.log("No stats found.");
                 break;
         }
-        const maxUtilsMessage = utils.value.name == null ? `x2 in ${utils.key}` : "";
-        resultChar = resultTxtChar.replace("{stats}", statsKey).concat(" ", maxUtilsMessage);
 
         switch (utilitiesKey) {
             case "skills":
@@ -1361,10 +1351,16 @@ class PlayerHome extends Phaser.Scene {
                 if (petLength == 1 && utils.action == "petLvlUp") {
                     this.currentCharDetails.utilities.pets[0].level++;
                     if (this.currentCharDetails.utilities.pets[0].level > 1) {
-                        const choices = ["accuracy", "damage", "agile", "armor", "life"];
+
+                        let choices = ["accuracy", "damage", "agile", "armor", "life"];
+
+                        if (petDetails.accuracy >= petDetails.maxAccuracy) {
+                            choices = ["damage", "agile", "armor", "life"];
+                        }
+   
                         const randomStats = randomizer(4);
                         randStatsPet = choices[randomStats];
-
+                        
                         if (randStatsPet == "accuracy" && petDetails.accuracy < petDetails.maxAccuracy) {
 
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
@@ -1381,10 +1377,6 @@ class PlayerHome extends Phaser.Scene {
                             petAdditional += randomizerMinMax(2, 5);
                             this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
                         }
-
-
-                        petLevel = true;
-                        result = this.currentCharDetails.utilities.pets[0].level >= 2 ? `, ${resultTxt.replace("{stats}", randStatsPet)} +${petAdditional}` : "";
                     }
                 }
 
@@ -1393,8 +1385,18 @@ class PlayerHome extends Phaser.Scene {
                 // do nothing for stats
                 break;
         }
-        const charStatsTxt = !!charStatsKey ? `Increase <b>"${charStatsKey}"</b><br>` : "";
-        return [result, { petLevel: petLevel, value: petAdditional }, { charStats: charStatsTxt }];
+
+        const withPet = petLength == 1 && utils.action == "petLvlUp";
+        return {
+            maxUtils: utils.value.name == null ? utilitiesKey : null, // for max utils, multiply stats
+            character: {
+                stats: charStatsKey,
+            },
+            pet: {
+                level: withPet ? this.currentCharDetails.utilities.pets[0].level : null,
+                additional: randStatsPet
+            }
+        };
     }
 
     /**
@@ -1512,7 +1514,25 @@ class PlayerHome extends Phaser.Scene {
      * @returns {void}
      */
     createModalTable(key, message) {
+
+        const tableMessage = message.map((util) => {
+            return `
+                <tr>
+                    <td>${util.charLevel || ""}</td>
+                    <td>${util.acquired || util.addedStats.maxUtils || ""}</td>
+                    <td>${util.addedStats.character.stats || ""}</td>
+                    <td>${Number(util.charAttributes.life)}</td>
+                    <td>${Number(util.charAttributes.damage)}</td>
+                    <td>${Number(util.charAttributes.agile)}</td>
+                    <td>${Number(util.charAttributes.speed)}</td>
+                    <td>${Number(util.charAttributes.armor)}</td>
+                    <td>${util.dateAcquired || ""}</td>
+                </tr>
+            `;
+        });
+        const reversedTable = tableMessage.reverse().join("");
         const modal = document.createElement("div");
+        // level, acquired, Bonus, Life, Damage, Agile, Speed, Armor, date
         modal.innerHTML = `
             <div class="modal fade show d-block" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-dialog-centered" role="document">
@@ -1521,11 +1541,24 @@ class PlayerHome extends Phaser.Scene {
                             <h5 class="modal-title text-light">Level Up!</h5>
                         </div>
                         <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered" style="font-size: 0.8rem;">
+                                    <tbody>
+                                        <tr>
+                                            <th>LvL</th>
+                                            <th>Acquired</th>
+                                            <th>Bonus</th>
+                                            <th>Life</th>
+                                            <th>Damage</th>
+                                            <th>Agile</th>
+                                            <th>Speed</th>
+                                            <th>Armor</th>
+                                            <th>Date</th>
+                                        </tr>
+                                        ${tableMessage}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
@@ -1737,13 +1770,26 @@ class PlayerHome extends Phaser.Scene {
     }
 
     createModalTable2(title, message, key) {
-        let finalMessage = message;
-        if (Array.isArray(message)) {
-            message = message.reverse();
-            finalMessage = message.join('');
-        }
 
+        let arrayOfUtils = message.flat();
+        const tableMessage = arrayOfUtils.map((util) => {
+            return (`
+                <tr>
+                    <td>${util.charLevel || ""}</td>
+                    <td>${util.acquired || util.addedStats.maxUtils || ""}</td>
+                    <td>${util.addedStats.character.stats || ""}</td>
+                    <td>${Number(util.charAttributes.life)}</td>
+                    <td>${Number(util.charAttributes.damage)}</td>
+                    <td>${Number(util.charAttributes.agile)}</td>
+                    <td>${Number(util.charAttributes.speed)}</td>
+                    <td>${Number(util.charAttributes.armor)}</td>
+                    <td>${util.dateAcquired || ""}</td>
+                </tr>`
+            );
+        });
+        const reversedTable = tableMessage.reverse().join("");
         const modal = document.createElement("div");
+
         modal.innerHTML = `
             <div class="modal fade show d-block" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -1752,11 +1798,24 @@ class PlayerHome extends Phaser.Scene {
                             <h5 class="modal-title text-light">${title}</h5>
                         </div>
                         <div class="modal-body" style="height: 500px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${finalMessage}
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered" style="font-size: 0.8rem;">
+                                    <tr>
+                                        <th>LvL</th>
+                                        <th>Acquired</th>
+                                        <th>Bonus</th>
+                                        <th>Life</th>
+                                        <th>Damage</th>
+                                        <th>Agile</th>
+                                        <th>Speed</th>
+                                        <th>Armor</th>
+                                        <th>Date</th>
+                                    </tr>
+                                    <tr>
+                                        ${reversedTable}
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button id="${key}closeModalBtn" class="btn btn-secondary">Close</button>
