@@ -22,13 +22,13 @@ class PlayerHome extends Phaser.Scene {
     //#region Create Scene
     create() {
         // this.scene.start("playerFight");
-        const loadIsLogin = this.loadCharacter("recentLogin");
+        const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
-            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
+            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
-        const loadedCharacter = this.loadCharacter(CONSTANTS._charDetailsKey);
+        const loadedCharacter = loadCharacter(CONSTANTS._charDetailsKey);
         if (!!loadedCharacter) {
             this.currentCharDetails = loadedCharacter;
             this.validateLoggedIn(this.currentCharDetails.name);
@@ -44,7 +44,7 @@ class PlayerHome extends Phaser.Scene {
             this.scene.start('playGame');
         }
 
-        this.loadedCharacterLogs = this.loadCharacter("fightLogs");
+        this.loadedCharacterLogs = loadCharacter("fightLogs");
 
         this.validateAvailableUtils();
 
@@ -58,7 +58,7 @@ class PlayerHome extends Phaser.Scene {
                 const playerWin = recentFight.winner == "player";
                 const fightMessage = playerWin ? "You win!" : "You lose!";
 
-                this.createToast(this.generateRandomKeys(), fightMessage, playerWin);
+                this.createToast(generateRandomKeys(), fightMessage, playerWin);
 
                 localStorage.setItem("fightResult", false);
             }
@@ -110,12 +110,12 @@ class PlayerHome extends Phaser.Scene {
         console.log({ loadedCharacterLogs: JSON.parse(this.loadedCharacterLogs) });
 
         // Define your desired numbers
-        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
+        const gender = this.currentCharDetails.gender != null ? this.currentCharDetails.gender : CONSTANTS._genders[randomizer(CONSTANTS._genders.length - 1)];
+        const bodyFrame = this.currentCharDetails.bodyFrame != null ? this.currentCharDetails.bodyFrame : CONSTANTS._bodyFrames[randomizer(CONSTANTS._bodyFrames.length - 1)];
 
         const randomHairFrames = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : Phaser.Utils.Array.GetRandom(CONSTANTS._hairFrames);
         const hairGenderValue = gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : this.randomizer(hairGenderValue);
+        const hairNumber = this.currentCharDetails.hair.number != null ? this.currentCharDetails.hair.number : randomizer(hairGenderValue);
         const hairFrameNumber = this.currentCharDetails.hair.frame != null ? this.currentCharDetails.hair.frame : randomHairFrames;
 
         const basicAttireRandomFrames = this.currentCharDetails.basicAttire != null ? this.currentCharDetails.basicAttire : Phaser.Utils.Array.GetRandom(CONSTANTS._basicAttireFrames);
@@ -191,10 +191,6 @@ class PlayerHome extends Phaser.Scene {
         this.renderUtils(container, charDetails);
     }
 
-    randomizer(max) {
-        return Phaser.Math.Between(0, max);
-    }
-
     renderButtons() {
         this.buttonContainer.removeAll(true);
 
@@ -216,9 +212,11 @@ class PlayerHome extends Phaser.Scene {
             // this.createModalTable2('Fight History', "<h1 class='text-danger'>Fight History not yet available</h1>");
             let logData = this.latestFight;
 
-            // if (this.latestFight.length > 5) {
-            //     logData = this.latestFight.slice(-5);
-            // }
+            if (logData.length > 5) {
+                const latestFights = logData.slice(-5);
+                logData = latestFights;
+            }
+
             let id = 1;
             const fightTableDetails = logData.map((data) => {
 
@@ -235,11 +233,11 @@ class PlayerHome extends Phaser.Scene {
                 const playerLifePetMax = data.playerDetails.utilities.pets.length > 0 ? data.playerDetails.utilities.pets[0].life : 0;
                 const opponentLifePetMax = data.opponentDetails.utilities.pets.length > 0 ? data.opponentDetails.utilities.pets[0].life : 0;
 
-                const PlayerPetLife = data.fightScript.filter(data => data.action && data.action.target == "playerPet");
-                const OpponentPetLife = data.fightScript.filter(data => data.action && data.action.target == "opponentPet");
+                // const PlayerPetLife = data.fightScript.filter(data => data.action && data.action.target == "playerPet");
+                // const OpponentPetLife = data.fightScript.filter(data => data.action && data.action.target == "opponentPet");
 
-                const lastLifePlayerPet = playerLifePetMax > 0 ? PlayerPetLife[PlayerPetLife.length -1].action.remainingLife : 0;
-                const lastLifeOpponentPet = opponentLifePetMax > 0 ? OpponentPetLife[OpponentPetLife.length -1].action.remainingLife : 0;
+                // const lastLifePlayerPet = playerLifePetMax > 0 ? PlayerPetLife[PlayerPetLife.length -1].action.remainingLife : 0;
+                // const lastLifeOpponentPet = opponentLifePetMax > 0 ? OpponentPetLife[OpponentPetLife.length -1].action.remainingLife : 0;
 
                 const fightScriptLength = data.fightScript.length - 1;
                 const lifeRemaining = {
@@ -248,29 +246,21 @@ class PlayerHome extends Phaser.Scene {
                 };
 
                 const attackThrow = data.fightScript.filter(data => data.action && (data.action.type == "Attack" || data.action.type == "Throw"));
-                const dodgeDetails = data.fightScript.filter(data => data.action && data.action.type == "Dodge");
+                const dodgeDetails = data.fightScript.filter(data => data.action && (data.action.type == "Dodge"));
+                const blockDetails = data.fightScript.filter(data => data.action && (data.action.type == "Block"));
 
-                // target human
-                const playerAttackThrow = attackThrow.filter(data => data.action.by == "player" || data.action.by == "playerPet");
-                const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet");
+                // target human / playerPet / opponentPet
+                const playerAttackThrow = attackThrow.filter(data => data.action.by == "player");
+                const opponentAttackThrow = attackThrow.filter(data => data.action.by == "opponent");
 
-                const playerDodge = dodgeDetails.filter(data => data.action.by == "player" || data.action.by == "playerPet").length;
-                const opponentDodge = dodgeDetails.filter(data => data.action.by == "opponent" || data.action.by == "opponentPet").length;
+                const playerDodgeCount = dodgeDetails.filter(data => data.action.by == "player").length;
+                const opponentDodgeCount = dodgeDetails.filter(data => data.action.by == "opponent").length;
 
-                const playerTotalHits = playerAttackThrow.length + opponentDodge;
-                const opponentTotalHits = opponentAttackThrow.length + playerDodge;
+                const playerBlockCount = blockDetails.filter(data => data.action.by == "player").length;
+                const opponentBlockCount = blockDetails.filter(data => data.action.by == "opponent").length;
 
-                const playerDodgeRate = Math.floor(calculatePercentage(playerDodge, opponentTotalHits));
-                const opponentDodgeRate = Math.floor(calculatePercentage(opponentDodge, playerTotalHits));
-                // player || opponent : dodge == (opponent || player => hits)
-
-                // character dealt damage
-                const playerTotalDealtDamage = playerAttackThrow.reduce((sum, attacks) => {
-                    return Math.max(0, sum + attacks.weapon.damage);
-                }, 0);
-                const opponentTotalDealtDamage = opponentAttackThrow.reduce((sum, attacks) => {
-                    return Math.max(0, sum + attacks.weapon.damage);
-                }, 0);
+                const playerTotalHits = playerAttackThrow.length + opponentDodgeCount;
+                const opponentTotalHits = opponentAttackThrow.length + playerDodgeCount;
 
                 const lastAction = data.fightScript.slice(-2);
                 const lastHit = {
@@ -278,22 +268,24 @@ class PlayerHome extends Phaser.Scene {
                     weaponUsed: lastAction[0].weapon
                 };
                 const lastHitMessage = `${lastHit.actionBy.by} ${lastHit.actionBy.type} with ${lastHit.weaponUsed.name}`;
+                const playerLifeDesign = lifeRemaining.player > 0 ? "text-success fw-bold" : "text-danger fw-bold";
+                const opponentLifeDesign = lifeRemaining.opponent > 0 ? "text-success fw-bold" : "text-danger fw-bold";
 
                 const resultDetail = {
                     id: data.id,
                     player: {
                         name: playerName,
-                        lifeRemaining: `${lifeRemaining.player || 0} / ${playerLife}`, // remaining life in logs
-                        petLifeRemaining: lastLifePlayerPet + " / " + playerLifePetMax,
-                        hitsDamage: playerTotalHits + " / " + playerTotalDealtDamage, // success and failed hits
-                        dodgeRate: `${playerDodgeRate}%`
+                        lifeRemaining: `<b class="${playerLifeDesign}">${lifeRemaining.player || 0}</b> / ${playerLife}`, // remaining life in logs
+                        // petLifeRemaining: lastLifePlayerPet + " / " + playerLifePetMax,
+                        dodgeCount: `${playerDodgeCount}`,
+                        blockCount: `${playerBlockCount}`
                     },
                     opponent: {
                         name: opponentName,
-                        lifeRemaining: `${lifeRemaining.opponent || 0} / ${opponentLife}`,
-                        petLifeRemaining: lastLifeOpponentPet + " / " + opponentLifePetMax,
-                        hitsDamage: opponentTotalHits + " / " + opponentTotalDealtDamage,
-                        dodgeRate: `${opponentDodgeRate}%`
+                        lifeRemaining: `<b class="${opponentLifeDesign}">${lifeRemaining.opponent || 0}</b> / ${opponentLife}`,
+                        // petLifeRemaining: lastLifeOpponentPet + " / " + opponentLifePetMax,
+                        dodgeCount: `${opponentDodgeCount}`,
+                        blockCount: `${opponentBlockCount}`
                     },
                     lastAction: lastHitMessage
                 };
@@ -302,7 +294,7 @@ class PlayerHome extends Phaser.Scene {
                 return this.htmlFormat(title, resultDetail, data.winner);
             });
 
-            this.createModalTable3('Fight History', fightTableDetails);
+            this.createModalTable3('Fight History (Latest 5 fights)', fightTableDetails);
         });
 
         // center
@@ -335,30 +327,6 @@ class PlayerHome extends Phaser.Scene {
             this.createModalTable2('Utility Logs', this.currentCharDetails.logs.utility, "utilLogs");
         });
 
-    }
-
-    changeGender() {
-        this.currentCharDetails.gender = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._genders[0] : CONSTANTS._genders[1];
-        this.renderCreateCharacter();
-    }
-
-    changeColor() {
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        this.renderCreateCharacter();
-    }
-
-    changeRandom() {
-
-        this.currentCharDetails.gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-
-        const hairGenderValue = this.currentCharDetails.gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        this.currentCharDetails.hair.number = this.randomizer(hairGenderValue);
-        this.currentCharDetails.hair.frame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        this.currentCharDetails.basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        this.renderCreateCharacter();
     }
 
     createBarStatus(charAttributes) {
@@ -757,7 +725,7 @@ class PlayerHome extends Phaser.Scene {
 
             // Show the input and buttons on pointerdown
             noPassword.on('pointerdown', () => {
-                this.createToast(this.generateRandomKeys(), "🛠️ Under Maintenance", false);
+                this.createToast(generateRandomKeys(), "🛠️ Under Maintenance", false);
                 // passwordInput.style.display = 'block';
                 // buttonContainer.style.display = 'block';
                 // passwordInput.focus();
@@ -775,19 +743,19 @@ class PlayerHome extends Phaser.Scene {
                     buttonContainer.style.display = 'none';
                     // Clear the input value
                     passwordInput.value = '';
-                    this.currentCharDetails.psd = this.encryptedData(userInput, userInput);
+                    this.currentCharDetails.psd = encryptedData(userInput, userInput);
                     this.setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if (data) {
-                            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
-                            this.createToast(this.generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
+                            saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+                            this.createToast(generateRandomKeys(), CONSTANTS._successMessages.savedPassword, true);
                         } else {
                             throw { code: 500, message: "Saving data failed!" };
                         }
                     })
                         .catch(error => {
                             this.currentCharDetails.psd = null;
-                            this.createToast(this.generateRandomKeys(), error.message || JSON.stringify(error), false);
+                            this.createToast(generateRandomKeys(), error.message || JSON.stringify(error), false);
                         }).finally(() => {
                             this.setLoading(false);
                         });
@@ -818,8 +786,8 @@ class PlayerHome extends Phaser.Scene {
 
         switch (utilKeys) {
             case "skills":
-                position.x += 180, // left
-                    position.y -= 170 // top
+                position.x += -15, // left
+                    position.y -= 300 // top
                 break;
             case "weapons":
                 break;
@@ -854,38 +822,8 @@ class PlayerHome extends Phaser.Scene {
         toHover.on("pointerout", () => document.getElementById("phaser-tooltip")?.remove());
     }
 
-    saveToLocalStorage(key, data) {
-        const encryptedData = this.encryptedData(key, data);
-        localStorage.setItem(key, encryptedData);
-    };
-
-    encryptedData(key, data) {
-        return CryptoJS.AES.encrypt(JSON.stringify(data), key.concat("1")).toString();
-    }
-
-    decryptData(key) {
-        const encryptedData = localStorage.getItem(key);
-        const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    };
-
-    loadCharacter(key) {
-        const encryptedData = localStorage.getItem(key);
-
-        if (encryptedData) {
-            try {
-                return this.decryptData(key);
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
     validateLoggedIn(username) {
-        const userLoggedKey = this.decryptData(CONSTANTS._charUserKey);
+        const userLoggedKey = decryptData(CONSTANTS._charUserKey);
         const compareResult = userLoggedKey == username;
 
         if (!compareResult) {
@@ -1016,11 +954,11 @@ class PlayerHome extends Phaser.Scene {
      */
     calculateLevelUp() {
 
-        // this.currentCharDetails.level.points = 1;
+        this.currentCharDetails.level.points = 1;
 
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
-                life: 60,
+                life: 30,
                 damage: 2,
                 agile: 2,
                 speed: 2,
@@ -1065,7 +1003,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                // randomUtils.name = "pets" // for manual testing overwrite
+                randomUtils.name = "pets" // for manual testing overwrite
                 let actionToDO = "";
 
                 switch (randomUtils.name) {
@@ -1100,7 +1038,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalLifeImmortality = !!this.currentCharDetails.utilities.skills.find(skill => skill == 51);
                                 if (additionalLifeImmortality) this.currentCharDetails.attributes.life += 20;
                                 if (additionalLife) this.currentCharDetails.attributes.life += 5;
-                                keyName = "Life stats";
+                                keyName = "Life";
                                 break;
                             case 1: // damage
                                 this.currentCharDetails.attributes.damage += 2;
@@ -1108,7 +1046,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalDamage_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 10);
                                 if (additionalDamage_GOD) this.currentCharDetails.attributes.damage += 2;
                                 if (additionalDamage) this.currentCharDetails.attributes.damage++;
-                                keyName = "Damage stats";
+                                keyName = "Damage";
                                 break;
                             case 2: // agile
                                 this.currentCharDetails.attributes.agile += 2;
@@ -1116,7 +1054,7 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalAgile_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 8);
                                 if (additionalAgile_GOD) this.currentCharDetails.attributes.agile += 2;
                                 if (additionalAgile) this.currentCharDetails.attributes.agile++;
-                                keyName = "Agile stats";
+                                keyName = "Agile";
                                 break;
                             case 3: // speed
                                 this.currentCharDetails.attributes.speed += 2;
@@ -1124,12 +1062,12 @@ class PlayerHome extends Phaser.Scene {
                                 const additionalSpeed_GOD = !!this.currentCharDetails.utilities.skills.find(skill => skill == 29);
                                 if (additionalSpeed_GOD) this.currentCharDetails.attributes.speed += 2;
                                 if (additionalSpeed) this.currentCharDetails.attributes.speed++;
-                                keyName = "Speed stats";
+                                keyName = "Speed";
                                 break;
                             case 4: // armor
                                 const armorPlus = witharmor ? 2 : 1;
                                 this.currentCharDetails.attributes.armor += armorPlus;
-                                keyName = "Armor stats";
+                                keyName = "Armor";
                                 break;
                             default:
                                 console.log("No stats found.");
@@ -1165,13 +1103,19 @@ class PlayerHome extends Phaser.Scene {
             }
             const message = gainedUtils.map((util, index) => `<tr><td>${index + 1}</td><td>${util}</td></tr>`).join("");
             const dateAcquired = new Date().toLocaleDateString('en-US');
-            const message2 = gainedUtils.map((util) => `<tr><td>${this.currentCharDetails.level.current}</td><td>${util}</td><td>${dateAcquired}</td></tr>`).join("");
+            const message2 = gainedUtils.map((util) => `
+                    <tr>
+                        <td>${this.currentCharDetails.level.current}</td>
+                        <td>${util}</td>
+                        <td>${dateAcquired}</td>
+                    </tr>
+                `).join("");
             this.currentCharDetails.logs.utility.push(message2);
             this.createModalTable('LevelUp', message);
 
             this.currentCharDetails.level.points = 0;
-            this.saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
-            this.saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
+            saveToLocalStorage(CONSTANTS._charUserKey, this.currentCharDetails.name); // character user key
+            saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
 
             // console.log({ currentCharDetails: this.currentCharDetails.utilities.weapons });
             // console.log({ availableUtils: this.availableUtils.weapons });
@@ -1320,7 +1264,7 @@ class PlayerHome extends Phaser.Scene {
                 break;
             }
         }
-        const randomStatsNumber = witharmor ? this.randomizer(4) : this.randomizer(3);
+        const randomStatsNumber = witharmor ? randomizer(4) : randomizer(3);
 
         switch (randomStatsNumber) {
             case 0: // life
@@ -1388,11 +1332,13 @@ class PlayerHome extends Phaser.Scene {
                 if (petLength == 1 && utils.action == "petLvlUp") {
                     this.currentCharDetails.utilities.pets[0].level++;
                     if (this.currentCharDetails.utilities.pets[0].level > 1) {
-                        const choices = ["accuracy", "damage", "agile", "armor", "life"];
-                        const randomStats = randomizer(4);
-                        randStatsPet = choices[randomStats];
 
-                        if (randStatsPet == "accuracy" && petDetails.accuracy < petDetails.maxAccuracy) {
+                        let choices = ["accuracy", "damage", "agile", "armor", "life"];
+
+                        const randomStats = 0;
+                        randStatsPet = choices[randomStats];
+                        debugger
+                        if (randStatsPet == "accuracy") {
                             
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
                             const petAccuracyValue = petDetails.accuracy + petAdditionalAccuracy;
@@ -1504,7 +1450,7 @@ class PlayerHome extends Phaser.Scene {
                 this.currentCharDetails.attributes.armor += 10;
                 this.currentCharDetails.attributes.speed = subtractedSpeed <= 0 ? 1 : subtractedSpeed;
 
-                const randomSkin = this.randomArrayIndex([1, 2, 3, 4, 5]);
+                const randomSkin = randomArrayIndex([1, 2, 3, 4, 5]);
                 const charArmor = this.currentCharDetails.gender.concat("_armor", randomSkin); // set to 1 because no other skill yet added
 
                 this.currentCharDetails.armorName = charArmor;
@@ -1546,52 +1492,6 @@ class PlayerHome extends Phaser.Scene {
                     <div class="modal-content">
                         <div class="modal-header bg-success">
                             <h5 class="modal-title text-light">Level Up!</h5>
-                        </div>
-                        <div class="modal-body" style="height: 200px; overflow-y: auto;">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    ${message}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <button id="${key}closeModalBtn" class="btn btn-primary">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close modal on button click
-        document.getElementById(`${key}closeModalBtn`).addEventListener("click", function () {
-            modal.remove();
-        });
-    }
-
-    createModalTableFightResult(key, message, data) {
-        // console.log(data);
-        // const encryptedData = localStorage.getItem(key);
-        // if (!encryptedData) {
-        //     throw {
-        //         code: 500,
-        //         message: "testing error"
-        //     }
-        // }; // safety check
-
-        // const bytes = CryptoJS.AES.decrypt(encryptedData, key.concat("1"));
-        // const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
-        // console.log(bytes);
-
-        const modal = document.createElement("div");
-        modal.innerHTML = `
-            <div class="modal fade show d-block" tabindex="-1" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success">
-                            <h5 class="modal-title text-light">Fight Result: ####!</h5>
                         </div>
                         <div class="modal-body" style="height: 200px; overflow-y: auto;">
                             <table class="table table-bordered">
@@ -1680,43 +1580,6 @@ class PlayerHome extends Phaser.Scene {
         }, 3000);
     }
 
-    generateRandomKeys() {
-        return Math.random().toString(36).substring(2, 7);
-    }
-
-    createCursorTooltip() {
-        // Create tooltip element
-        const tooltip = document.createElement("div");
-        tooltip.id = "cursor-tooltip";
-        tooltip.className = "position-absolute bg-dark text-white border rounded p-2";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "1000";
-        tooltip.style.pointerEvents = "none"; // Prevents interference with other elements
-        tooltip.style.fontSize = "14px";
-        tooltip.style.border = "1px solid white";
-        tooltip.style.borderRadius = "5px";
-        tooltip.style.padding = "5px";
-        tooltip.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.2)";
-
-        document.body.appendChild(tooltip);
-
-        // Update tooltip position on mouse move
-        document.addEventListener("mousemove", (event) => {
-            tooltip.style.left = `${event.pageX + 10}px`; // Offset to prevent overlap
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.innerHTML = `X: ${event.pageX}, Y: ${event.pageY}`;
-        });
-
-        // Hide on mouse out
-        document.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-        });
-
-        document.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-        });
-    }
-
     validateAvailableUtils() {
 
         if (this.currentCharDetails.utilities.weapons.length != 0) {
@@ -1730,50 +1593,6 @@ class PlayerHome extends Phaser.Scene {
         if (this.currentCharDetails.utilities.pets.length != 0) {
             this.availableUtils.pets = this.availableUtils.pets.filter(item => !this.currentCharDetails.utilities.pets.includes(item.name) && !this.currentCharDetails.utilities.pets.includes(item.types));
         }
-    }
-
-    creteBars(container) {
-
-        const barWidth = 80; // Total width of the bar
-        const barHeight = 15; // Height of each segment
-        const maxSegments = 10; // Always 10 segments per bar
-        const segmentWidth = barWidth / maxSegments; // Width of each segment
-
-        for (let i = 1; i <= CONSTANTS._colors.length - 1; i++) {
-            const color = CONSTANTS._colors[i]; // Use the pre-determined colors
-            const borderThickness = 1; // Thickness of the border
-            const borderColor = color[i] == CONSTANTS._colors[13] ? 0xffffff : 0x000000;
-            // Create the outer rectangle (border)
-            const outerSegment = this.add.rectangle(
-                i * segmentWidth, // Position segments horizontally with spacing
-                0, // Align vertically
-                segmentWidth, // Outer rectangle includes the border
-                barHeight, // Outer rectangle includes the border
-                borderColor // Border color (black)
-            );
-            outerSegment.setOrigin(0); // Align to the top-left
-            container.add(outerSegment);
-
-            // Create the inner rectangle (fill)
-            const innerSegment = this.add.rectangle(
-                i * segmentWidth + borderThickness, // Adjust for border thickness
-                borderThickness, // Adjust for border thickness
-                segmentWidth - 2, // Adjust for border thickness
-                barHeight - 2, // Adjust for border thickness
-                Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
-            );
-            innerSegment.setOrigin(0); // Align to the top-left
-            container.add(innerSegment);
-        }
-    }
-
-    randomArrayIndex(data) {
-
-        // Generate a random index
-        const randomIndex = Math.floor(Math.random() * data.length);
-
-        // Select the random value from the array
-        return data[randomIndex];
     }
 
     createModalTable2(title, message, key) {
@@ -1848,55 +1667,6 @@ class PlayerHome extends Phaser.Scene {
         });
     }
 
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
-        }
-    }
-
-    renderRandomCharacter(lvlPoints) {
-
-        const rand_Gender = CONSTANTS._genders[this.randomizer(CONSTANTS._genders.length - 1)];
-        const rand_hairGenderValue = rand_Gender == CONSTANTS._genders[1] ? CONSTANTS._hairSpriteCount.male : CONSTANTS._hairSpriteCount.female;
-        const rand_hairNumber = this.randomizer(rand_hairGenderValue);
-        const rand_hairFrame = CONSTANTS._hairFrames[this.randomizer(CONSTANTS._hairFrames.length - 1)];
-        const rand_basicAttire = CONSTANTS._basicAttireFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-        const rand_bodyFrame = CONSTANTS._bodyFrames[this.randomizer(CONSTANTS._bodyFrames.length - 1)];
-
-        let randomChar = {
-            level: {
-                current: 0,
-                experience: 0,
-                points: lvlPoints || 1
-            },
-            name: "Dummy" + this.randomizer(999),
-            gender: rand_Gender,
-            bodyFrame: rand_bodyFrame,
-            hair: {
-                number: rand_hairNumber,
-                frame: rand_hairFrame
-            },
-            basicAttire: rand_basicAttire,
-            utilities: {
-                skills: [],
-                weapons: [],
-                pets: []
-            },
-            attributes: {
-                life: 60,
-                damage: 1,
-                agile: 1,
-                speed: 1,
-                armor: 0
-            }
-        }
-
-        return randomChar;
-    }
-
     validatePetFrame(pet) {
         let frames = [];
 
@@ -1963,7 +1733,12 @@ class PlayerHome extends Phaser.Scene {
         const design = winner == "player" ? "bg-success" : "bg-danger";
         const accordionId = `accordion-${bodyMessage.id}`;
         const bodyMessageID = bodyMessage.id;
-        const designPlayerDodgeRate = bodyMessage.player.dodgeRate == "0%" ? "text-danger fw-bold" : "";
+
+        const designPlayerDodgeCount = Number(bodyMessage.player.dodgeCount) > Number(bodyMessage.opponent.dodgeCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+        const designOpponentDodgeCount = Number(bodyMessage.player.dodgeCount) < Number(bodyMessage.opponent.dodgeCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+
+        const designPlayerBlockCount = Number(bodyMessage.player.blockCount) > Number(bodyMessage.opponent.blockCount) ? "text-success fw-bold" : "text-danger  fw-bold";
+        const designOpponentBlockCount = Number(bodyMessage.player.blockCount) < Number(bodyMessage.opponent.blockCount) ? "text-success fw-bold" : "text-danger  fw-bold";
 
         // Get the key/value from the object (since you said only one entry per objec
 
@@ -1985,7 +1760,7 @@ class PlayerHome extends Phaser.Scene {
                             aria-labelledby="heading-${bodyMessageID}" 
                             data-bs-parent="#${accordionId}">
                             <div class="accordion-body">
-                                <table class="table table-sm table-bordered table-striped">
+                                <table class="table table-sm table-bordered table-striped text-center">
                                     <thead class="table-dark">
                                         <tr>
                                             <th>Attribute</th>
@@ -2000,24 +1775,19 @@ class PlayerHome extends Phaser.Scene {
                                             <td>${bodyMessage.opponent.name}</td>
                                         </tr>
                                         <tr>
-                                            <td>Pet Life Remaining</td>
-                                            <td>${bodyMessage.player.petLifeRemaining}</td>
-                                            <td>${bodyMessage.opponent.petLifeRemaining}</td>
-                                        </tr>
-                                        <tr>
                                             <td>Life Remaining</td>
                                             <td>${bodyMessage.player.lifeRemaining}</td>
                                             <td>${bodyMessage.opponent.lifeRemaining}</td>
                                         </tr>
                                         <tr>
-                                            <td>Hits / Damage</td>
-                                            <td>${bodyMessage.player.hitsDamage}</td>
-                                            <td>${bodyMessage.opponent.hitsDamage}</td>
+                                            <td>Dodge Count</td>
+                                            <td class="${designPlayerDodgeCount}">${bodyMessage.player.dodgeCount}</td>
+                                            <td class="${designOpponentDodgeCount}">${bodyMessage.opponent.dodgeCount}</td>
                                         </tr>
                                         <tr>
-                                            <td>Dodge Rate</td>
-                                            <td class="${designPlayerDodgeRate}">${bodyMessage.player.dodgeRate}</td>
-                                            <td>${bodyMessage.opponent.dodgeRate}</td>
+                                            <td>Block Count</td>
+                                            <td class="${designPlayerBlockCount}">${bodyMessage.player.blockCount}</td>
+                                            <td class="${designOpponentBlockCount}">${bodyMessage.opponent.blockCount}</td>
                                         </tr>
                                         <tr>
                                             <td>Last Action</td>

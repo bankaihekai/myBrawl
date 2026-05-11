@@ -1955,7 +1955,12 @@ const CONSTANTS = {
                 "by": "player"
             }
         }
-    ]
+    ],
+    _thrownWeapons: [5, 6, 20, 28],
+    _heavyWeapons: [1, 2, 4, 7, 12, 14, 15, 19, 21, 22, 25],
+    _sharpWeapons: [8, 10, 16, 17, 18, 23, 26, 27, 30, 32],
+    _physicalWeapons: [-1, 3],
+    _maxSpeed: 1000, // Threshold for cyclic comparison
 };
 
 // Optionally freeze the object to prevent modification

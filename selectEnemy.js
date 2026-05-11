@@ -16,13 +16,13 @@ class PlayerSelect extends Phaser.Scene {
     create() {
 
         localStorage.removeItem("opponent");
-        const loadIsLogin = this.loadCharacter("recentLogin");
+        const loadIsLogin = loadCharacter("recentLogin");
         if (loadIsLogin) {
             this.createToast(generateRandomKeys(), CONSTANTS._successMessages.loginSuccess, true);
             localStorage.removeItem("recentLogin");
         };
 
-        const loadedCharacter = this.loadCharacter(CONSTANTS._charDetailsKey);
+        const loadedCharacter = loadCharacter(CONSTANTS._charDetailsKey);
         if (!!loadedCharacter) {
             this.currentCharDetails = loadedCharacter;
             this.validateLoggedIn(this.currentCharDetails.name);
@@ -38,7 +38,7 @@ class PlayerSelect extends Phaser.Scene {
             this.scene.start('playGame');
         }
         // this.validateAvailableUtils();
-        const loadedOpponent = this.loadCharacter("opponent");
+        const loadedOpponent = loadCharacter("opponent");
         if (loadedOpponent) {
             this.scene.start('playerFight');
         }
@@ -261,7 +261,7 @@ class PlayerSelect extends Phaser.Scene {
                     // Clear the input value
                     passwordInput.value = '';
                     this.currentCharDetails.psd = encryptedData(userInput, userInput);
-                    this.setLoading(true);
+                    setLoading(true);
                     createUser(this.currentCharDetails).then((data) => {
                         if (data) {
                             saveToLocalStorage(CONSTANTS._charDetailsKey, this.currentCharDetails); // character data
@@ -274,7 +274,7 @@ class PlayerSelect extends Phaser.Scene {
                             this.currentCharDetails.psd = null;
                             this.createToast(generateRandomKeys(), error.message || JSON.stringify(error), false);
                         }).finally(() => {
-                            this.setLoading(false);
+                            setLoading(false);
                         });
 
                     this.renderCreateCharacter();
@@ -317,21 +317,6 @@ class PlayerSelect extends Phaser.Scene {
         });
     }
 
-    loadCharacter(key) {
-        const encryptedData = localStorage.getItem(key);
-
-        if (encryptedData) {
-            try {
-                return decryptData(key);
-            } catch (error) {
-                console.error(CONSTANTS._errorMessages.failedDecrypt, error);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
     validateLoggedIn(username) {
         const userLoggedKey = decryptData(CONSTANTS._charUserKey);
         const compareResult = userLoggedKey == username;
@@ -360,7 +345,7 @@ class PlayerSelect extends Phaser.Scene {
 
         if (!charData.attributes) { // set to default attributes
             charData.attributes = {
-                life: 60,
+                life: 30,
                 damage: 2,
                 agile: 2,
                 speed: 2,
@@ -435,7 +420,7 @@ class PlayerSelect extends Phaser.Scene {
                                 const additionalLifeImmortality = !!charData.utilities.skills.find(skill => skill == 51);
                                 if (additionalLifeImmortality) charData.attributes.life += 20;
                                 if (additionalLife) charData.attributes.life += 5;
-                                keyName = "Life stats";
+                                keyName = "Life";
                                 break;
                             case 1: // damage
                                 charData.attributes.damage += 2;
@@ -443,7 +428,7 @@ class PlayerSelect extends Phaser.Scene {
                                 const additionalDamage_GOD = !!charData.utilities.skills.find(skill => skill == 10);
                                 if (additionalDamage_GOD) charData.attributes.damage += 2;
                                 if (additionalDamage) charData.attributes.damage++;
-                                keyName = "Damage stats";
+                                keyName = "Damage";
                                 break;
                             case 2: // agile
                                 charData.attributes.agile += 2;
@@ -451,7 +436,7 @@ class PlayerSelect extends Phaser.Scene {
                                 const additionalAgile_GOD = !!charData.utilities.skills.find(skill => skill == 8);
                                 if (additionalAgile_GOD) charData.attributes.agile += 2;
                                 if (additionalAgile) charData.attributes.agile++;
-                                keyName = "Agile stats";
+                                keyName = "Agile";
                                 break;
                             case 3: // speed
                                 charData.attributes.speed += 2;
@@ -459,12 +444,12 @@ class PlayerSelect extends Phaser.Scene {
                                 const additionalSpeed_GOD = !!charData.utilities.skills.find(skill => skill == 29);
                                 if (additionalSpeed_GOD) charData.attributes.speed += 2;
                                 if (additionalSpeed) charData.attributes.speed++;
-                                keyName = "Speed stats";
+                                keyName = "Speed";
                                 break;
                             case 4: // armor
                                 const armorPlus = witharmor ? 2 : 1;
                                 charData.attributes.armor += armorPlus;
-                                keyName = "Armor stats";
+                                keyName = "Armor";
                                 break;
                             default:
                                 console.log("No stats found.");
@@ -916,39 +901,6 @@ class PlayerSelect extends Phaser.Scene {
         }, 3000);
     }
 
-    createCursorTooltip() {
-        // Create tooltip element
-        const tooltip = document.createElement("div");
-        tooltip.id = "cursor-tooltip";
-        tooltip.className = "position-absolute bg-dark text-white border rounded p-2";
-        tooltip.style.position = "absolute";
-        tooltip.style.zIndex = "1000";
-        tooltip.style.pointerEvents = "none"; // Prevents interference with other elements
-        tooltip.style.fontSize = "14px";
-        tooltip.style.border = "1px solid white";
-        tooltip.style.borderRadius = "5px";
-        tooltip.style.padding = "5px";
-        tooltip.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.2)";
-
-        document.body.appendChild(tooltip);
-
-        // Update tooltip position on mouse move
-        document.addEventListener("mousemove", (event) => {
-            tooltip.style.left = `${event.pageX + 10}px`; // Offset to prevent overlap
-            tooltip.style.top = `${event.pageY + 10}px`;
-            tooltip.innerHTML = `X: ${event.pageX}, Y: ${event.pageY}`;
-        });
-
-        // Hide on mouse out
-        document.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-        });
-
-        document.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-        });
-    }
-
     validateAvailableUtils(charData, availUtils) {
 
         if (charData.utilities.weapons.length != 0) {
@@ -964,15 +916,6 @@ class PlayerSelect extends Phaser.Scene {
         }
 
         return availUtils;
-    }
-
-    setLoading(withLoading) {
-        const loadingScreen = document.getElementById("loading-screen");
-        if (loadingScreen) {
-            loadingScreen.style.display = withLoading ? "flex" : "none";
-        } else {
-            console.warn("Loading screen element not found!");
-        }
     }
 
     renderRandomCharacter(lvlPoints) {
@@ -1016,4 +959,3 @@ class PlayerSelect extends Phaser.Scene {
         return randomChars;
     }
 }
-

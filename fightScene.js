@@ -8,11 +8,6 @@ class PlayerFight extends Phaser.Scene {
             isSaving: false // flag to lock naming while entering password
         }
         this.script = [];
-        this.thrownWeapons = [5, 6, 20, 28];
-        this.heavyWeapons = [1, 2, 4, 7, 12, 14, 15, 19, 21, 22, 25];
-        this.sharpWeapons = [8, 10, 16, 17, 18, 23, 26, 27, 30, 32];
-        this.physicalWeapons = [-1, 3];
-        this.maxSpeed = 1000; // Threshold for cyclic comparison
 
         // for skill basher 6
         this.isStun = {
@@ -539,10 +534,10 @@ class PlayerFight extends Phaser.Scene {
         const weaponDamage = weapon ? Number(weapon.damage) : 0;
         const target = targetUser == CONSTANTS._player ? this.playerUtils : this.opponentUtils;
         const targetSkills = target.skills;
-        const thrownWeaponsResult = this.thrownWeapons.find(w => w == weapon.number); // current used weapon type is thrown
-        const heavyWeaponsResult = this.heavyWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
-        const sharpWeaponsResult = this.sharpWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
-        const physicalWeaponsResult = this.physicalWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
+        const thrownWeaponsResult = CONSTANTS._thrownWeapons.find(w => w == weapon.number); // current used weapon type is thrown
+        const heavyWeaponsResult = CONSTANTS._heavyWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
+        const sharpWeaponsResult = CONSTANTS._sharpWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
+        const physicalWeaponsResult = CONSTANTS._physicalWeapons.find(w => w == weapon.number); // current used  weapon type is heavy
         const weaponCritical = calculateChance(weapon.critical);
 
         // javelinist skill
@@ -1577,7 +1572,7 @@ class PlayerFight extends Phaser.Scene {
 
         if (this.playerLife > 0 && this.opponentLife > 0) {
             if (!withCounter) {
-                const attackerWithThrownWeapon = this.thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
+                const attackerWithThrownWeapon = CONSTANTS._thrownWeapons.find(w => w == theAttackerActiveUtils.activeWeapon);
                 if (attackerWithThrownWeapon) {
                     this.generateLogs(this.init, { type: CONSTANTS._actions.stopThrow, by: theAttacker });
                 } else {
@@ -1605,7 +1600,7 @@ class PlayerFight extends Phaser.Scene {
 
         const isPlayerAttacker = theAttacker == CONSTANTS._player;
 
-        const isWithThrownWeapon = this.thrownWeapons.find(w => w == attackerWeapon.number);
+        const isWithThrownWeapon = CONSTANTS._thrownWeapons.find(w => w == attackerWeapon.number);
 
         let additionalAccuracy = 0;
         const bullsEye = theAttackerSkills.skills.find(skill => skill == 33); // bulls eye skill 33 passive
@@ -1763,7 +1758,7 @@ class PlayerFight extends Phaser.Scene {
                     const withBash = !!comboInitMax && (comboInitMax[0] == comboInitMax[1]);
                     if (withBash) {
                         const withBasher = theAttackerSkills.skills.find(skill => skill == 6);
-                        const isWithHeavyWeapon = this.heavyWeapons.find(w => w == attackerWeapon.number);
+                        const isWithHeavyWeapon = CONSTANTS._heavyWeapons.find(w => w == attackerWeapon.number);
                         if (withBasher && isWithHeavyWeapon) {
                             this.calculateStun(theAttacker);
                         };
@@ -1932,7 +1927,7 @@ class PlayerFight extends Phaser.Scene {
         const attackersQueue = [];
         let queueIndex = 0;
         const queueLimit = 1000;
-        const maxSpeed = 1000;
+        const maxSpeed = CONSTANTS._maxSpeed;;
         const baseSpeedBonus = 300;
         const attackerCount = listOfAttackers.length;
         const skippedPlayers = new Set(); // To track skipped players

@@ -1,27 +1,29 @@
-/* Reset default margin and padding */
-html,
 body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent scrollbars */
+    overflow: hidden;
+    background: linear-gradient(to top, #efaf73, #fee8be);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+#game-container {
     width: 100%;
     height: 100%;
+}
+canvas {
+    display: block;
+}
+#loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #000; /* Optional background color */
-}
-
-/* Ensure the game container fills the viewport and centers the canvas */
-#game-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100vw; /* Full width of viewport */
-    height: 100vh; /* Full height of viewport */
-}
-
-/* Ensure the Phaser canvas is centered */
-#game-container canvas {
-    display: block; /* Remove any inline-block spacing */
+    z-index: 1000;
 }
