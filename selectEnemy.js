@@ -361,23 +361,27 @@ class PlayerSelect extends Phaser.Scene {
                 let randomUtils = {};
                 let utils = "";
 
-                // checker for empty utilities
-                const zero_avail_Skills = availUtils.skills.length == 0 ? {} : { "name": "skills", "chance": 30 };
-                const zero_avail_Weapons = availUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": 35 };
-                const zero_avail_Pets = availUtils.pets.length == 0 ? {} : { "name": "pets", "chance": 20 };
-                const avail_stats = { "name": "stats", "chance": 15 };
                 const toRender = [];
+                const isWithLevel = this.currentCharDetails.level.current > 1;
+                const skillChance = isWithLevel ? 30 : 45;
+                const weaponChance = isWithLevel ? 35 : 45;
+                const petChance = isWithLevel ? 20 : 10;
+                const avail_stats = { "name": "stats", "chance": 15 };
+                const zero_avail_Skills = availUtils.skills.length == 0 ? {} : { "name": "skills", "chance": skillChance };
+                const zero_avail_Weapons = availUtils.weapons.length == 0 ? {} : { "name": "weapons", "chance": weaponChance };
+                const zero_avail_Pets = availUtils.pets.length == 0 ? {} : { "name": "pets", "chance": petChance };
 
-                // checker for animal lover skill that can support multiple pets
-                const currentUserPetCount = charData.utilities.pets.length;
-                const isAnimalLover = charData.utilities.skills.filter(skill => skill == 24);
+                // checker for empty utilities                  
+                if (isWithLevel) {
+                    toRender.push(avail_stats);
+                }
 
                 toRender.push(avail_stats);
 
                 if (availUtils.skills.length > 0) toRender.push(zero_avail_Skills);
                 if (availUtils.weapons.length > 0) toRender.push(zero_avail_Weapons);
                 if (availUtils.pets.length > 0) {
-                    if (currentUserPetCount >= 0) {
+                    if (charData.utilities.pets.length >= 0) {
                         toRender.push(zero_avail_Pets);
                     } else {
                         // do nothing -> dont add pets

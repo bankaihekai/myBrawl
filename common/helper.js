@@ -127,6 +127,132 @@ function calculatePetCombo(withAnimalsLover, petDetails) {
     return combo;
 }
 
+function getRandom_UtilsItem(items) {
+
+    // Calculate the total chance
+    const totalChance = items.reduce((acc, item) => acc + item.chance, 0);
+    // Generate a random number between 0 and the total chance
+    const randomNum = Math.random() * totalChance;
+
+    // Determine which item is selected based on the random number
+    let cumulativeChance = 0;
+    for (const item of items) {
+        cumulativeChance += item.chance;
+        if (randomNum < cumulativeChance) {
+            return item;
+        }
+    }
+}
+
+function getRandomWeapons(availableUtilsWeapons, currentCharDetails) {
+    if (availableUtilsWeapons.length == 0) return { name: null };
+
+    let totalChance = availableUtilsWeapons.reduce((sum, item) => sum + item.chance, 0);
+    let randomNum = Math.random() * totalChance;
+    let cumulativeChance = 0;
+
+    for (let item of availableUtilsWeapons) {
+        cumulativeChance += item.chance;
+        if (randomNum <= cumulativeChance) {
+            currentCharDetails.utilities.weapons.push(item.number);
+
+            return {
+                characterDetails: currentCharDetails,
+                item: item
+            };
+        }
+    }
+}
+
+function getRandomItem(items, characterDetails) {
+
+    if (items.length == 0) return { name: null };
+
+    let itemsToUse = [];
+
+    for (let item of items) {
+        // Skip the items that need required utils to acquire
+        if (item.require) {
+            let withRequiredItem = !!characterDetails.utilities.skills.find(skill => skill == item.require);
+            if (!withRequiredItem) continue; // Skip this item instead of returning
+        }
+
+        itemsToUse.push(item);
+    }
+
+    let totalChance = itemsToUse.reduce((sum, item) => sum + item.chance, 0);
+    let randomNum = Math.random() * totalChance;
+    let cumulativeChance = 0;
+
+    for (let item of itemsToUse) {
+        cumulativeChance += item.chance;
+        if (randomNum <= cumulativeChance) {
+            characterDetails.utilities.skills.push(item.number);
+            return {
+                characterDetails: characterDetails,
+                item: item
+            };
+        }
+    }
+}
+
+function getRandomPets(availPets, characterDetails) {
+
+    if (characterDetails.utilities.pets.length > 0) {
+        return {
+            characterDetails: characterDetails,
+            item: [characterDetails.utilities.pets[0], "petLvlUp"]
+        }
+    }
+    else {
+        if (availPets.length == 0) return { name: null };
+
+        const charOwnedPets = characterDetails.utilities.pets;
+        const availablePets = availPets;
+        const newSetofPet = CONSTANTS._petsNew;
+
+        // group owned pets and count 
+        const groupedPets = charOwnedPets.reduce((acc, pet) => {
+            if (!acc[pet.name]) {
+                acc[pet.name] = { name: pet.name, count: 0 }; // Initialize with pet data and count
+            }
+            acc[pet.name].count++; // Increment count
+            return acc;
+        }, {});
+
+        const results = Object.values(groupedPets);
+        const maxPets = results.filter(maxPet => maxPet.count >= 4);
+
+        // remove the max pets in the possible options
+        maxPets.forEach(maxPet => {
+            const petIndex = newSetofPet.findIndex(pet => ((pet.name == maxPet.name) && (pet.types == maxPet.types)));
+
+            if (petIndex !== -1) {
+                newSetofPet.splice(petIndex, 1);
+            }
+        });
+
+        let totalChance = newSetofPet.reduce((sum, pet) => sum + pet.chance, 0);
+        let randomNum = Math.random() * totalChance;
+        let cumulativeChance = 0;
+
+        for (let item of newSetofPet) {
+            if (item.skip) continue;
+            cumulativeChance += item.chance;
+            if (randomNum <= cumulativeChance) {
+
+                const petToSave = availablePets.filter(pets => pets.name == item.name);
+
+                if (petToSave.length > 0) characterDetails.utilities.pets.push(petToSave[0]);
+                return {
+                    characterDetails: characterDetails,
+                    item: petToSave.length > 0 ? [petToSave[0], ""] : [{ name: null }, ""]
+                };
+            }
+        }
+    }
+}
+
 //#endregion
 
 //#region HTML Display

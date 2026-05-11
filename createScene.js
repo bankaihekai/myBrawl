@@ -354,7 +354,7 @@ class CreateScene extends Phaser.Scene {
                         borderThickness, // Adjust for border thickness
                         segmentWidth - 2, // Adjust for border thickness
                         barHeight - 2, // Adjust for border thickness
-                        Phaser.Display.Color.HexStringToColor(color).color // Set color based on filled/unfilled segments
+                        Phaser.Display.Color.HexStringToColor(color || "#ffffff").color // Set color based on filled/unfilled segments
                     );
                     innerSegment.setOrigin(0); // Align to the top-left
                     this.barContainer.add(innerSegment);

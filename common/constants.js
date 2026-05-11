@@ -1962,7 +1962,8 @@ const CONSTANTS = {
         }
     ],
     _styling: {
-        bonus: "bg-success text-white"
+        bonus: "bg-success text-white",
+        petBonus: "bg-primary text-white"
     }
 };
 
