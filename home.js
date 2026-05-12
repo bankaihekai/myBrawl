@@ -954,7 +954,7 @@ class PlayerHome extends Phaser.Scene {
      */
     calculateLevelUp() {
 
-        this.currentCharDetails.level.points = 1;
+        // this.currentCharDetails.level.points = 1; ////
 
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
@@ -1003,7 +1003,7 @@ class PlayerHome extends Phaser.Scene {
                 }
 
                 randomUtils = this.getRandom_UtilsItem(toRender);
-                randomUtils.name = "pets" // for manual testing overwrite
+                // randomUtils.name = "pets" // for manual testing overwrite ////
                 let actionToDO = "";
 
                 switch (randomUtils.name) {
@@ -1335,9 +1335,10 @@ class PlayerHome extends Phaser.Scene {
 
                         let choices = ["accuracy", "damage", "agile", "armor", "life"];
 
+                        // const randomStats = randomizer(4);
                         const randomStats = 0;
                         randStatsPet = choices[randomStats];
-                        debugger
+
                         if (randStatsPet == "accuracy") {
                             
                             const petAdditionalAccuracy = randomizerMinMax(2, 5);
@@ -1346,6 +1347,13 @@ class PlayerHome extends Phaser.Scene {
 
                             if (isPetMaxAccuracy) {
                                 this.currentCharDetails.utilities.pets[0].accuracy = petDetails.maxAccuracy;
+
+                                choices = ["damage", "agile", "armor", "life"];
+                                randStatsPet = choices[randomizer(3)];
+
+                                petAdditional += randomizerMinMax(2, 5);
+                                this.currentCharDetails.utilities.pets[0][randStatsPet] += petAdditional;
+
                             } else {
                                 this.currentCharDetails.utilities.pets[0].accuracy += petAdditionalAccuracy;
                                 petAdditional += petAdditionalAccuracy;
