@@ -954,7 +954,7 @@ class PlayerHome extends Phaser.Scene {
      */
     calculateLevelUp() {
 
-        // this.currentCharDetails.level.points = 1; ////
+        // this.currentCharDetails.level.points = 100; ////
 
         if (!this.currentCharDetails.attributes) { // set to default attributes
             this.currentCharDetails.attributes = {
@@ -1002,7 +1002,7 @@ class PlayerHome extends Phaser.Scene {
                     }
                 }
 
-                randomUtils = this.getRandom_UtilsItem(toRender);
+                randomUtils = getRandom_UtilsItem(toRender);
                 // randomUtils.name = "pets" // for manual testing overwrite ////
                 let actionToDO = "";
 
@@ -1120,24 +1120,6 @@ class PlayerHome extends Phaser.Scene {
             // console.log({ currentCharDetails: this.currentCharDetails.utilities.weapons });
             // console.log({ availableUtils: this.availableUtils.weapons });
             // console.log({ currentCharDetails: this.currentCharDetails });
-        }
-    }
-
-    // GET random skill, weapon, pet, etc.
-    getRandom_UtilsItem(items) {
-
-        // Calculate the total chance
-        const totalChance = items.reduce((acc, item) => acc + item.chance, 0);
-        // Generate a random number between 0 and the total chance
-        const randomNum = Math.random() * totalChance;
-
-        // Determine which item is selected based on the random number
-        let cumulativeChance = 0;
-        for (const item of items) {
-            cumulativeChance += item.chance;
-            if (randomNum < cumulativeChance) {
-                return item;
-            }
         }
     }
 

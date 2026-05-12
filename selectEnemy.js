@@ -384,7 +384,7 @@ class PlayerSelect extends Phaser.Scene {
                     }
                 }
 
-                randomUtils = this.getRandom_UtilsItem(toRender);
+                randomUtils = getRandom_UtilsItem(toRender);
                 let actionToDO = "";
                 // randomUtils.name = "pets" // for manual testing overwrite
 
@@ -472,24 +472,6 @@ class PlayerSelect extends Phaser.Scene {
             charData.level.points = 0;
         }
         return charData;
-    }
-
-    // GET random skill, weapon, pet, etc.
-    getRandom_UtilsItem(items) {
-
-        // Calculate the total chance
-        const totalChance = items.reduce((acc, item) => acc + item.chance, 0);
-        // Generate a random number between 0 and the total chance
-        const randomNum = Math.random() * totalChance;
-
-        // Determine which item is selected based on the random number
-        let cumulativeChance = 0;
-        for (const item of items) {
-            cumulativeChance += item.chance;
-            if (randomNum < cumulativeChance) {
-                return item;
-            }
-        }
     }
 
     getRandomWeapons(charData, availUtils) {

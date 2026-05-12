@@ -569,43 +569,6 @@ class CreateScene extends Phaser.Scene {
         toHover.on("pointerout", () => document.getElementById("phaser-tooltip")?.remove());
     }
 
-    // GET random skill, weapon, pet, etc.
-    getRandomItem(items) {
-
-        let totalChance = items.reduce((sum, item) => sum + item.chance, 0);
-        let randomNum = Math.random() * totalChance;
-        let cumulativeChance = 0;
-
-        for (let item of items) {
-            cumulativeChance += item.chance;
-            if (randomNum <= cumulativeChance) {
-                return item;
-            }
-        }
-    }
-
-    getRandomUtils() {
-        const randomUtils = this.getRandomItem(CONSTANTS._utils);
-        let utils;
-        switch (randomUtils.name) {
-            case "skills":
-                utils = this.getRandomItem(CONSTANTS._skills);
-                break;
-            case "weapons":
-                utils = this.getRandomItem(CONSTANTS._weapons);
-                break;
-            case "pets":
-                var petResult = this.getRandomItem(CONSTANTS._pets);
-                petResult.types = petResult.types[randomizer(petResult.types.length - 1)];
-                utils = petResult;
-                break;
-            default:
-                this.createToast(generateRandomKeys(), CONSTANTS._errorMessages.noUtilitiesFound);
-        }
-
-        if (utils) return { key: randomUtils.name, value: utils };
-    }
-
     validateLoggedIn() {
         const activeUserName = localStorage.getItem(CONSTANTS._charUserKey);
         const activeUserDetails = localStorage.getItem(CONSTANTS._charDetailsKey);
