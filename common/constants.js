@@ -1960,7 +1960,14 @@ const CONSTANTS = {
     _heavyWeapons: [1, 2, 4, 7, 12, 14, 15, 19, 21, 22, 25],
     _sharpWeapons: [8, 10, 16, 17, 18, 23, 26, 27, 30, 32],
     _physicalWeapons: [-1, 3],
-    _maxSpeed: 1000, // Threshold for cyclic comparison
+    _maxSpeed: 1000, // Threshold for cyclic comparison,
+    _defaultAttributes: {
+        life: 30,
+        damage: 2,
+        agile: 2,
+        speed: 2,
+        armor: 0
+    }
 };
 
 // Optionally freeze the object to prevent modification
